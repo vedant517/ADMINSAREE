@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import { Star, ArrowLeft, MessageSquare, User, Clock, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../../services/apiConfig';
 
@@ -24,7 +24,7 @@ const ProductReviewPage = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${API_BASE_URL}/products/${id}`);
+      const { data } = await api.get(`/products/${id}`);
       setProduct(data.data);
       setLoading(false);
     } catch (err) {
@@ -37,19 +37,9 @@ const ProductReviewPage = () => {
     e.preventDefault();
     try {
       setSubmitLoading(true);
-      const token = localStorage.getItem('token');
-      
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      };
-
-      await axios.post(
-        `${API_BASE_URL}/products/${id}/reviews`,
-        { rating, comment },
-        config
+      await api.post(
+        `/products/${id}/reviews`,
+        { rating, comment }
       );
 
       setMessage({ type: 'success', text: 'Review submitted successfully!' });
@@ -164,7 +154,7 @@ const ProductReviewPage = () => {
                         </div>
                     )}
 
-                    {!localStorage.getItem('token') ? (
+                    {!localStorage.getItem('isLoggedIn') ? (
                         <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-100">
                              <p className="text-sm text-slate-500 mb-4">Please log in to write a review for this product.</p>
                              <button onClick={() => navigate('/')} className="px-6 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl w-full hover:bg-slate-800 transition">

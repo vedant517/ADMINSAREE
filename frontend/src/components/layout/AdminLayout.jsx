@@ -21,8 +21,10 @@ import {
   ExternalLink,
   LogOut,
   ChevronRight,
-  Moon
+  Moon,
+  MessageSquare
 } from 'lucide-react';
+import api from '../../services/api';
 
 const navGroups = [
   {
@@ -30,6 +32,7 @@ const navGroups = [
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
       { icon: ShoppingCart, label: 'Order Management', path: '/orders' },
+      { icon: MessageSquare, label: 'Enquiries', path: '/enquiries' },
       { icon: Users, label: 'Customers', path: '/customers' },
       { icon: Ticket, label: 'Coupon Code', path: '/coupons' },
       { icon: Receipt, label: 'Transaction', path: '/transactions' },
@@ -39,6 +42,7 @@ const navGroups = [
     title: 'Product',
     items: [
       { icon: PlusCircle, label: 'Add Products', path: '/add-product' },
+      { icon: Layers, label: 'Categories', path: '/categories' },
       { icon: ImageIcon, label: 'Product Media', path: '/media' },
       { icon: List, label: 'Product List', path: '/products' },
       { icon: Star, label: 'Product Reviews', path: '/reviews' },
@@ -126,8 +130,13 @@ export default function AdminLayout({ setIsAuthenticated }) {
         {/* Profile Footer */}
         <div style={{ borderTop: '1px solid #f1f5f9', padding: '16px' }}>
           <button
-            onClick={() => {
-              localStorage.removeItem('token');
+            onClick={async () => {
+              try {
+                await api.post('/admin/logout');
+              } catch (err) {
+                console.error('Logout failed:', err);
+              }
+              localStorage.removeItem('isLoggedIn');
               localStorage.removeItem('role');
               if (setIsAuthenticated) setIsAuthenticated(false);
               else window.location.href = '/';

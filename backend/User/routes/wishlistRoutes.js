@@ -6,14 +6,7 @@ const router = express.Router();
 
 //  GET USER ID FROM TOKEN
 const getUserId = (req) => {
-  const authHeader = req.headers.authorization;
-  let token = null;
-
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
-  } else if (req.cookies?.token) {
-    token = req.cookies.token;
-  }
+  const token = req.cookies?.token;
 
   if (!token) return null;
 

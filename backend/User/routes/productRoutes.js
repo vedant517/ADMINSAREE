@@ -19,12 +19,26 @@ const router = express.Router();
 // ==============================
 // ✅ GET CATEGORIES (Separate APIs)
 // ==============================
-router.get("/main-categories", (req, res) => {
-  res.json({ success: true, data: PRODUCT_MAIN_CATEGORIES });
+router.get("/main-categories", async (req, res) => {
+  try {
+    const Category = (await import("../models/Category.js")).default;
+    const categories = await Category.find({ isMain: true });
+    res.json({ success: true, data: categories });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
-router.get("/sub-categories", (req, res) => {
-  res.json({ success: true, data: PRODUCT_SUB_CATEGORIES });
+router.get("/sub-categories", async (req, res) => {
+  try {
+    const Category = (await import("../models/Category.js")).default;
+    const categories = await Category.find({ isMain: false });
+    // If frontend expects strings, map them. But usually objects are better.
+    // Based on Filter.jsx, it expects strings for now: setSubCategories(res.data.data.categories);
+    res.json({ success: true, data: categories.map(c => c.name) });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // ==============================

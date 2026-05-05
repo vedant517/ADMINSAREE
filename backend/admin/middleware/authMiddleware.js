@@ -3,16 +3,11 @@ import User from "../../models/User.js";
 import Admin from '../models/Admin.js';
 
 export const protect = async (req, res, next) => {
-  let token;
-
-  const authHeader = req.headers.authorization || req.headers.Authorization;
-  
-  if (authHeader && authHeader.toLowerCase().startsWith('bearer')) {
-    token = authHeader.split(' ')[1];
-  }
+  // ── Strictly read from httpOnly cookie ──
+  const token = req.cookies?.token;
 
   if (!token) {
-    console.error('No token found in request headers');
+    console.error('No token found in request cookies');
     return res.status(401).json({ message: 'Not authorized to access this route' });
   }
 
@@ -28,8 +23,12 @@ export const protect = async (req, res, next) => {
 
     if (!user) {
       console.error('User/Admin not found for ID:', decoded.id);
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ 
+        message: 'User not found',
+        debug: { id: decoded.id } 
+      });
     }
+
     if (user && user.constructor.modelName === 'User') {
       await User.findByIdAndUpdate(user._id, { lastActive: Date.now() });
     }
@@ -44,9 +43,9 @@ export const protect = async (req, res, next) => {
 
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
-        message: `User role ${req.user.role} is not authorized to access this route`,
+        message: `User role ${req.user?.role || 'unknown'} is not authorized to access this route`,
       });
     }
     next();

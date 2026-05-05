@@ -11,7 +11,7 @@ import {
   Search,
   Star,
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import { API_BASE_URL } from '../../services/apiConfig';
 import { fetchProducts } from '../../features/products/productSlice';
 import { formatINR } from '../../utils/currency';
@@ -87,7 +87,7 @@ export default function ProductReviews() {
   const fetchAllReviews = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${API_BASE_URL}/reviews`);
+      const { data } = await api.get('/reviews');
       setReviews(data.data || []);
     } catch (error) {
       console.error('Error fetching reviews:', error);

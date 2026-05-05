@@ -5,11 +5,8 @@ export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token || localStorage.getItem('token');
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
+    credentials: 'include', // Automatically send cookies
+    prepareHeaders: (headers) => {
       return headers;
     },
   }),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { Link } from 'react-router-dom';
 
 const CategoryShowcase = () => {
@@ -9,7 +9,7 @@ const CategoryShowcase = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const { data } = await axios.get('/api/products/main-categories');
+        const { data } = await api.get('/products/main-categories');
         setCategories(data.data);
       } catch (error) {
         console.error('Error fetching main categories:', error);

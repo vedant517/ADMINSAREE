@@ -1,20 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { API_BASE_URL } from '../../services/apiConfig';
+import api from '../../services/api';
 
-const API_URL = `${API_BASE_URL}/products`;
+const API_URL = '/products';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-const getAuthHeader = (thunkAPI) => ({
-  Authorization: `Bearer ${thunkAPI.getState().auth?.token}`,
-});
+// Removed manual getAuthHeader since cookies are used automatically
 
 // ─── Thunks ──────────────────────────────────────────────────────────────────
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (params, thunkAPI) => {
     try {
-      const response = await axios.get(API_URL, { params });
+      const response = await api.get(API_URL, { params });
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
@@ -26,7 +22,7 @@ export const fetchProductById = createAsyncThunk(
   'products/fetchProductById',
   async (id, thunkAPI) => {
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await api.get(`${API_URL}/${id}`);
       return response.data.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
@@ -53,10 +49,9 @@ export const addProduct = createAsyncThunk(
         });
       }
 
-      const response = await axios.post(API_URL, formData, {
+      const response = await api.post(API_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          ...getAuthHeader(thunkAPI),
         },
       });
       return response.data.data;
@@ -80,10 +75,9 @@ export const updateProduct = createAsyncThunk(
         });
       }
 
-      const response = await axios.put(`${API_URL}/${id}`, formData, {
+      const response = await api.put(`${API_URL}/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          ...getAuthHeader(thunkAPI),
         },
       });
 
@@ -101,9 +95,7 @@ export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
   async (id, thunkAPI) => {
     try {
-      await axios.delete(`${API_URL}/${id}`, {
-        headers: getAuthHeader(thunkAPI),
-      });
+      await api.delete(`${API_URL}/${id}`);
       return id;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);

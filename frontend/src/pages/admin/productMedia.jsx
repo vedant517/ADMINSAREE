@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
-import { API_BASE_URL } from "../../services/apiConfig";
+import api from "../../services/api";
 
 const MAIN_CATEGORIES = ["Royal Silks", "Festive Radiance", "Bridal Elegance", "Handwoven Heritage"];
 const SUB_CATEGORIES = ["Wedding", "Party Wear", "Bride", "Festive", "Casual", "Daily Wear"];
@@ -28,13 +28,11 @@ const OfferPage = () => {
     const fetchData = async () => {
       try {
         const [offerRes, productRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/offers`),
-          fetch(`${API_BASE_URL}/products?limit=1000`),
+          api.get('/offers'),
+          api.get('/products?limit=1000'),
         ]);
-        const [offerData, productData] = await Promise.all([
-          offerRes.json(),
-          productRes.json(),
-        ]);
+        const offerData = offerRes.data;
+        const productData = productRes.data;
         setOffers(offerData.data || []);
         setProducts(productData.data || []);
         setLoading(false);
@@ -67,12 +65,8 @@ const OfferPage = () => {
     try {
       const payload = { ...formData };
       if (!payload.variantId) delete payload.variantId;
-      const res = await fetch(`${API_BASE_URL}/offers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
+      const res = await api.post('/offers', payload);
+      const data = res.data;
       if (data.success) {
         setOffers((prev) => [...prev, data.data]);
         setShowForm(false);
@@ -207,43 +201,7 @@ const OfferPage = () => {
         </button>
       </div>
 
-      {/* ── MAIN CATEGORY TABS ── */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        {mainCategoryTabs.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedMainCategory(cat)}
-            style={{
-              padding: "7px 18px", borderRadius: 30,
-              border: selectedMainCategory === cat ? "none" : "1.5px solid #e2e8f0",
-              background: selectedMainCategory === cat ? "linear-gradient(135deg,#4c9f70,#3a895c)" : "#fff",
-              color: selectedMainCategory === cat ? "#fff" : "#64748b",
-              fontWeight: 700, fontSize: 13, cursor: "pointer",
-              boxShadow: selectedMainCategory === cat ? "0 4px 12px rgba(76,159,112,0.3)" : "0 1px 3px rgba(0,0,0,0.06)",
-              transition: "all 0.2s",
-            }}
-          >{cat}</button>
-        ))}
-      </div>
 
-      {/* ── TAG TABS ── */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap", paddingLeft: 4 }}>
-        {tagTabs.map((sub) => (
-          <button
-            key={sub}
-            onClick={() => setSelectedTag(sub)}
-            style={{
-              padding: "5px 14px", borderRadius: 30,
-              border: selectedTag === sub ? "none" : "1.5px solid #e2e8f0",
-              background: selectedTag === sub ? "linear-gradient(135deg,#3b82f6,#2563eb)" : "#fff",
-              color: selectedTag === sub ? "#fff" : "#64748b",
-              fontWeight: 600, fontSize: 12, cursor: "pointer",
-              boxShadow: selectedTag === sub ? "0 4px 12px rgba(59,130,246,0.3)" : "0 1px 3px rgba(0,0,0,0.06)",
-              transition: "all 0.2s",
-            }}
-          >{sub}</button>
-        ))}
-      </div>
 
       {/* ── OFFERS GRID ── */}
       {filteredOffers.length === 0 ? (

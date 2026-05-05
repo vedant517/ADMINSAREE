@@ -6,9 +6,9 @@ import {
   Clock, AlertCircle, Zap, Users, ShoppingCart, ChevronLeft,
   ChevronRight, RefreshCw,
 } from 'lucide-react';
-import { API_BASE_URL } from '../../services/apiConfig';
+import api from '../../services/api';
 
-const API_BASE = `${API_BASE_URL}/coupons`;
+const API_BASE = '/coupons';
 
 /* ── colour tokens ── */
 const G  = '#1a6b3c';
@@ -35,19 +35,16 @@ const isExpiring = (d) => {
 };
 
 /* ── API calls ── */
+// apiFetch now uses the centralized api (axios) instance
 async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      ...(options.headers || {})
-    },
-    ...options,
+  const method = (options.method || 'GET').toLowerCase();
+  const res = await api({
+    url: `${API_BASE}${path}`,
+    method,
+    data: options.body ? JSON.parse(options.body) : undefined,
+    ...options
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Request failed');
-  return data;
+  return res.data;
 }
 
 

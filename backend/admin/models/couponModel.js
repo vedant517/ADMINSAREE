@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Single unified Coupon schema used by both Admin and User sides
 const couponSchema = new mongoose.Schema(
   {
     code: {
@@ -11,14 +12,11 @@ const couponSchema = new mongoose.Schema(
       minlength: [3, "Code must be at least 3 characters"],
       maxlength: [20, "Code cannot exceed 20 characters"],
     },
-    description: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+    description: { type: String, default: "", trim: true },
     discountType: {
       type: String,
-      enum: ["percentage", "flat"],
+      // Accept both "flat" (admin) and "fixed" (user) — normalize to "flat"
+      enum: ["percentage", "flat", "fixed"],
       required: true,
       default: "percentage",
     },
@@ -27,58 +25,22 @@ const couponSchema = new mongoose.Schema(
       required: [true, "Discount value is required"],
       min: [0, "Discount cannot be negative"],
     },
-    minOrderValue: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-    maxDiscount: {
-      type: Number,
-      default: null,
-    },
-    usageLimit: {
-      type: Number,
-      default: null,
-      min: 1,
-    },
-    usagePerUser: {
-      type: Number,
-      default: 1,
-      min: 1,
-    },
-    usedCount: {
-      type: Number,
-      default: 0,
-    },
-    usedBy: [
-      {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        usedAt: { type: Date, default: Date.now },
-      },
-    ],
-    validFrom: {
-      type: Date,
-      default: Date.now,
-    },
-    validUntil: {
-      type: Date,
-      required: [true, "Expiry date is required"],
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    applicableCategories: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    ],
-    applicableProducts: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    ],
+    minOrderValue: { type: Number, default: 0, min: 0 },
+    maxDiscount:   { type: Number, default: null },
+    usageLimit:    { type: Number, default: null, min: 1 },
+    usagePerUser:  { type: Number, default: 1, min: 1 },
+    usedCount:     { type: Number, default: 0 },
+    // Unified usedBy — store just user ObjectIds
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    validFrom:  { type: Date, default: Date.now },
+    validUntil: { type: Date, required: [true, "Expiry date is required"] },
+    isActive:   { type: Boolean, default: true },
+    applicableCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+    applicableProducts:   [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
   { timestamps: true }
 );
 
-/* Virtual */
 couponSchema.virtual("isValid").get(function () {
   const now = new Date();
   return (
@@ -92,4 +54,4 @@ couponSchema.virtual("isValid").get(function () {
 couponSchema.set("toJSON", { virtuals: true });
 couponSchema.set("toObject", { virtuals: true });
 
-export default mongoose.model("Coupon", couponSchema);
+export default mongoose.models.Coupon || mongoose.model("Coupon", couponSchema);

@@ -5,31 +5,20 @@ import { API_BASE_URL } from './apiConfig';
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
+  withCredentials: true, // Crucial for sending cookies automatically
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-// Attach JWT from localStorage on every request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Global response error handler
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('role');
-      window.location.href = '/';
+      // window.location.href = '/'; // Redirect if needed
     }
     return Promise.reject(error);
   }

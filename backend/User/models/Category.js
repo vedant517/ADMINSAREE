@@ -7,7 +7,7 @@ const categorySchema = new mongoose.Schema(
     slug: { type: String, lowercase: true, unique: true },
     description: { type: String },
     image: { type: String },
-
+    isMain: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

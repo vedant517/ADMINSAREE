@@ -5,51 +5,46 @@ import Address from "../../models/Address.js";
 const router = express.Router();
 
 // @route   POST /api/addresses
-// @desc    Add a new address
+// @desc    Add a new shipping address (checkout form)
 // @access  Private
 router.post("/", protect, async (req, res) => {
   try {
     if (!req.body) {
       return res.status(400).json({ 
         success: false, 
-        message: "Request body is missing. Ensure you are sending JSON and 'Content-Type: application/json' header." 
+        message: "Request body is missing." 
       });
     }
-    const { contact, shippingAddress } = req.body;
+
+    const { 
+      firstName, lastName, email, phoneNumber,
+      address, country, state, city, zipCode 
+    } = req.body;
 
     // Validate required fields
-    if (!contact || !contact.emailOrPhone) {
+    if (!firstName || !lastName || !email || !phoneNumber || !address || !country || !state || !city || !zipCode) {
       return res.status(400).json({ 
         success: false,
-        message: "contact.emailOrPhone is required" 
+        message: "All fields are required: firstName, lastName, email, phoneNumber, address, country, state, city, zipCode"
       });
     }
 
-    if (!shippingAddress) {
-      return res.status(400).json({ 
-        success: false,
-        message: "shippingAddress is required with fullName, phone, address, city, postalCode, state" 
-      });
-    }
-
-    const { fullName, phone, address, city, postalCode, state } = shippingAddress;
-    if (!fullName || !phone || !address || !city || !postalCode || !state) {
-      return res.status(400).json({ 
-        success: false,
-        message: "shippingAddress must include: fullName, phone, address, city, postalCode, state" 
-      });
-    }
-
-
-    
     const newAddress = new Address({
       user: req.user.id,
-      contact,
-      shippingAddress,
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      address,
+      country,
+      state,
+      city,
+      zipCode,
     });
 
     const savedAddress = await newAddress.save();
     res.status(201).json({ success: true, data: savedAddress });
+
   } catch (error) {
     console.error("Save address error:", error);
     res.status(500).json({ 
@@ -64,15 +59,33 @@ router.post("/", protect, async (req, res) => {
 // @access  Private
 router.get("/", protect, async (req, res) => {
   try {
-    // Some clients send order info in GET body for checkout context
-    if (req.body && Object.keys(req.body).length > 0) {
-      console.log(`[ADDRESS-CONTEXT] Fetching addresses for order:`, req.body);
-    }
     const addresses = await Address.find({ user: req.user.id }).sort({ createdAt: -1 });
-    res.json(addresses);
+    res.json({ success: true, data: addresses });
   } catch (error) {
     console.error("Fetch addresses error:", error);
     res.status(500).json({ message: "Server error fetching addresses" });
+  }
+});
+
+// @route   PUT /api/addresses/:id
+// @desc    Update an address
+// @access  Private
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const address = await Address.findOne({ _id: req.params.id, user: req.user.id });
+    if (!address) {
+      return res.status(404).json({ success: false, message: "Address not found" });
+    }
+
+    const { firstName, lastName, email, phoneNumber, address: addr, country, state, city, zipCode } = req.body;
+    const updated = await Address.findByIdAndUpdate(
+      req.params.id,
+      { firstName, lastName, email, phoneNumber, address: addr, country, state, city, zipCode },
+      { new: true }
+    );
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -89,30 +102,6 @@ router.delete("/:id", protect, async (req, res) => {
 
     if (address.user.toString() !== req.user.id) {
       return res.status(401).json({ message: "Not authorized" });
-    }
-
-    await Address.findByIdAndDelete(req.params.id);
-    res.json({ message: "Address removed", success: true });
-  } catch (error) {
-    console.error("Delete address error:", error);
-    res.status(500).json({ message: "Server error deleting address" });
-  }
-});
-
-// @route   DELETE /api/addresses/:userId/:id
-// @desc    Delete an address (specifically for a user)
-// @access  Private
-router.delete("/:userId/:id", protect, async (req, res) => {
-  try {
-    // If not admin, the userId must match the authenticated user
-    if (req.user.role !== 'admin' && req.params.userId !== req.user.id) {
-      return res.status(401).json({ message: "Not authorized to delete another user's address" });
-    }
-
-    const address = await Address.findOne({ _id: req.params.id, user: req.params.userId });
-
-    if (!address) {
-      return res.status(404).json({ message: "Address not found for this user" });
     }
 
     await Address.findByIdAndDelete(req.params.id);

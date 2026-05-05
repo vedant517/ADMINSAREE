@@ -26,11 +26,20 @@ export const loginUser = async (req, res) => {
         role: admin.role
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
+    // Set Cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
     res.status(200).json({
-      token,
+      message: "Login successful",
       role: admin.role
     });
 
@@ -38,5 +47,10 @@ export const loginUser = async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({ msg: error.message });
   }
+};
+
+export const logoutUser = (req, res) => {
+  res.clearCookie("token", { path: "/" });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 

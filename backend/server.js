@@ -64,6 +64,11 @@ import addressRoutes from "./admin/routes/address.routes.js";
 import offerRoutes from "./admin/routes/offerRoutes.js";
 import adminProfileRoutes from "./admin/routes/adminProfile.routes.js";
 import couponRoutes from "./admin/routes/Couponroutes.js";
+import adminCategoryRoutes from "./admin/routes/categoryRoutes.js";
+import enquiryRoutes from "./User/routes/enquiryRoutes.js";
+import adminEnquiryRoutes from "./admin/routes/adminEnquiryRoutes.js";
+
+
 
 
 
@@ -92,23 +97,26 @@ import metadataRoutes from "./User/routes/metadataRoutes.js";
 // Products (Public & Admin)
 app.use("/api/products", productRoutes); 
 
-// Metadata & Categories
-app.use("/api", metadataRoutes);
+// Auth
+app.use("/api/auth", authRoutes);
 
 // Orders
 app.use("/api/admin/orders", orderRoutes);
 app.use("/api/user/orders", userOrderRoutes);
-app.use("/api/orders", orderRoutes); // Keep legacy for compatibility
+app.use("/api/orders", orderRoutes); 
 
-// Auth
-app.use("/api/auth", authRoutes);
+// Metadata & Categories
+app.use("/api/categories", adminCategoryRoutes);
+app.use("/api", metadataRoutes);
+
+
 
 // User Features
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/addresses", userAddressRoutes);
-app.use("/api/coupons", userCouponRoutes);
+app.use("/api/coupons", couponRoutes);
 app.use("/api/offers", offerRoutes); // Use admin offer routes for listing too
 app.use("/api/payments", paymentRoutes);
 app.use("/api/user", userRoutes);
@@ -119,6 +127,8 @@ app.use("/api/buynow", buyNowRoutes);
 app.use("/api/admin", adminRoutes); // Register admin auth routes (login)
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/enquiries", enquiryRoutes);
+app.use("/api/admin/enquiries", adminEnquiryRoutes);
 app.use("/api/admin/profile", adminProfileRoutes);
 app.use("/api/config", configRoutes);
 // ==============================

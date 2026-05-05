@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
+import api from '../../services/api';
 import { API_BASE_URL } from "../../services/apiConfig";
 
 
@@ -242,10 +243,8 @@ const AdminProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/admin/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const res = await api.get('/admin/profile');
+        const data = res.data;
         if (data.success) {
           setProfile(data.data);
           setForm({
@@ -293,15 +292,8 @@ const AdminProfile = () => {
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/profile`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
+      const res = await api.put('/admin/profile', form);
+      const data = res.data;
       if (data.success) {
         toast.success("Profile updated successfully");
         setProfile(data.data);
@@ -331,18 +323,11 @@ const AdminProfile = () => {
     }
     setPwSaving(true);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/profile/password`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
+      const res = await api.put(
+        '/admin/profile/password',
+        { currentPassword, newPassword }
       );
-      const data = await res.json();
+      const data = res.data;
       if (data.success) {
         toast.success("Password updated");
         setCurrentPassword("");
@@ -365,15 +350,12 @@ const AdminProfile = () => {
     const formData = new FormData();
     formData.append("profileImage", file);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/profile/image`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
+      const res = await api.post(
+        '/admin/profile/image',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      const data = await res.json();
+      const data = res.data;
       if (data.success) {
         setForm((f) => ({ ...f, profileImageUrl: data.imageUrl }));
         setProfile((p) => ({ ...p, profileImageUrl: data.imageUrl }));
@@ -388,14 +370,10 @@ const AdminProfile = () => {
 
   const handleDeleteImage = async () => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/profile/image`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await api.delete(
+        '/admin/profile/image'
       );
-      const data = await res.json();
+      const data = res.data;
       if (data.success) {
         setForm((f) => ({ ...f, profileImageUrl: "" }));
         setProfile((p) => ({ ...p, profileImageUrl: "" }));

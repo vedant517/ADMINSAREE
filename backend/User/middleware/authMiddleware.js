@@ -4,17 +4,8 @@ export const protect = (req, res, next) => {
   let token = null;
   
   try {
-    // ── Priority 1: Authorization header (Bearer token from localStorage) ──
-    const authHeader = req.headers.authorization;
-
-    // ── Priority 2: httpOnly cookie (set by server on login) ──
-    const cookieToken = req.cookies?.token;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.split(" ")[1];
-    } else if (cookieToken) {
-      token = cookieToken;
-    }
+    // ── Strictly read from httpOnly cookie ──
+    token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({ message: "Not authorized, no token" });

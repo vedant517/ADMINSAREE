@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 
 const ProductFilter = ({ onFilterChange }) => {
@@ -24,7 +24,7 @@ const ProductFilter = ({ onFilterChange }) => {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const res = await axios.get('/api/metadata');
+        const res = await api.get('/metadata');
         setSubCategories(res.data.data.categories);
         setColors(res.data.data.colors);
       } catch (error) {

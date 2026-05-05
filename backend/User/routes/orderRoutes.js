@@ -115,6 +115,10 @@ router.post("/", userProtect, async (req, res) => {
     const {
       items,
       orderItems,
+      // New flat address fields (from updated checkout form)
+      firstName, lastName, email: userEmail, phoneNumber,
+      address: flatAddress, country, state, city, zipCode,
+      // Old nested format (kept for backward compatibility)
       shippingAddress,
       paymentMethod,
       itemsPrice,
@@ -152,14 +156,19 @@ router.post("/", userProtect, async (req, res) => {
     // Handle both totalAmount and totalPrice field names
     const finalTotalPrice = totalPrice || totalAmount || 0;
 
-    // Normalize shipping address for Admin compatibility
+    // Normalize shipping address — prefer new flat fields, fall back to old nested format
     const finalShippingAddress = {
-      fullName: shippingAddress?.fullName || shippingAddress?.name || "Customer",
-      address: shippingAddress?.address || shippingAddress?.addressLine || "Not provided",
-      city: shippingAddress?.city || "Not provided",
-      postalCode: shippingAddress?.postalCode || shippingAddress?.pincode || "Not provided",
-      country: shippingAddress?.country || "India",
-      phone: shippingAddress?.phone || "Not provided",
+      fullName:   firstName && lastName ? `${firstName} ${lastName}` 
+                    : shippingAddress?.fullName || shippingAddress?.name || "Customer",
+      firstName:  firstName || shippingAddress?.firstName || "",
+      lastName:   lastName  || shippingAddress?.lastName  || "",
+      email:      userEmail || shippingAddress?.email || "",
+      phone:      phoneNumber || shippingAddress?.phone || shippingAddress?.phoneNumber || "Not provided",
+      address:    flatAddress || shippingAddress?.address || shippingAddress?.addressLine || "Not provided",
+      city:       city    || shippingAddress?.city       || "Not provided",
+      state:      state   || shippingAddress?.state      || "",
+      postalCode: zipCode || shippingAddress?.postalCode || shippingAddress?.zipCode || "Not provided",
+      country:    country || shippingAddress?.country    || "India",
     };
 
     // Handle Coupon usage
@@ -167,19 +176,17 @@ router.post("/", userProtect, async (req, res) => {
     if (couponCode) {
       const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
       if (coupon) {
-        // Basic safety check (even if frontend already validated)
         const now = new Date();
-        if (now >= coupon.validFrom && now <= coupon.validUntil) {
+        if (now >= new Date(coupon.validFrom) && now <= new Date(coupon.validUntil)) {
           appliedCoupon = {
             code: coupon.code,
             discountType: coupon.discountType,
             discountValue: coupon.discountValue
           };
-          
-          // Record usage
+          // Record usage — $addToSet prevents duplicates, $inc tracks total count
           await Coupon.findByIdAndUpdate(coupon._id, {
             $inc: { usedCount: 1 },
-            $push: { usedBy: req.user._id }
+            $addToSet: { usedBy: req.user._id }
           });
         }
       }

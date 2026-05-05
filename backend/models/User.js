@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: false,
+    required: [true, 'Please add a name'],
   },
   username: {
     type: String,
@@ -12,9 +12,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Please add an email'],
-    unique: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email'],
+    required: false,
   },
   password: {
     type: String,
@@ -24,7 +22,8 @@ const userSchema = new mongoose.Schema({
   },
   phonenum: {
     type: String,
-    required: false,
+    required: [true, 'Please add a phone number'],
+    unique: true,
   },
   role: {
     type: String,

@@ -15,13 +15,17 @@ const orderSchema = new mongoose.Schema(
     orderId: { type: String, unique: true }, // Added for Admin Dashboard compatibility
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     orderItems: [orderItemSchema], // Changed from items to orderItems
-    shippingAddress: { // Changed from address/shippingAddress structure to nested object
-      fullName: String,
-      address: String,
-      city: String,
+    shippingAddress: {
+      fullName:   String,
+      firstName:  String,
+      lastName:   String,
+      email:      String,
+      phone:      String,
+      address:    String,
+      city:       String,
+      state:      String,
       postalCode: String,
-      country: String,
-      phone: String,
+      country:    String,
     },
     itemsPrice: { type: Number, default: 0 },
     taxPrice: { type: Number, default: 0 },

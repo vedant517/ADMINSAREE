@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { setCredentials } from '../../features/auth/authSlice';
-import { API_BASE_URL } from '../../services/apiConfig';
+import api from '../../services/api';
 
 export default function Login({ setIsAuthenticated }) {
   const [email, setEmail] = useState('admin@gmail.com');
@@ -21,16 +21,18 @@ export default function Login({ setIsAuthenticated }) {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+      const res = await api.post('/admin/login', {
+        email: email.trim(),
+        password
       });
 
-      const data = await response.json();
+      const data = res.data;
 
-      if (response.ok) {
-        dispatch(setCredentials({ token: data.token, role: data.role }));
+      if (res.status === 200) {
+        // We only care about role now, token is in the httpOnly cookie
+        dispatch(setCredentials({ role: data.role }));
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('role', data.role);
         if (setIsAuthenticated) setIsAuthenticated(true);
         navigate('/dashboard');
       } else {

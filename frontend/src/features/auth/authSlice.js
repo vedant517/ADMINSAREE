@@ -3,24 +3,24 @@ import { createSlice } from '@reduxjs/toolkit';
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    token: localStorage.getItem('token') || null,
+    isLoggedIn: !!localStorage.getItem('isLoggedIn'),
     role: localStorage.getItem('role') || null,
-    isAuthenticated: !!localStorage.getItem('token'),
+    isAuthenticated: !!localStorage.getItem('isLoggedIn'),
   },
   reducers: {
     setCredentials: (state, action) => {
-      const { token, role } = action.payload;
-      state.token = token;
+      const { role } = action.payload;
       state.role = role;
+      state.isLoggedIn = true;
       state.isAuthenticated = true;
-      localStorage.setItem('token', token);
+      localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('role', role);
     },
     logout: (state) => {
-      state.token = null;
       state.role = null;
+      state.isLoggedIn = false;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('role');
     },
   },

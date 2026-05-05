@@ -4,12 +4,9 @@ import { API_BASE_URL } from "../../services/apiConfig";
 export const customerApi = createApi({
   reducerPath: "customerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/customers`,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token || localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
+    baseUrl: API_BASE_URL,
+    credentials: 'include', // Automatically send cookies
+    prepareHeaders: (headers) => {
       return headers;
     },
   }),
@@ -17,18 +14,18 @@ export const customerApi = createApi({
   endpoints: (builder) => ({
     // Stats
     getCustomerStats: builder.query({
-      query: () => "/stats",
+      query: () => "/customers/stats",
     }),
 
     // Customer List
     getCustomers: builder.query({
       query: ({ page = 1, search = "" }) =>
-        `?page=${page}&limit=5&search=${search}`,
+        `/customers?page=${page}&limit=5&search=${search}`,
     }),
 
     // Single Customer
     getCustomerById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/customers/${id}`,
     }),
   }),
 });

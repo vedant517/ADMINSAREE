@@ -5,15 +5,7 @@ export const orderApi = createApi({
   reducerPath: 'orderApi',
   baseQuery: fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      // Try to get token from Redux state first, fallback to localStorage
-      const token = getState().auth?.token || localStorage.getItem('token') || localStorage.getItem('adminToken');
-      if (token) {
-        // Use capitalized Authorization header for wider compatibility
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
+    credentials: 'include',
   }),
   tagTypes: ['Order', 'OrderStats'],
   endpoints: (builder) => ({

@@ -15,6 +15,8 @@ const Order = lazy(() => import('./pages/admin/Order'));
 const Transactions = lazy(() => import('./pages/admin/Transactions'));
 const Customers = lazy(() => import('./pages/admin/Customers'));
 const ProductReviews = lazy(() => import('./pages/admin/ProductReviews'));
+const Categories = lazy(() => import('./pages/admin/Categories'));
+const Enquiries = lazy(() => import('./pages/admin/Enquiries'));
 const ProductReviewPage = lazy(() => import('./pages/user/ProductReviewPage'));
 
 const LoadingSpinner = () => (
@@ -24,11 +26,11 @@ const LoadingSpinner = () => (
 );
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('isLoggedIn'));
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuthenticated(!!localStorage.getItem('token'));
+      setIsAuthenticated(!!localStorage.getItem('isLoggedIn'));
     };
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
@@ -54,6 +56,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
 
             <Route path="/products" element={<Products />} />
+            <Route path="/categories" element={<Categories />} />
             <Route path="/add-product" element={<AddProduct />} />
             <Route path="/edit-product/:id" element={<AddProduct />} />
             <Route path="/orders" element={<Order />} />
@@ -62,7 +65,8 @@ function App() {
             <Route path="/media" element={<ProductMedia />} />
             <Route path="/reviews" element={<ProductReviews />} />
             <Route path="/roles" element={<AdminProfile />} />
-            <Route path="/coupons" element={<Coupons />} />     
+            <Route path="/coupons" element={<Coupons />} />
+            <Route path="/enquiries" element={<Enquiries />} />
             <Route path="*" element={<div className="p-8 text-slate-400 text-center"></div>} />
           </Route>
 

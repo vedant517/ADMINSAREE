@@ -288,60 +288,24 @@ const AddProduct = () => {
                     ))}
 
                     <div style={{ gridColumn: '1 / -1', marginTop: '8px' }}>
-                      <label style={{ ...labelStyle, fontSize: '10px' }}>Select Color</label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '8px' }}>
-                        {PRODUCT_COLORS.map((c) => (
-                          <div key={c.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const currentColors = variant.color ? variant.color.split(', ') : [];
-                                if (currentColors.includes(c.name)) {
-                                  handleVariantChange(idx, 'color', currentColors.filter(cc => cc !== c.name).join(', '));
-                                } else {
-                                  handleVariantChange(idx, 'color', [...currentColors, c.name].join(', '));
-                                }
-                              }}
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: c.hex,
-                                border: variant.color?.split(', ').includes(c.name) ? '2px solid #0f172a' : '1px solid #e2e8f0',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'all 0.15s',
-                                transform: variant.color?.split(', ').includes(c.name) ? 'scale(1.1)' : 'scale(1)',
-                                padding: 0
-                              }}
-                            >
-                              {variant.color?.split(', ').includes(c.name) && (
-                                <Check size={16} color={c.name === 'White' || c.name === 'Gold' ? '#000' : '#fff'} />
-                              )}
-                            </button>
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: variant.color?.split(', ').includes(c.name) ? '#0f172a' : '#64748b' }}>
-                              {c.name}
-                            </span>
-                          </div>
-                        ))}
-                        <input 
-                          type="text" 
-                          placeholder="Other color..." 
-                          value={variant.color?.split(', ').some(colorName => PRODUCT_COLORS.some(c => c.name === colorName)) ? '' : variant.color}
-                          onChange={(e) => handleVariantChange(idx, 'color', e.target.value)}
-                          style={{ 
-                            flex: 1, 
-                            minWidth: '100px', 
-                            padding: '4px 10px', 
-                            fontSize: '12px', 
-                            border: '1px solid #e2e8f0', 
-                            borderRadius: '6px',
-                            outline: 'none'
-                          }}
-                        />
-                      </div>
+                      <label style={{ ...labelStyle, fontSize: '10px' }}>Variant Color</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="e.g. Royal Blue, Golden, etc." 
+                        value={variant.color || ''}
+                        onChange={(e) => handleVariantChange(idx, 'color', e.target.value)}
+                        style={{ 
+                          width: '100%', 
+                          padding: '10px 14px', 
+                          background: 'white',
+                          border: '1px solid #e2e8f0', 
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
                     </div>
 
                     <button type="button" onClick={() => removeVariant(idx)} style={{ padding: '8px', color: '#fca5a5', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1px' }}>

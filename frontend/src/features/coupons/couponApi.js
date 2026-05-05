@@ -4,11 +4,9 @@ import { API_BASE_URL } from '../../services/apiConfig';
 export const couponApi = createApi({
   reducerPath: 'couponApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/coupons`,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token || localStorage.getItem('token');
-      if (token) headers.set('Authorization', `Bearer ${token}`);
-
+    baseUrl: API_BASE_URL,
+    credentials: 'include',
+    prepareHeaders: (headers) => {
       return headers;
     },
   }),
@@ -22,43 +20,43 @@ export const couponApi = createApi({
         if (search)       params.set('search', search);
         if (isActive !== undefined) params.set('isActive', isActive);
         if (discountType) params.set('discountType', discountType);
-        return `?${params.toString()}`;
+        return `/coupons?${params.toString()}`;
       },
       providesTags: ['Coupon'],
     }),
 
     getCouponById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/coupons/${id}`,
       providesTags: (_, __, id) => [{ type: 'Coupon', id }],
     }),
 
     createCoupon: builder.mutation({
-      query: (body) => ({ url: '/', method: 'POST', body }),
+      query: (body) => ({ url: '/coupons', method: 'POST', body }),
       invalidatesTags: ['Coupon'],
     }),
 
     updateCoupon: builder.mutation({
-      query: ({ id, ...body }) => ({ url: `/${id}`, method: 'PUT', body }),
+      query: ({ id, ...body }) => ({ url: `/coupons/${id}`, method: 'PUT', body }),
       invalidatesTags: ['Coupon'],
     }),
 
     deleteCoupon: builder.mutation({
-      query: (id) => ({ url: `/${id}`, method: 'DELETE' }),
+      query: (id) => ({ url: `/coupons/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Coupon'],
     }),
 
     toggleCoupon: builder.mutation({
-      query: (id) => ({ url: `/${id}/toggle`, method: 'PATCH' }),
+      query: (id) => ({ url: `/coupons/${id}/toggle`, method: 'PATCH' }),
       invalidatesTags: ['Coupon'],
     }),
 
     /* ── User/checkout endpoints ── */
     applyCoupon: builder.mutation({
-      query: (body) => ({ url: '/apply', method: 'POST', body }),
+      query: (body) => ({ url: '/coupons/apply', method: 'POST', body }),
     }),
 
     markCouponUsed: builder.mutation({
-      query: (body) => ({ url: '/mark-used', method: 'POST', body }),
+      query: (body) => ({ url: '/coupons/mark-used', method: 'POST', body }),
       invalidatesTags: ['Coupon'],
     }),
   }),
