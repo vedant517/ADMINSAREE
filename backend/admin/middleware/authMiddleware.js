@@ -21,16 +21,15 @@ export const protect = async (req, res, next) => {
     console.log('Token decoded successfully:', decoded.id);
     
     // Try User model first, then fall back to Admin model
-    let user = await User.findById(decoded.id);
+    let user = await User.findById(decoded.id).select('-password');
     if (!user) {
-      user = await Admin.findById(decoded.id);
+      user = await Admin.findById(decoded.id).select('-password');
     }
 
     if (!user) {
       console.error('User/Admin not found for ID:', decoded.id);
       return res.status(401).json({ message: 'User not found' });
     }
-
     if (user && user.constructor.modelName === 'User') {
       await User.findByIdAndUpdate(user._id, { lastActive: Date.now() });
     }

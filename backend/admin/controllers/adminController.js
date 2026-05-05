@@ -22,7 +22,7 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: admin._id,
+        id: admin._id.toString(),
         role: admin.role
       },
       process.env.JWT_SECRET,
@@ -39,3 +39,4 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 };
+
