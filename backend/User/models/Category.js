@@ -8,6 +8,7 @@ const categorySchema = new mongoose.Schema(
     description: { type: String },
     image: { type: String },
     isMain: { type: Boolean, default: false },
+    categories: [{ type: String }],
   },
   { timestamps: true }
 );

@@ -13,10 +13,10 @@ import toast from 'react-hot-toast';
 import { formatINR } from '../../utils/currency';
 
 const statusConfig = {
-  captured:   { bg: '#e8f5ee', color: '#1a6b3c', icon: CheckCircle2, label: 'Success' },
-  created:    { bg: '#e3f2fd', color: '#1565c0', icon: Clock,         label: 'Pending' },
-  failed:     { bg: '#fce8e8', color: '#c0392b', icon: XCircle,       label: 'Failed' },
-  refunded:   { bg: '#fff3e0', color: '#e65100', icon: RotateCcw,     label: 'Refunded' },
+  captured: { bg: '#e8f5ee', color: '#1a6b3c', icon: CheckCircle2, label: 'Success' },
+  created: { bg: '#e3f2fd', color: '#1565c0', icon: Clock, label: 'Pending' },
+  failed: { bg: '#fce8e8', color: '#c0392b', icon: XCircle, label: 'Failed' },
+  refunded: { bg: '#fff3e0', color: '#e65100', icon: RotateCcw, label: 'Refunded' },
   authorized: { bg: '#e8f5ee', color: '#2e7d32', icon: CheckCircle2, label: 'Authorized' },
 };
 
@@ -99,16 +99,16 @@ function TransactionDetailModal({ transaction, onClose, onRefund }) {
 
 export default function Transactions() {
   const [activeFilter, setActiveFilter] = useState(null);
-  const [searchQuery, setSearchQuery]   = useState('');
-  const [currentPage, setCurrentPage]   = useState(1);
-  const [selectedTxn, setSelectedTxn]   = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTxn, setSelectedTxn] = useState(null);
   const itemsPerPage = 10;
 
   const filters = [
-    { label: 'All',      value: null },
-    { label: 'Success',  value: 'captured' },
-    { label: 'Pending',  value: 'created' },
-    { label: 'Failed',   value: 'failed' },
+    { label: 'All', value: null },
+    { label: 'Success', value: 'captured' },
+    { label: 'Pending', value: 'created' },
+    { label: 'Failed', value: 'failed' },
     { label: 'Refunded', value: 'refunded' },
   ];
 
@@ -117,7 +117,7 @@ export default function Transactions() {
   const [refundTxn] = useRefundTransactionMutation();
 
   const transactions = txnResponse?.data || [];
-  const totalPages   = txnResponse?.pages || 1;
+  const totalPages = txnResponse?.pages || 1;
 
   const filtered = transactions.filter((t) =>
     (t.transactionId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||

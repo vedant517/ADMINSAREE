@@ -22,32 +22,34 @@ export const createRazorpayOrder = async (req, res) => {
   console.log('Body:', JSON.stringify(req.body, null, 2));
   try {
     const { amount, currency = 'INR', orderId, notes = {} } = req.body;
-
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: 'Valid amount is required' });
-    }
-
     const razorpay = getRazorpayInstance();
 
-    // If orderId is provided, we can verify the amount from the database for security
     let paymentAmount = amount;
+    let dbOrder = null;
+
+    // 1. Try to fetch amount from DB if orderId is provided
     if (orderId) {
-      let dbOrder = null;
-      // Try by ObjectId first if valid
       if (mongoose.Types.ObjectId.isValid(orderId)) {
         dbOrder = await Order.findById(orderId);
       }
-      // If not found by _id, try by the custom orderId field
       if (!dbOrder) {
         dbOrder = await Order.findOne({ orderId: orderId });
       }
       
       if (dbOrder) {
         paymentAmount = dbOrder.totalPrice;
-        console.log(`Found order ${orderId}, using total price: ${paymentAmount}`);
-      } else {
-        console.log(`Order ${orderId} not found in database, using provided amount: ${amount}`);
+        console.log(`Found order ${orderId}, using total price from DB: ${paymentAmount}`);
       }
+    }
+
+    // 2. Validate that we have a valid amount now
+    if (!paymentAmount || paymentAmount <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: orderId && !dbOrder 
+          ? `Order ${orderId} not found and no backup amount provided.` 
+          : 'Valid amount is required' 
+      });
     }
 
     const options = {
@@ -66,7 +68,7 @@ export const createRazorpayOrder = async (req, res) => {
     // Save transaction record
     const transaction = await Transaction.create({
       user: req.user?._id,
-      order: orderId || undefined,
+      order: dbOrder ? dbOrder._id : (mongoose.Types.ObjectId.isValid(orderId) ? orderId : undefined),
       razorpayOrderId: razorpayOrder.id,
       amount: paymentAmount,
       currency,

@@ -13,13 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
 
 const Products = () => {
-  const dispatch  = useDispatch();
-  const navigate  = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items: products, loading, error, successMessage } = useSelector((s) => s.products);
   const { categories = [] } = useSelector((s) => s.categories || {});
 
-  const [search, setSearch]             = useState('');
-  const [filterType, setFilterType]     = useState('All Stock');
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('All Stock');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
@@ -109,10 +109,10 @@ const Products = () => {
               <tr style={{ background: '#fafafa', borderBottom: '1px solid #f1f5f9' }}>
                 {[
                   { label: 'Product Details', align: 'left' },
-                  { label: 'Taxonomy',        align: 'left' },
-                  { label: 'Price Points',    align: 'center' },
-                  { label: 'Availability',    align: 'center' },
-                  { label: 'Actions',         align: 'right' },
+                  { label: 'Taxonomy', align: 'left' },
+                  { label: 'Price Points', align: 'center' },
+                  { label: 'Availability', align: 'center' },
+                  { label: 'Actions', align: 'right' },
                 ].map(({ label, align }) => (
                   <th key={label} style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: align, whiteSpace: 'nowrap' }}>
                     {label}

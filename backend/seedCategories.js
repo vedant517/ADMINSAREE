@@ -28,23 +28,25 @@ const seedCategories = async () => {
     await Category.deleteMany({});
     console.log("Cleared existing categories.");
 
-    // Seed Main Categories
-    const mainCats = PRODUCT_MAIN_CATEGORIES.map(cat => ({
-      name: cat.name,
-      slug: cat.name.toLowerCase().replace(/\s+/g, '-'),
-      image: cat.image,
-      isMain: true
-    }));
+    // Seed All Categories as Main Categories (Flat structure)
+    const allNames = new Set([
+      ...PRODUCT_MAIN_CATEGORIES.map(c => c.name),
+      ...PRODUCT_SUB_CATEGORIES
+    ]);
 
-    // Seed Sub Categories
-    const subCats = PRODUCT_SUB_CATEGORIES.map(name => ({
-      name: name,
-      slug: name.toLowerCase().replace(/\s+/g, '-'),
-      isMain: false
-    }));
+    const finalCategories = Array.from(allNames).map(name => {
+      const mainCatInfo = PRODUCT_MAIN_CATEGORIES.find(c => c.name === name);
+      return {
+        name: name,
+        slug: name.toLowerCase().replace(/\s+/g, '-'),
+        image: mainCatInfo ? mainCatInfo.image : '',
+        isMain: true,
+        categories: mainCatInfo ? mainCatInfo.categories : []
+      };
+    });
 
-    await Category.insertMany([...mainCats, ...subCats]);
-    console.log("Seeded categories successfully!");
+    await Category.insertMany(finalCategories);
+    console.log("Seeded all categories successfully!");
 
     process.exit(0);
   } catch (error) {

@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
       productDoc.rating =
         productDoc.reviews.reduce((acc, item) => item.rating + acc, 0) /
         productDoc.reviews.length;
-      await productDoc.save();
+      await productDoc.save({ validateBeforeSave: false });
     }
 
     res.status(201).json({

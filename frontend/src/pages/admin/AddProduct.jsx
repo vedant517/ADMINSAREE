@@ -461,7 +461,10 @@ const AddProduct = () => {
               <div>
                 <label style={labelStyle}>Tags / Categories</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {SUB_CATEGORIES.map((cat) => (
+                  {(formData.mainCategory 
+                    ? MAIN_CATEGORIES.find(c => c.name === formData.mainCategory)?.categories || SUB_CATEGORIES 
+                    : SUB_CATEGORIES
+                  ).map((cat) => (
                     <button
                       key={cat}
                       type="button"

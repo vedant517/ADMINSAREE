@@ -67,6 +67,7 @@ import couponRoutes from "./admin/routes/Couponroutes.js";
 import adminCategoryRoutes from "./admin/routes/categoryRoutes.js";
 import enquiryRoutes from "./User/routes/enquiryRoutes.js";
 import adminEnquiryRoutes from "./admin/routes/adminEnquiryRoutes.js";
+import shippingRoutes from "./admin/routes/shippingRoutes.js";
 
 
 
@@ -131,6 +132,7 @@ app.use("/api/enquiries", enquiryRoutes);
 app.use("/api/admin/enquiries", adminEnquiryRoutes);
 app.use("/api/admin/profile", adminProfileRoutes);
 app.use("/api/config", configRoutes);
+app.use("/api/shipping", shippingRoutes);
 // ==============================
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });

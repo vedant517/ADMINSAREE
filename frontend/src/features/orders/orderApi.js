@@ -54,13 +54,34 @@ export const orderApi = createApi({
         body: { amount },
       }),
     }),
-    createOrder: builder.mutation({
-      query: (orderData) => ({
-        url: '/user/orders',
+      createOrder: builder.mutation({
+        query: (orderData) => ({
+          url: '/orders',
         method: 'POST',
         body: orderData,
       }),
       invalidatesTags: ['Order', 'OrderStats'],
+    }),
+    getUserOrders: builder.query({
+      query: () => '/orders/my-orders',
+      providesTags: (result) =>
+        result?.data
+          ? [
+            ...result.data.map(({ orderId }) => ({ type: 'Order', id: orderId })),
+            { type: 'Order', id: 'LIST' },
+          ]
+          : [{ type: 'Order', id: 'LIST' }],
+    }),
+      cancelOrder: builder.mutation({
+        query: (orderId) => ({
+          url: `/orders/cancel/${orderId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, orderId) => [
+        { type: 'Order', id: orderId },
+        { type: 'Order', id: 'LIST' },
+        'OrderStats',
+      ],
     }),
   }),
 });
@@ -72,4 +93,6 @@ export const {
   useCreateOrderMutation,
   useUpdateShippingInfoMutation,
   useCalculateShippingChargeMutation,
+  useGetUserOrdersQuery,
+  useCancelOrderMutation,
 } = orderApi;

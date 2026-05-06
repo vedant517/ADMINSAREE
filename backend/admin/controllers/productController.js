@@ -250,7 +250,7 @@ export const createProductReview = async (req, res) => {
       comment,
     });
 
-    await product.save();
+    await product.save({ validateBeforeSave: false });
     res.status(201).json({ success: true, message: 'Review added' });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -259,11 +259,22 @@ export const createProductReview = async (req, res) => {
 
 export const getProductMetadata = async (req, res) => {
   try {
+    const Category = (await import('../../User/models/Category.js')).default;
+    
+    // Fetch categories from DB
+    const allCategories = await Category.find().lean();
+    
+    // For the dropdown, we show everything
+    const mainCategories = allCategories;
+    
+    // For the tags, we also show everything
+    const subCategories = allCategories.map(c => c.name);
+
     res.status(200).json({
       success: true,
       data: {
-        mainCategories: PRODUCT_MAIN_CATEGORIES,
-        categories: PRODUCT_SUB_CATEGORIES,
+        mainCategories,
+        categories: subCategories,
         colors: PRODUCT_COLORS
       }
     });

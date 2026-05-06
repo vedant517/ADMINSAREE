@@ -123,7 +123,7 @@ function StatusUpdateModal({ order, onClose, onUpdate }) {
           </div>
           <div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Payment Status</p>
-            <p className="text-sm font-semibold" style={{color: order.payment === 'Paid' ? '#10b981' : '#f97316'}}>{order.payment || 'Unpaid'}</p>
+            <p className="text-sm font-semibold" style={{ color: order.payment === 'Paid' ? '#10b981' : '#f97316' }}>{order.payment || 'Unpaid'}</p>
           </div>
           <div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Payment Method</p>
@@ -145,13 +145,13 @@ function StatusUpdateModal({ order, onClose, onUpdate }) {
         <div className="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-y-auto max-h-48">
           <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Purchased Items ({order.orderItems?.length || 0})</h4>
           {order.orderItems?.map((item, index) => (
-             <div key={index} className="flex items-center gap-3 mb-3 border-b border-slate-200 pb-2 last:border-0 last:pb-0">
-                <img src={item.image || 'https://via.placeholder.com/40'} alt={item.name} className="w-12 h-12 object-cover rounded-md border border-slate-200" />
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-800">{item.name}</p>
-                  <p className="text-xs text-slate-500">Qty: {item.qty} × {formatINR(item.price)} = {formatINR(item.qty * item.price)}</p>
-                </div>
-             </div>
+            <div key={index} className="flex items-center gap-3 mb-3 border-b border-slate-200 pb-2 last:border-0 last:pb-0">
+              <img src={item.image || 'https://via.placeholder.com/40'} alt={item.name} className="w-12 h-12 object-cover rounded-md border border-slate-200" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                <p className="text-xs text-slate-500">Qty: {item.qty} × {formatINR(item.price)} = {formatINR(item.qty * item.price)}</p>
+              </div>
+            </div>
           ))}
         </div>
 

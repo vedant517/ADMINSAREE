@@ -5,10 +5,27 @@ import Transaction from "../models/Transaction.js";
 // CREATE ORDER
 export const createOrder = async (req, res) => {
   try {
-    const { orderItems } = req.body;
+    // 1. Handle flexible items input (items or orderItems)
+    const orderItems = req.body.orderItems || req.body.items;
 
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({ message: "No order items" });
+    }
+
+    // 2. Handle flexible shipping address input
+    let shippingAddress = req.body.shippingAddress;
+    
+    // If shippingAddress is missing but flat fields are present, map them
+    if (!shippingAddress && (req.body.address || req.body.city || req.body.zipCode)) {
+      shippingAddress = {
+        fullName: `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim() || undefined,
+        address: req.body.address,
+        city: req.body.city,
+        postalCode: req.body.zipCode || req.body.postalCode,
+        country: req.body.country,
+        state: req.body.state,
+        phone: req.body.phoneNumber || req.body.phone
+      };
     }
 
     // Calculate items price securely and GST
@@ -19,7 +36,8 @@ export const createOrder = async (req, res) => {
 
     for (const item of orderItems) {
       const product = await Product.findById(item.product);
-      const priceToUse = product ? product.price : item.price;
+      // Use price from DB if available, otherwise fallback to item.price (for custom/manual orders)
+      const priceToUse = product ? (product.discountPrice > 0 ? product.discountPrice : product.price) : item.price;
       
       secureOrderItems.push({
         ...item,
@@ -28,9 +46,11 @@ export const createOrder = async (req, res) => {
       
       calculatedItemsPrice += (priceToUse * item.qty);
       
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.qty }
-      });
+      if (product) {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: -item.qty }
+        });
+      }
     }
 
     const itemsPrice = calculatedItemsPrice;
@@ -61,6 +81,7 @@ export const createOrder = async (req, res) => {
       ...req.body,
       orderId: "#ORD" + Date.now(),
       orderItems: secureOrderItems,
+      shippingAddress, // Use the normalized/mapped address
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -77,7 +98,7 @@ export const createOrder = async (req, res) => {
     const order = await Order.create(orderData);
     
     // Create transaction based on payment method
-    if (paymentMethod === 'COD' || paymentMethod === 'Cash on Delivery') {
+    if (paymentMethod.toUpperCase() === 'COD' || paymentMethod.toLowerCase().includes('cash on delivery')) {
        await Transaction.create({
          transactionId: 'TXNCOD' + Date.now(),
          order: order._id,
@@ -107,6 +128,7 @@ export const createOrder = async (req, res) => {
       data: order
     });
   } catch (err) {
+    console.error("Order Creation Error:", err);
     res.status(500).json({ message: err.message });
   }
 };

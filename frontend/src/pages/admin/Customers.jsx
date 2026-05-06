@@ -33,9 +33,8 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading }) {
           {loading ? '...' : (value !== undefined && value !== null ? value : 0)}
         </span>
         {badge && (
-          <span className={`text-[10px] font-bold py-0.5 px-1.5 rounded-full ${
-            badgeUp ? 'bg-[#e8f5ee] text-[#1a6b3c]' : 'bg-[#fce8e8] text-[#c0392b]'
-          }`}>{badge}</span>
+          <span className={`text-[10px] font-bold py-0.5 px-1.5 rounded-full ${badgeUp ? 'bg-[#e8f5ee] text-[#1a6b3c]' : 'bg-[#fce8e8] text-[#c0392b]'
+            }`}>{badge}</span>
         )}
       </div>
       <div className="text-[10px] text-slate-400 mt-0.5">{sub}</div>
@@ -46,7 +45,7 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading }) {
 /* ── Customer Growth Line Graph ── */
 function CustomerGrowthGraph({ data, loading }) {
   const maxValue = Math.max(...(data?.map(d => d.count) || [50, 80, 120, 90, 150, 200, 180]), 1);
-  
+
   const graphData = data || [
     { month: 'Jan', count: 50 },
     { month: 'Feb', count: 80 },
@@ -79,7 +78,7 @@ function CustomerGrowthGraph({ data, loading }) {
           </button>
         </div>
       </div>
-      
+
       {loading ? (
         <div className="h-40 flex items-center justify-center">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1a6b3c]"></div>
@@ -93,14 +92,14 @@ function CustomerGrowthGraph({ data, loading }) {
             <span>{Math.round(maxValue * 0.25)}</span>
             <span>0</span>
           </div>
-          
+
           <div className="ml-8 h-full relative">
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
               {[0, 1, 2, 3, 4].map(i => (
                 <div key={i} className="border-t border-slate-100 w-full" />
               ))}
             </div>
-            
+
             <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
               <polygon
                 points={`0,100 ${points} 100,100`}
@@ -122,7 +121,7 @@ function CustomerGrowthGraph({ data, loading }) {
                 </linearGradient>
               </defs>
             </svg>
-            
+
             <div className="absolute inset-0">
               {graphData.map((item, idx) => {
                 const left = `${(idx / (graphData.length - 1)) * 100}%`;
@@ -137,7 +136,7 @@ function CustomerGrowthGraph({ data, loading }) {
                 );
               })}
             </div>
-            
+
             <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[9px] text-slate-400 mt-1">
               {graphData.map((item, idx) => (
                 <span key={idx} style={{ width: `${100 / graphData.length}%`, textAlign: 'center' }}>{item.month}</span>
@@ -180,10 +179,9 @@ function CustomerDetailsModal({ customer, onClose }) {
           </div>
           <div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wide">Status</p>
-            <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-              customer.status === 'VIP' ? 'bg-[#e8f5ee] text-[#1a6b3c]' :
-              customer.status === 'Active' ? 'bg-[#e3f2fd] text-[#1565c0]' : 'bg-[#fce8e8] text-[#c0392b]'
-            }`}>
+            <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${customer.status === 'VIP' ? 'bg-[#e8f5ee] text-[#1a6b3c]' :
+                customer.status === 'Active' ? 'bg-[#e3f2fd] text-[#1565c0]' : 'bg-[#fce8e8] text-[#c0392b]'
+              }`}>
               {customer.status || 'Standard'}
             </span>
           </div>
@@ -215,13 +213,13 @@ export default function Customers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showMoreActions, setShowMoreActions] = useState(false);
-  
+
   const itemsPerPage = 5;
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useGetCustomerStatsQuery();
-  const { data, isLoading, isFetching, error: customersError } = useGetCustomersQuery({ 
-    page: currentPage, 
-    search: searchQuery 
+  const { data, isLoading, isFetching, error: customersError } = useGetCustomersQuery({
+    page: currentPage,
+    search: searchQuery
   });
 
   useEffect(() => {
@@ -234,7 +232,7 @@ export default function Customers() {
   const totalCustomers = stats?.totalCustomers ?? stats?.total ?? stats?.data?.totalCustomers ?? 0;
   const newCustomers = stats?.newCustomers ?? stats?.new ?? stats?.data?.newCustomers ?? 0;
   const repeatCustomers = stats?.repeatCustomers ?? stats?.repeat ?? stats?.data?.repeatCustomers ?? 0;
-  
+
   const customers = data?.data || data?.customers || data || [];
   const totalPages = data?.pagination?.pages || data?.totalPages || 1;
 
@@ -249,7 +247,7 @@ export default function Customers() {
   ];
 
   const getStatusStyle = (status) => {
-    switch(status) {
+    switch (status) {
       case 'VIP': return { background: '#e8f5ee', color: '#1a6b3c' };
       case 'Active': return { background: '#e3f2fd', color: '#1565c0' };
       default: return { background: '#fce8e8', color: '#c0392b' };
@@ -263,7 +261,7 @@ export default function Customers() {
         <div className="bg-white rounded-lg border border-red-200 p-6 text-center">
           <p className="text-red-600 mb-2">Error loading data</p>
           <p className="text-xs text-slate-500">{statsError?.message || customersError?.message || 'Please check your API connection'}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-[#1a6b3c] text-white rounded-md text-sm"
           >
@@ -287,12 +285,12 @@ export default function Customers() {
         {/* Top bar */}
         <div className="flex items-center justify-between mb-5">
           <span className="text-base font-bold text-slate-900">Customer Dashboard</span>
-          
+
           <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg py-1.5 px-3 w-[220px] text-xs text-slate-400">
             <Search size={13} color="#94a3b8" />
-            <input 
-              type="text" 
-              placeholder="Search customers..." 
+            <input
+              type="text"
+              placeholder="Search customers..."
               className="border-none outline-none w-full bg-transparent text-xs"
               value={searchQuery}
               onChange={(e) => {
@@ -301,7 +299,7 @@ export default function Customers() {
               }}
             />
           </div>
-          
+
           <div className="flex items-center gap-2.5">
             <Bell size={18} color="#64748b" className="cursor-pointer" onClick={() => alert('Notifications')} />
             <Zap size={18} color="#64748b" className="cursor-pointer" onClick={() => alert('Quick actions')} />
@@ -314,7 +312,7 @@ export default function Customers() {
           <span className="text-[15px] font-bold text-slate-900">Customer List</span>
           <div className="flex gap-2 relative">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowMoreActions(!showMoreActions)}
                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-200 rounded-md py-1.5 px-3 text-xs cursor-pointer"
               >
@@ -323,7 +321,7 @@ export default function Customers() {
               {showMoreActions && (
                 <div className="absolute top-full right-0 bg-white border border-slate-200 rounded-md py-2 mt-1 min-w-[160px] shadow-md z-10">
                   {['Export CSV', 'Import', 'Bulk Email', 'Bulk SMS', 'Settings'].map((action) => (
-                    <div 
+                    <div
                       key={action}
                       className="py-1.5 px-3 text-xs cursor-pointer hover:bg-slate-50"
                       onClick={() => {
@@ -342,36 +340,36 @@ export default function Customers() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-3 mb-5">
-          <StatCard 
-            title="Total Customers" 
-            value={totalCustomers} 
-            badge="↑ 12.5%" 
-            badgeUp 
-            sub="vs last month" 
+          <StatCard
+            title="Total Customers"
+            value={totalCustomers}
+            badge="↑ 12.5%"
+            badgeUp
+            sub="vs last month"
             loading={statsLoading}
           />
-          <StatCard 
-            title="New Customers" 
-            value={newCustomers} 
-            badge="↑ 23%" 
-            badgeUp 
-            sub="This month" 
+          <StatCard
+            title="New Customers"
+            value={newCustomers}
+            badge="↑ 23%"
+            badgeUp
+            sub="This month"
             loading={statsLoading}
           />
-          <StatCard 
-            title="Repeat Customers" 
-            value={repeatCustomers} 
-            badge="↑ 8.2%" 
-            badgeUp 
-            sub="Returning rate" 
+          <StatCard
+            title="Repeat Customers"
+            value={repeatCustomers}
+            badge="↑ 8.2%"
+            badgeUp
+            sub="Returning rate"
             loading={statsLoading}
           />
-          <StatCard 
-            title="Growth" 
-            value="24%" 
-            badge="↑ 5%" 
-            badgeUp 
-            sub="vs last month" 
+          <StatCard
+            title="Growth"
+            value="24%"
+            badge="↑ 5%"
+            badgeUp
+            sub="vs last month"
             loading={false}
           />
         </div>
@@ -421,8 +419,8 @@ export default function Customers() {
                     </tr>
                   ) : (
                     customers.map((customer, idx) => (
-                      <tr 
-                        key={customer._id || customer.id || idx} 
+                      <tr
+                        key={customer._id || customer.id || idx}
                         className="border-b border-slate-100 cursor-pointer hover:bg-slate-50"
                         onClick={() => setSelectedCustomer(customer)}
                       >
@@ -445,7 +443,7 @@ export default function Customers() {
                           {formatINR(customer.totalSpend || customer.spend || 0)}
                         </td>
                         <td className="py-2.5 px-2.5">
-                          <span 
+                          <span
                             className="text-[11px] font-semibold py-0.5 px-2.5 rounded-full"
                             style={getStatusStyle(customer.status)}
                           >
@@ -453,7 +451,7 @@ export default function Customers() {
                           </span>
                         </td>
                         <td className="py-2.5 px-2.5">
-                          <button 
+                          <button
                             className="text-slate-400 hover:text-slate-600"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -472,7 +470,7 @@ export default function Customers() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-3.5">
-                  <button 
+                  <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     className="flex items-center gap-1 bg-none border-none text-xs font-medium disabled:text-slate-300 disabled:cursor-not-allowed text-slate-600 cursor-pointer"
@@ -483,12 +481,11 @@ export default function Customers() {
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       const page = i + 1;
                       return (
-                        <button 
+                        <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`py-1 px-2.5 text-xs cursor-pointer border border-slate-200 rounded-md ${
-                            currentPage === page ? 'bg-[#1a6b3c] text-white font-bold' : 'bg-white text-slate-600 font-normal'
-                          }`}
+                          className={`py-1 px-2.5 text-xs cursor-pointer border border-slate-200 rounded-md ${currentPage === page ? 'bg-[#1a6b3c] text-white font-bold' : 'bg-white text-slate-600 font-normal'
+                            }`}
                         >
                           {page}
                         </button>
@@ -497,18 +494,17 @@ export default function Customers() {
                     {totalPages > 5 && (
                       <>
                         <span className="flex items-center px-1">...</span>
-                        <button 
+                        <button
                           onClick={() => setCurrentPage(totalPages)}
-                          className={`py-1 px-2.5 text-xs cursor-pointer border border-slate-200 rounded-md ${
-                            currentPage === totalPages ? 'bg-[#1a6b3c] text-white font-bold' : 'bg-white text-slate-600 font-normal'
-                          }`}
+                          className={`py-1 px-2.5 text-xs cursor-pointer border border-slate-200 rounded-md ${currentPage === totalPages ? 'bg-[#1a6b3c] text-white font-bold' : 'bg-white text-slate-600 font-normal'
+                            }`}
                         >
                           {totalPages}
                         </button>
                       </>
                     )}
                   </div>
-                  <button 
+                  <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     className="flex items-center gap-1 bg-none border-none text-xs font-medium disabled:text-slate-300 disabled:cursor-not-allowed text-slate-600 cursor-pointer"
