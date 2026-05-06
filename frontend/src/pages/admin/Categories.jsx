@@ -29,6 +29,23 @@ const Categories = () => {
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Helper to resolve image URLs (handles local paths starting with /uploads)
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('/uploads')) {
+      // In development, we use the proxy, so same host works.
+      // But adding a fallback source or explicit proxy handling is safer.
+      return path;
+    }
+    return path;
+  };
+
+  const handleImageError = (e, name) => {
+    e.target.onerror = null; // Prevent infinite loop
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Category')}&background=random&size=400&bold=true`;
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -62,19 +79,26 @@ const Categories = () => {
     if (formData.image) {
       data.append('image', formData.image);
     } else if (formData.imageUrl) {
-      data.append('image', formData.imageUrl);
+      data.append('imageUrl', formData.imageUrl);
     }
 
     try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      };
+
       if (editingId) {
-        await api.put(`/categories/${editingId}`, data);
+        await api.put(`/categories/${editingId}`, data, config);
       } else {
-        await api.post('/categories', data);
+        await api.post('/categories', data, config);
       }
       setShowAddModal(false);
       resetForm();
       fetchCategories();
     } catch (error) {
+      console.error('Submit error:', error);
       alert(error.response?.data?.message || 'Something went wrong. Make sure you are logged in as an admin.');
     } finally {
       setSubmitting(false);
@@ -152,7 +176,12 @@ const Categories = () => {
           >
             <div style={{ height: '160px', position: 'relative', background: '#f8fafc' }}>
               {cat.image ? (
-                <img src={cat.image} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img 
+                  src={getImageUrl(cat.image)} 
+                  alt={cat.name} 
+                  onError={(e) => handleImageError(e, cat.name)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
               ) : (
                 <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
                   <ImageIcon size={48} />
@@ -172,7 +201,6 @@ const Categories = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <div>
                   <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{cat.name}</h3>
-                  <p style={{ fontSize: '12px', color: '#94a3b8' }}>/{cat.slug}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
@@ -245,7 +273,12 @@ const Categories = () => {
                   onMouseOut={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
                 >
                   {preview ? (
-                    <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={preview} 
+                      alt="Preview" 
+                      onError={(e) => handleImageError(e, 'Preview')}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
                   ) : (
                     <>
                       <Upload size={32} color="#94a3b8" />

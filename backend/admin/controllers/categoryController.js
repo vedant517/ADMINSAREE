@@ -15,7 +15,15 @@ export const createCategory = async (req, res) => {
     const slug = name.toLowerCase().replace(/\s+/g, "-");
     
     // Support both Cloudinary file upload and direct URL
-    const image = req.file ? req.file.path : req.body.image;
+    let image = "";
+    if (req.file) {
+      const normalizedPath = req.file.path.replace(/\\/g, "/");
+      image = normalizedPath.startsWith("http") ? normalizedPath : (normalizedPath.startsWith("/") ? normalizedPath : "/" + normalizedPath);
+    } else if (req.body.imageUrl && typeof req.body.imageUrl === 'string') {
+      image = req.body.imageUrl;
+    } else if (req.body.image && typeof req.body.image === 'string' && req.body.image !== '[object Object]') {
+      image = req.body.image;
+    }
     
     const category = await Category.create({
       name,
@@ -33,19 +41,31 @@ export const createCategory = async (req, res) => {
 export const updateCategory = async (req, res) => {
   try {
     const { name, isMain } = req.body;
+    console.log(`[CategoryUpdate] Updating ID: ${req.params.id}, Name: ${name}, isMain: ${isMain}`);
+    
     const slug = name ? name.toLowerCase().replace(/\s+/g, "-") : undefined;
     
-    const updateData = { name, slug, isMain: isMain === 'true' || isMain === true };
+    // Only update fields that are provided
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (slug) updateData.slug = slug;
+    if (isMain !== undefined) updateData.isMain = isMain === 'true' || isMain === true;
     
     if (req.file) {
-      updateData.image = req.file.path;
-    } else if (req.body.image) {
+      const normalizedPath = req.file.path.replace(/\\/g, "/");
+      updateData.image = normalizedPath.startsWith("http") ? normalizedPath : (normalizedPath.startsWith("/") ? normalizedPath : "/" + normalizedPath);
+      console.log(`[CategoryUpdate] New file uploaded: ${updateData.image}`);
+    } else if (req.body.imageUrl && typeof req.body.imageUrl === 'string' && req.body.imageUrl.trim() !== '') {
+      updateData.image = req.body.imageUrl;
+      console.log(`[CategoryUpdate] Image URL provided: ${updateData.image}`);
+    } else if (req.body.image && typeof req.body.image === 'string' && req.body.image !== '[object Object]' && req.body.image.trim() !== '') {
       updateData.image = req.body.image;
+      console.log(`[CategoryUpdate] Image path provided: ${updateData.image}`);
     }
     
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      updateData,
+      { $set: updateData },
       { new: true }
     );
     
@@ -53,8 +73,10 @@ export const updateCategory = async (req, res) => {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
     
+    console.log(`[CategoryUpdate] Successfully updated category: ${category.name}`);
     res.json({ success: true, data: category });
   } catch (error) {
+    console.error(`[CategoryUpdate] Error: ${error.message}`);
     res.status(400).json({ success: false, message: error.message });
   }
 };

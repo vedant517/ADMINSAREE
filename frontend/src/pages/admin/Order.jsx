@@ -146,7 +146,12 @@ function StatusUpdateModal({ order, onClose, onUpdate }) {
           <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Purchased Items ({order.orderItems?.length || 0})</h4>
           {order.orderItems?.map((item, index) => (
             <div key={index} className="flex items-center gap-3 mb-3 border-b border-slate-200 pb-2 last:border-0 last:pb-0">
-              <img src={item.image || 'https://via.placeholder.com/40'} alt={item.name} className="w-12 h-12 object-cover rounded-md border border-slate-200" />
+              <img
+                src={item.image && item.image.startsWith('http') ? item.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name || 'Item')}&background=random&size=80&bold=true`}
+                alt={item.name}
+                className="w-12 h-12 object-cover rounded-md border border-slate-200"
+                onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name || 'Item')}&background=random&size=80&bold=true`; }}
+              />
               <div className="flex-1">
                 <p className="text-sm font-bold text-slate-800">{item.name}</p>
                 <p className="text-xs text-slate-500">Qty: {item.qty} × {formatINR(item.price)} = {formatINR(item.qty * item.price)}</p>
@@ -248,6 +253,12 @@ export default function OrderManagement() {
     const lower = productName?.toLowerCase() || '';
     for (const [key, emoji] of Object.entries(map)) if (lower.includes(key)) return emoji;
     return '📦';
+  }
+
+  function getImageUrl(path) {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return path; // Vite proxy handles /uploads paths
   }
 
   const orders = useMemo(() =>
@@ -527,16 +538,25 @@ export default function OrderManagement() {
                         <td style={{ padding: '14px 12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{
-                              width: '40px', height: '40px', flexShrink: 0,
+                              width: '44px', height: '44px', flexShrink: 0,
                               background: '#f1f5f9', borderRadius: '10px',
                               overflow: 'hidden',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               border: '1px solid #e2e8f0',
                             }}>
                               {o.image ? (
-                                <img src={o.image} alt={o.product} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img
+                                  src={getImageUrl(o.image)}
+                                  alt={o.product}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.style.display = 'none';
+                                    e.target.parentElement.innerHTML = `<span style="font-size:18px">${o.emoji}</span>`;
+                                  }}
+                                />
                               ) : (
-                                <span style={{ fontSize: '18px' }}>{o.emoji}</span>
+                                <span style={{ fontSize: '20px', lineHeight: 1 }}>{o.emoji}</span>
                               )}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
