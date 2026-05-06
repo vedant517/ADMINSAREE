@@ -13,17 +13,27 @@ export const createCategory = async (req, res) => {
   try {
     const { name, isMain } = req.body;
     const slug = name.toLowerCase().replace(/\s+/g, "-");
-    
-    // Support both Cloudinary file upload and direct URL
-    const image = req.file ? req.file.path : req.body.image;
-    
+
+    // Extract image URL safely — Cloudinary multer storage sets req.file.path as the secure URL
+    // but sometimes req.file.secure_url or req.file.url is used depending on the storage engine
+    let image = null;
+    if (req.file) {
+      image =
+        req.file.secure_url ||   // cloudinary-storage v2
+        req.file.path ||          // multer-storage-cloudinary (path = secure_url)
+        req.file.url ||           // some custom setups
+        null;
+    } else if (req.body.imageUrl && typeof req.body.imageUrl === 'string' && req.body.imageUrl.trim()) {
+      image = req.body.imageUrl.trim();
+    }
+
     const category = await Category.create({
       name,
       slug,
       image,
       isMain: isMain === 'true' || isMain === true
     });
-    
+
     res.status(201).json({ success: true, data: category });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -34,25 +44,36 @@ export const updateCategory = async (req, res) => {
   try {
     const { name, isMain } = req.body;
     const slug = name ? name.toLowerCase().replace(/\s+/g, "-") : undefined;
-    
-    const updateData = { name, slug, isMain: isMain === 'true' || isMain === true };
-    
+
+    const updateData = {
+      name,
+      slug,
+      isMain: isMain === 'true' || isMain === true
+    };
+
     if (req.file) {
-      updateData.image = req.file.path;
-    } else if (req.body.image) {
-      updateData.image = req.body.image;
+      // New image uploaded — extract URL from Cloudinary response
+      updateData.image =
+        req.file.secure_url ||
+        req.file.path ||
+        req.file.url ||
+        null;
+    } else if (req.body.imageUrl && typeof req.body.imageUrl === 'string' && req.body.imageUrl.trim()) {
+      // Existing URL passed from frontend (no new upload)
+      updateData.image = req.body.imageUrl.trim();
     }
-    
+    // Otherwise: no image change — don't touch the image field in DB
+
     const category = await Category.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
     );
-    
+
     if (!category) {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
-    
+
     res.json({ success: true, data: category });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

@@ -12,7 +12,6 @@ import {
   Star,
 } from 'lucide-react';
 import api from '../../services/api';
-import { API_BASE_URL } from '../../services/apiConfig';
 import { fetchProducts } from '../../features/products/productSlice';
 import { formatINR } from '../../utils/currency';
 
@@ -24,22 +23,29 @@ const ratingTabs = [
 ];
 
 const scoreTone = (rating) => {
-  if (rating >= 4.5) return { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Excellent' };
-  if (rating >= 4) return { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500', label: 'Strong' };
-  if (rating >= 3) return { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Mixed' };
-  return { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-500', label: 'Needs Attention' };
+  if (rating >= 4.5) return { bg: '#f0fdf4', text: '#15803d', dot: '#22c55e', label: 'Excellent' };
+  if (rating >= 4)   return { bg: '#f0f9ff', text: '#0369a1', dot: '#38bdf8', label: 'Strong' };
+  if (rating >= 3)   return { bg: '#fffbeb', text: '#b45309', dot: '#f59e0b', label: 'Mixed' };
+  return               { bg: '#fff1f2', text: '#be123c', dot: '#f43f5e', label: 'Needs Attention' };
 };
 
+/* ── Stat Card ── */
 function StatCard({ title, value, sub }) {
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/40 p-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">{title}</p>
-          <div className="mt-3 text-3xl font-black tracking-tight text-slate-900">{value}</div>
-          <p className="mt-1 text-xs font-medium text-slate-400">{sub}</p>
+    <div style={{
+      background: '#fff',
+      borderRadius: '24px',
+      border: '1px solid #f1f5f9',
+      boxShadow: '0 4px 20px rgba(148,163,184,0.10)',
+      padding: '24px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#94a3b8', margin: 0 }}>{title}</p>
+          <div style={{ marginTop: '12px', fontSize: '30px', fontWeight: 900, letterSpacing: '-0.02em', color: '#0f172a', lineHeight: 1 }}>{value}</div>
+          <p style={{ marginTop: '6px', fontSize: '12px', fontWeight: 500, color: '#94a3b8' }}>{sub}</p>
         </div>
-        <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
+        <div style={{ width: '44px', height: '44px', borderRadius: '16px', background: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <ArrowUpRight size={18} />
         </div>
       </div>
@@ -47,19 +53,18 @@ function StatCard({ title, value, sub }) {
   );
 }
 
+/* ── Rating Stars ── */
 function RatingStars({ rating }) {
   const rounded = Math.round(Number(rating) || 0);
-
   return (
-    <div className="flex items-center gap-1">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
       {Array.from({ length: 5 }).map((_, index) => {
         const active = index < rounded;
         return (
           <Star
             key={index}
-            size={14}
-            className={active ? 'text-amber-400' : 'text-slate-200'}
-            style={{ fill: active ? 'currentColor' : 'none' }}
+            size={13}
+            style={{ color: active ? '#fbbf24' : '#e2e8f0', fill: active ? '#fbbf24' : 'none' }}
             strokeWidth={1.8}
           />
         );
@@ -68,6 +73,97 @@ function RatingStars({ rating }) {
   );
 }
 
+/* ── Mobile Review Card ── */
+function MobileReviewCard({ review, navigate }) {
+  const tone = scoreTone(review.rating);
+  return (
+    <div style={{
+      background: '#fff',
+      border: '1px solid #f1f5f9',
+      borderRadius: '20px',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+    }}>
+      {/* Product row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '52px', height: '52px', borderRadius: '14px', border: '1px solid #f1f5f9', overflow: 'hidden', background: '#fff', padding: '4px', flexShrink: 0, boxSizing: 'border-box' }}>
+          <img
+            src={review.productImage}
+            alt={review.productName}
+            onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.productName)}&background=10b981&color=fff&bold=true`; }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
+          />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {review.productName}
+          </div>
+          <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8', marginTop: '2px' }}>
+            {review.mainCategory}
+          </div>
+        </div>
+      </div>
+
+      {/* Score + reviewer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a' }}>{review.reviewerName}</div>
+          <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Ref: {String(review.reviewerId).slice(-8)}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '4px 10px', borderRadius: '999px',
+            background: tone.bg, color: tone.text,
+            fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em',
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: tone.dot }} />
+            {tone.label}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <RatingStars rating={review.rating} />
+            <span style={{ fontSize: '13px', fontWeight: 900, color: '#0f172a' }}>{review.rating.toFixed(1)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Feedback */}
+      <p style={{ fontSize: '13px', fontWeight: 500, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+        {review.comment}
+      </p>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '8px', borderTop: '1px solid #f8fafc' }}>
+        <div>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Package size={12} color="#10b981" /> {formatINR(review.productPrice)}
+          </div>
+          <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>
+            Avg: {review.averageRating ? review.averageRating.toFixed(1) : '0.0'} / 5 · {review.productReviewCount} reviews
+          </div>
+        </div>
+        <button
+          onClick={() => navigate(`/edit-product/${review.productId}`)}
+          style={{
+            padding: '8px 16px', borderRadius: '12px',
+            background: '#0f172a', color: '#fff',
+            fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em',
+            border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+          }}
+        >
+          View Product
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════ */
 export default function ProductReviews() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -96,8 +192,8 @@ export default function ProductReviews() {
     }
   };
 
+  // ── Logic untouched ──
   const reviewRows = useMemo(() => {
-    // 1. Map reviews from the Review collection
     const standaloneReviews = (reviews || []).map((review) => ({
       id: review._id,
       reviewId: review._id,
@@ -117,10 +213,9 @@ export default function ProductReviews() {
       rating: Number(review.rating || 0),
       comment: review.comment || 'No written feedback submitted.',
       catalogDate: review.createdAt ? new Date(review.createdAt) : null,
-      source: 'collection'
+      source: 'collection',
     }));
 
-    // 2. Map legacy reviews from products that might not be in the collection yet
     const legacyReviews = (products || []).flatMap((product) => {
       const pReviews = Array.isArray(product.reviews) ? product.reviews : [];
       return pReviews
@@ -144,7 +239,7 @@ export default function ProductReviews() {
           rating: Number(review.rating || 0),
           comment: review.comment || 'No written feedback submitted.',
           catalogDate: product.createdAt ? new Date(product.createdAt) : null,
-          source: 'legacy'
+          source: 'legacy',
         }));
     });
 
@@ -157,7 +252,6 @@ export default function ProductReviews() {
 
   const filteredReviews = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-
     return reviewRows.filter((review) => {
       const matchesSearch =
         !query ||
@@ -166,11 +260,9 @@ export default function ProductReviews() {
         review.comment.toLowerCase().includes(query) ||
         review.mainCategory.toLowerCase().includes(query) ||
         review.categories.some(c => c.toLowerCase().includes(query));
-
       const matchesRating =
         activeRating === 'all' ||
         (activeRating === '3-below' ? review.rating <= 3 : review.rating === Number(activeRating));
-
       return matchesSearch && matchesRating;
     });
   }, [activeRating, reviewRows, searchQuery]);
@@ -180,234 +272,414 @@ export default function ProductReviews() {
     const averageRating = totalReviews
       ? reviewRows.reduce((sum, review) => sum + review.rating, 0) / totalReviews
       : 0;
-
-    // Count unique product IDs from the merged reviewRows
     const uniqueReviewedProductIds = new Set(reviewRows.map(r => r.productId));
     const reviewedProducts = uniqueReviewedProductIds.size;
-
     const lowRated = reviewRows.filter((review) => review.rating <= 3).length;
-
-    return {
-      totalReviews,
-      averageRating,
-      reviewedProducts,
-      lowRated,
-    };
+    return { totalReviews, averageRating, reviewedProducts, lowRated };
   }, [products, reviewRows]);
 
   return (
-    <div className="min-h-screen p-6 lg:p-10 animate-fadeIn space-y-8">
-      <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-            <Star className="text-amber-400" size={34} style={{ fill: 'currentColor' }} />
-            Product Reviews
-          </h1>
-          <p className="mt-2 ml-12 text-[11px] font-black uppercase tracking-[0.26em] text-slate-400">
-            Centralized feedback intelligence across your catalog
-          </p>
-        </div>
+    <>
+      <style>{`
+        /* ── Base ── */
+        .pr-root {
+          min-height: 100vh;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 28px;
+          box-sizing: border-box;
+        }
+        @media (min-width: 1024px) { .pr-root { padding: 40px; } }
 
-        <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
-          <div className="relative min-w-0 md:w-80">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products, buyers, feedback..."
-              className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10"
-            />
+        /* ── Header ── */
+        .pr-header {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        @media (min-width: 1024px) {
+          .pr-header {
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+          }
+        }
+
+        .pr-header-controls {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
+        }
+        @media (min-width: 640px) {
+          .pr-header-controls { flex-direction: row; }
+        }
+        @media (min-width: 1024px) {
+          .pr-header-controls { width: auto; }
+        }
+
+        .pr-search-input {
+          width: 100%;
+          padding: 14px 16px 14px 42px;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #334155;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .pr-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.08); }
+        @media (min-width: 640px) { .pr-search-input { width: 300px; } }
+
+        .pr-sort-select {
+          width: 100%;
+          appearance: none;
+          padding: 14px 40px 14px 40px;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          font-size: 14px;
+          font-weight: 600;
+          color: #334155;
+          outline: none;
+          cursor: pointer;
+          box-sizing: border-box;
+          transition: border-color 0.2s;
+        }
+        .pr-sort-select:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.08); }
+        @media (min-width: 640px) { .pr-sort-select { width: 200px; } }
+
+        /* ── Stats grid ── */
+        .pr-stats-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+        @media (min-width: 900px) {
+          .pr-stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* ── Table card ── */
+        .pr-table-card {
+          background: #fff;
+          border-radius: 28px;
+          border: 1px solid #f1f5f9;
+          box-shadow: 0 8px 30px rgba(148,163,184,0.12);
+          overflow: hidden;
+        }
+
+        /* ── Tab bar ── */
+        .pr-tabs-bar {
+          padding: 20px 24px 16px;
+          border-bottom: 1px solid #f1f5f9;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        @media (min-width: 768px) {
+          .pr-tabs-bar {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+        }
+
+        .pr-tabs {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        /* ── Desktop table — scrollable wrapper ── */
+        .pr-desktop-table {
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .pr-desktop-table { display: block; overflow-x: auto; }
+        }
+
+        /* ── Mobile cards ── */
+        .pr-mobile-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          padding: 20px;
+        }
+        @media (min-width: 768px) {
+          .pr-mobile-cards { display: none; }
+        }
+
+        /* ── Spin animation ── */
+        @keyframes pr-spin { to { transform: rotate(360deg); } }
+        .pr-spinner {
+          width: 44px; height: 44px;
+          border: 4px solid #d1fae5;
+          border-top-color: #10b981;
+          border-radius: 50%;
+          animation: pr-spin 0.8s linear infinite;
+        }
+
+        /* ── Table cells ── */
+        .pr-th {
+          padding: 16px 20px;
+          font-size: 10px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          color: #94a3b8;
+          background: rgba(248,250,252,0.7);
+          border-bottom: 1px solid #f1f5f9;
+          white-space: nowrap;
+          text-align: left;
+        }
+        .pr-th-right { text-align: right; }
+
+        .pr-td { padding: 18px 20px; vertical-align: top; }
+
+        .pr-tr {
+          border-bottom: 1px solid #f8fafc;
+          cursor: default;
+          transition: background 0.12s;
+        }
+        .pr-tr:hover { background: #fafafa; }
+      `}</style>
+
+      <div className="pr-root">
+
+        {/* ── Header ── */}
+        <div className="pr-header">
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.02em', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
+              <Star style={{ color: '#fbbf24', fill: '#fbbf24' }} size={32} />
+              Product Reviews
+            </h1>
+            <p style={{ marginTop: '8px', marginLeft: '44px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#94a3b8' }}>
+              Centralized feedback intelligence across your catalog
+            </p>
           </div>
 
-          <div className="relative md:w-52">
-            <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full appearance-none pl-10 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10"
-            >
-              <option value="rating_desc">Top Rated First</option>
-              <option value="rating_asc">Lowest Rated First</option>
-              <option value="product_name">Product Name</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="pr-header-controls">
+            {/* Search */}
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, buyers, feedback..."
+                className="pr-search-input"
+              />
+            </div>
+
+            {/* Sort */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <Filter size={14} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="pr-sort-select"
+              >
+                <option value="rating_desc">Top Rated First</option>
+                <option value="rating_asc">Lowest Rated First</option>
+                <option value="product_name">Product Name</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Reviews"
-          value={stats.totalReviews.toLocaleString('en-IN')}
-          sub="Written ratings collected"
-        />
-        <StatCard
-          title="Average Score"
-          value={stats.totalReviews ? stats.averageRating.toFixed(1) : '0.0'}
-          sub="Mean customer satisfaction"
-        />
-        <StatCard
-          title="Reviewed Products"
-          value={stats.reviewedProducts.toLocaleString('en-IN')}
-          sub="Catalog entries with feedback"
-        />
-        <StatCard
-          title="Attention Needed"
-          value={stats.lowRated.toLocaleString('en-IN')}
-          sub="Reviews rated 3 stars or below"
-        />
-      </div>
+        {/* ── Stat Cards ── */}
+        <div className="pr-stats-grid">
+          <StatCard title="Total Reviews" value={stats.totalReviews.toLocaleString('en-IN')} sub="Written ratings collected" />
+          <StatCard title="Average Score" value={stats.totalReviews ? stats.averageRating.toFixed(1) : '0.0'} sub="Mean customer satisfaction" />
+          <StatCard title="Reviewed Products" value={stats.reviewedProducts.toLocaleString('en-IN')} sub="Catalog entries with feedback" />
+          <StatCard title="Attention Needed" value={stats.lowRated.toLocaleString('en-IN')} sub="Reviews rated 3 stars or below" />
+        </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-        <div className="px-6 lg:px-8 pt-6 pb-4 border-b border-slate-100">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
+        {/* ── Table Card ── */}
+        <div className="pr-table-card">
+
+          {/* Tab bar */}
+          <div className="pr-tabs-bar">
+            <div className="pr-tabs">
               {ratingTabs.map((tab) => {
                 const active = activeRating === tab.value;
                 return (
                   <button
                     key={tab.value}
                     onClick={() => setActiveRating(tab.value)}
-                    className={`px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.16em] transition-all ${active
-                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
-                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                      }`}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '999px',
+                      fontSize: '10px', fontWeight: 900,
+                      textTransform: 'uppercase', letterSpacing: '0.14em',
+                      cursor: 'pointer', border: 'none',
+                      transition: 'all 0.15s',
+                      background: active ? '#0f172a' : '#f8fafc',
+                      color: active ? '#fff' : '#94a3b8',
+                      boxShadow: active ? '0 4px 12px rgba(15,23,42,0.15)' : 'none',
+                    }}
                   >
                     {tab.label}
                   </button>
                 );
               })}
             </div>
-
-            <div className="flex items-center gap-3 text-xs font-semibold text-slate-400">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600, color: '#94a3b8', flexShrink: 0 }}>
               <span>{filteredReviews.length.toLocaleString('en-IN')} reviews visible</span>
               <MoreHorizontal size={16} />
             </div>
           </div>
-        </div>
 
-        {loading && reviewRows.length === 0 ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin"></div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-              Loading review matrix
-            </p>
-          </div>
-        ) : filteredReviews.length === 0 ? (
-          <div className="py-24 px-6 text-center flex flex-col items-center gap-4">
-            <div className="w-20 h-20 rounded-[1.75rem] bg-slate-50 border border-slate-100 flex items-center justify-center">
-              <AlertCircle size={34} className="text-slate-300" />
+          {/* Loading */}
+          {loading && reviewRows.length === 0 ? (
+            <div style={{ padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+              <div className="pr-spinner" />
+              <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#94a3b8' }}>Loading review matrix</p>
             </div>
-            <div>
-              <h3 className="text-lg font-black tracking-tight text-slate-900">No reviews found</h3>
-              <p className="mt-2 text-sm text-slate-400 max-w-md">
-                Customer feedback will appear here once shoppers submit ratings and comments for your products.
-              </p>
+
+          ) : filteredReviews.length === 0 ? (
+            <div style={{ padding: '80px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '22px', background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertCircle size={32} style={{ color: '#cbd5e1' }} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', margin: 0 }}>No reviews found</h3>
+                <p style={{ marginTop: '8px', fontSize: '14px', color: '#94a3b8', maxWidth: '380px' }}>
+                  Customer feedback will appear here once shoppers submit ratings and comments for your products.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/products')}
+                style={{ padding: '12px 24px', borderRadius: '16px', background: '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.16em', border: 'none', cursor: 'pointer' }}
+              >
+                Open Product List
+              </button>
             </div>
-            <button
-              onClick={() => navigate('/products')}
-              className="mt-2 px-5 py-3 rounded-2xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.18em] hover:bg-slate-800 transition-all"
-            >
-              Open Product List
-            </button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/60 border-b border-slate-100">
-                  <th className="px-6 lg:px-8 py-5 text-left">Product</th>
-                  <th className="px-6 py-5 text-left">Reviewer</th>
-                  <th className="px-6 py-5 text-left">Score</th>
-                  <th className="px-6 py-5 text-left">Feedback</th>
-                  <th className="px-6 py-5 text-left">Catalog Info</th>
-                  <th className="px-6 lg:px-8 py-5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredReviews.map((review) => {
-                  const tone = scoreTone(review.rating);
-                  return (
-                    <tr key={review.id} className="hover:bg-slate-50/60 transition-colors align-top">
-                      <td className="px-6 lg:px-8 py-6">
-                        <div className="flex items-center gap-4 min-w-[240px]">
-                          <div className="w-14 h-14 rounded-2xl border border-slate-100 overflow-hidden bg-white p-1.5 flex-shrink-0">
-                            <img
-                              src={review.productImage}
-                              alt={review.productName}
-                              className="w-full h-full object-cover rounded-xl"
-                              onError={(e) => {
-                                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.productName)}&background=10b981&color=fff&bold=true`;
-                              }}
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-sm font-black uppercase tracking-tight text-slate-900 truncate">
-                              {review.productName}
-                            </div>
-                            <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                              {review.mainCategory} · {review.categories?.join(', ')}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
 
-                      <td className="px-6 py-6 min-w-[170px]">
-                        <div className="text-sm font-black text-slate-900">{review.reviewerName}</div>
-                        <div className="mt-1 text-[11px] font-semibold text-slate-400">
-                          Ref: {String(review.reviewerId).slice(-8)}
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-6 min-w-[150px]">
-                        <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full ${tone.bg} ${tone.text}`}>
-                          <span className={`w-2 h-2 rounded-full ${tone.dot}`}></span>
-                          <span className="text-xs font-black uppercase tracking-[0.14em]">{tone.label}</span>
-                        </div>
-                        <div className="mt-3 flex items-center gap-3">
-                          <RatingStars rating={review.rating} />
-                          <span className="text-sm font-black text-slate-900">{review.rating.toFixed(1)}</span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-6 min-w-[320px]">
-                        <p className="text-sm font-medium text-slate-600 leading-6">
-                          {review.comment}
-                        </p>
-                      </td>
-
-                      <td className="px-6 py-6 min-w-[170px]">
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                          <Package size={14} className="text-emerald-500" />
-                          {formatINR(review.productPrice)}
-                        </div>
-                        <div className="mt-2 text-[11px] text-slate-400 font-semibold">
-                          Product avg: {review.averageRating ? review.averageRating.toFixed(1) : '0.0'} / 5
-                        </div>
-                        <div className="mt-1 text-[11px] text-slate-400 font-semibold">
-                          Total feedback: {review.productReviewCount.toLocaleString('en-IN')}
-                        </div>
-                      </td>
-
-                      <td className="px-6 lg:px-8 py-6">
-                        <div className="flex justify-end">
-                          <button
-                            onClick={() => navigate(`/edit-product/${review.productId}`)}
-                            className="px-4 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.14em] hover:bg-slate-800 transition-all whitespace-nowrap"
-                          >
-                            View Product
-                          </button>
-                        </div>
-                      </td>
+          ) : (
+            <>
+              {/* ── Desktop Table ── */}
+              <div className="pr-desktop-table">
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+                  <thead>
+                    <tr>
+                      {['Product', 'Reviewer', 'Score', 'Feedback', 'Catalog Info', ''].map((col, i) => (
+                        <th key={i} className={`pr-th ${i === 5 ? 'pr-th-right' : ''}`}>{col}</th>
+                      ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </thead>
+                  <tbody>
+                    {filteredReviews.map((review) => {
+                      const tone = scoreTone(review.rating);
+                      return (
+                        <tr key={review.id} className="pr-tr">
+
+                          {/* Product */}
+                          <td className="pr-td" style={{ minWidth: '220px', maxWidth: '260px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{ width: '52px', height: '52px', borderRadius: '16px', border: '1px solid #f1f5f9', overflow: 'hidden', background: '#fff', padding: '4px', flexShrink: 0, boxSizing: 'border-box' }}>
+                                <img
+                                  src={review.productImage}
+                                  alt={review.productName}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
+                                  onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.productName)}&background=10b981&color=fff&bold=true`; }}
+                                />
+                              </div>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {review.productName}
+                                </div>
+                                <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8', marginTop: '3px' }}>
+                                  {review.mainCategory}
+                                  {review.categories?.length > 0 && ` · ${review.categories.join(', ')}`}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Reviewer */}
+                          <td className="pr-td" style={{ minWidth: '150px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 900, color: '#0f172a' }}>{review.reviewerName}</div>
+                            <div style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', marginTop: '3px' }}>Ref: {String(review.reviewerId).slice(-8)}</div>
+                          </td>
+
+                          {/* Score */}
+                          <td className="pr-td" style={{ minWidth: '150px' }}>
+                            <div style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '6px',
+                              padding: '5px 12px', borderRadius: '999px',
+                              background: tone.bg, color: tone.text,
+                              fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em',
+                            }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: tone.dot, flexShrink: 0 }} />
+                              {tone.label}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                              <RatingStars rating={review.rating} />
+                              <span style={{ fontSize: '13px', fontWeight: 900, color: '#0f172a' }}>{review.rating.toFixed(1)}</span>
+                            </div>
+                          </td>
+
+                          {/* Feedback */}
+                          <td className="pr-td" style={{ minWidth: '240px', maxWidth: '300px' }}>
+                            <p style={{ fontSize: '13px', fontWeight: 500, color: '#475569', lineHeight: 1.6, margin: 0 }}>
+                              {review.comment}
+                            </p>
+                          </td>
+
+                          {/* Catalog Info */}
+                          <td className="pr-td" style={{ minWidth: '150px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <Package size={13} style={{ color: '#10b981' }} />
+                              {formatINR(review.productPrice)}
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '5px' }}>
+                              Avg: {review.averageRating ? review.averageRating.toFixed(1) : '0.0'} / 5
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>
+                              Total: {review.productReviewCount.toLocaleString('en-IN')} reviews
+                            </div>
+                          </td>
+
+                          {/* Action */}
+                          <td className="pr-td" style={{ textAlign: 'right', minWidth: '130px' }}>
+                            <button
+                              onClick={() => navigate(`/edit-product/${review.productId}`)}
+                              style={{
+                                padding: '9px 18px', borderRadius: '14px',
+                                background: '#0f172a', color: '#fff',
+                                fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em',
+                                border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                transition: 'background 0.15s',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#1e293b'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = '#0f172a'}
+                            >
+                              View Product
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Mobile Cards ── */}
+              <div className="pr-mobile-cards">
+                {filteredReviews.map((review) => (
+                  <MobileReviewCard key={review.id} review={review} navigate={navigate} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
