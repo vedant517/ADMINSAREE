@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Trash2, 
+import {
+  Mail,
+  Phone,
+  Calendar,
+  Trash2,
   MessageSquare,
   Search,
   Loader2
@@ -58,289 +58,165 @@ const Enquiries = () => {
   });
 
   const statusColors = {
-    New:          { bg: '#fef2f2', color: '#991b1b' },
-    'In Progress':{ bg: '#fff7ed', color: '#9a3412' },
-    Resolved:     { bg: '#f0fdf4', color: '#166534' },
+    New:           { bg: 'bg-red-50',    color: 'text-red-800' },
+    'In Progress': { bg: 'bg-orange-50', color: 'text-orange-800' },
+    Resolved:      { bg: 'bg-green-50',  color: 'text-green-800' },
+  };
+
+  const getStatusSelectStyle = (status) => {
+    const map = {
+      New:           'bg-red-50 text-red-800',
+      'In Progress': 'bg-orange-50 text-orange-800',
+      Resolved:      'bg-green-50 text-green-800',
+    };
+    return map[status] || 'bg-gray-50 text-gray-700';
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
-      <Loader2 style={{ animation: 'spin 1s linear infinite' }} size={40} color="#8b7355" />
+    <div className="flex items-center justify-center h-[80vh]">
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <Loader2 style={{ animation: 'spin 1s linear infinite' }} size={40} color="#8b7355" />
     </div>
   );
 
   return (
-    <>
-      <style>{`
-        .enq-root {
-          padding: 20px;
-          max-width: 1200px;
-          margin: 0 auto;
-          box-sizing: border-box;
-        }
-        @media (min-width: 768px) { .enq-root { padding: 32px; } }
+    <div className="p-5 md:p-8 max-w-6xl mx-auto box-border">
 
-        /* ── Filters row ── */
-        .enq-filters {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          margin-bottom: 24px;
-        }
-        @media (min-width: 768px) {
-          .enq-filters {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-          }
-        }
+      {/* Header */}
+      <div className="mb-7">
+        <h1 className="text-2xl font-extrabold text-gray-800 mb-1.5">Enquiries &amp; Leads</h1>
+        <p className="text-gray-500 text-sm m-0">Manage user messages and styling inquiries.</p>
+      </div>
 
-        .enq-search-wrap {
-          position: relative;
-          width: 100%;
-        }
-        @media (min-width: 768px) { .enq-search-wrap { flex: 1; max-width: 420px; } }
-
-        .enq-search-input {
-          width: 100%;
-          padding: 12px 12px 12px 40px;
-          border-radius: 12px;
-          border: 1px solid #e5e7eb;
-          outline: none;
-          font-size: 14px;
-          box-sizing: border-box;
-          transition: border-color 0.2s;
-        }
-        .enq-search-input:focus { border-color: #6b7280; }
-
-        .enq-filter-btns {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
-        }
-
-        /* ── Desktop table ── */
-        .enq-table-wrap {
-          display: none;
-          overflow-x: auto;
-        }
-        @media (min-width: 768px) { .enq-table-wrap { display: block; } }
-
-        /* ── Mobile cards ── */
-        .enq-mobile-list {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-        @media (min-width: 768px) { .enq-mobile-list { display: none; } }
-
-        .enq-card {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 18px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .enq-card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .enq-card-meta {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .enq-meta-row {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        .enq-card-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding-top: 10px;
-          border-top: 1px solid #f3f4f6;
-          flex-wrap: wrap;
-        }
-      `}</style>
-
-      <div className="enq-root">
-        {/* Header */}
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#1f2937', marginBottom: '6px' }}>Enquiries & Leads</h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Manage user messages and styling inquiries.</p>
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div className="relative w-full md:flex-1 md:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-colors focus:border-gray-500 box-border"
+          />
         </div>
-
-        {/* Filters */}
-        <div className="enq-filters">
-          <div className="enq-search-wrap">
-            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={18} />
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="enq-search-input"
-            />
-          </div>
-          <div className="enq-filter-btns">
-            {['All', 'New', 'In Progress', 'Resolved'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                style={{
-                  padding: '9px 14px',
-                  borderRadius: '10px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  background: filter === f ? '#1f2937' : '#fff',
-                  color: filter === f ? '#fff' : '#4b5563',
-                  border: '1px solid #e5e7eb',
-                  transition: 'all 0.2s',
-                  whiteSpace: 'nowrap',
-                }}
-              >{f}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Desktop Table ── */}
-        <div className="enq-table-wrap">
-          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
-              <thead style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                <tr>
-                  {['User Info', 'Message', 'Date', 'Status', 'Actions'].map((h) => (
-                    <th key={h} style={{ padding: '16px', fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEnquiries.map((enq) => (
-                  <tr key={enq._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '20px 16px' }}>
-                      <div style={{ fontWeight: 700, color: '#111827', marginBottom: '4px' }}>{enq.name}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={12} /> {enq.email}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}><Phone size={12} /> {enq.contactNo}</div>
-                    </td>
-                    <td style={{ padding: '20px 16px', maxWidth: '300px' }}>
-                      <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{enq.message}</div>
-                    </td>
-                    <td style={{ padding: '20px 16px', whiteSpace: 'nowrap' }}>
-                      <div style={{ fontSize: '13px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Calendar size={14} /> {new Date(enq.createdAt).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td style={{ padding: '20px 16px' }}>
-                      <select
-                        value={enq.status}
-                        onChange={(e) => updateStatus(enq._id, e.target.value)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '20px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          background: statusColors[enq.status]?.bg || '#f9fafb',
-                          color: statusColors[enq.status]?.color || '#374151',
-                          border: 'none',
-                          cursor: 'pointer',
-                          outline: 'none',
-                        }}
-                      >
-                        <option value="New">New</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Resolved">Resolved</option>
-                      </select>
-                    </td>
-                    <td style={{ padding: '20px 16px' }}>
-                      <button
-                        onClick={() => deleteEnquiry(enq._id)}
-                        style={{ padding: '8px', color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                      ><Trash2 size={18} /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredEnquiries.length === 0 && (
-              <div style={{ padding: '60px', textAlign: 'center', color: '#9ca3af' }}>
-                <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.3, display: 'block', margin: '0 auto 16px' }} />
-                <p style={{ margin: 0 }}>No enquiries found.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Mobile Cards ── */}
-        <div className="enq-mobile-list">
-          {filteredEnquiries.length === 0 ? (
-            <div style={{ padding: '60px 20px', textAlign: 'center', color: '#9ca3af' }}>
-              <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.3, display: 'block', margin: '0 auto 16px' }} />
-              <p style={{ margin: 0 }}>No enquiries found.</p>
-            </div>
-          ) : filteredEnquiries.map((enq) => (
-            <div key={enq._id} className="enq-card">
-              <div className="enq-card-header">
-                <div>
-                  <div style={{ fontWeight: 700, color: '#111827', fontSize: '15px', marginBottom: '6px' }}>{enq.name}</div>
-                  <div className="enq-card-meta">
-                    <div className="enq-meta-row"><Mail size={12} /> {enq.email}</div>
-                    <div className="enq-meta-row"><Phone size={12} /> {enq.contactNo}</div>
-                    <div className="enq-meta-row"><Calendar size={12} /> {new Date(enq.createdAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => deleteEnquiry(enq._id)}
-                  style={{ padding: '8px', color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}
-                ><Trash2 size={16} /></button>
-              </div>
-
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.6, margin: 0, padding: '12px', background: '#f9fafb', borderRadius: '10px' }}>
-                {enq.message}
-              </p>
-
-              <div className="enq-card-footer">
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>Update Status:</span>
-                <select
-                  value={enq.status}
-                  onChange={(e) => updateStatus(enq._id, e.target.value)}
-                  style={{
-                    padding: '7px 14px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    background: statusColors[enq.status]?.bg || '#f9fafb',
-                    color: statusColors[enq.status]?.color || '#374151',
-                    border: 'none',
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
-                >
-                  <option value="New">New</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                </select>
-              </div>
-            </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {['All', 'New', 'In Progress', 'Resolved'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-semibold cursor-pointer border transition-all whitespace-nowrap
+                ${filter === f
+                  ? 'bg-gray-800 text-white border-gray-800'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+            >
+              {f}
+            </button>
           ))}
         </div>
       </div>
-    </>
+
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <table className="w-full border-collapse text-left" style={{ minWidth: '700px' }}>
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                {['User Info', 'Message', 'Date', 'Status', 'Actions'].map((h) => (
+                  <th key={h} className="p-4 text-xs font-bold text-gray-600 uppercase">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEnquiries.map((enq) => (
+                <tr key={enq._id} className="border-b border-gray-100">
+                  <td className="p-5">
+                    <div className="font-bold text-gray-900 mb-1">{enq.name}</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1"><Mail size={12} /> {enq.email}</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><Phone size={12} /> {enq.contactNo}</div>
+                  </td>
+                  <td className="p-5 max-w-[300px]">
+                    <div className="text-[13px] text-gray-700 leading-relaxed">{enq.message}</div>
+                  </td>
+                  <td className="p-5 whitespace-nowrap">
+                    <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                      <Calendar size={14} /> {new Date(enq.createdAt).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="p-5">
+                    <select
+                      value={enq.status}
+                      onChange={(e) => updateStatus(enq._id, e.target.value)}
+                      className={`px-3 py-1.5 rounded-2xl text-xs font-bold border-none cursor-pointer outline-none ${getStatusSelectStyle(enq.status)}`}
+                    >
+                      <option value="New">New</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Resolved">Resolved</option>
+                    </select>
+                  </td>
+                  <td className="p-5">
+                    <button
+                      onClick={() => deleteEnquiry(enq._id)}
+                      className="p-2 text-red-500 bg-transparent border-none cursor-pointer"
+                    ><Trash2 size={18} /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredEnquiries.length === 0 && (
+            <div className="p-16 text-center text-gray-400">
+              <MessageSquare size={48} className="mb-4 opacity-30 mx-auto block" />
+              <p className="m-0">No enquiries found.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="flex flex-col gap-3.5 md:hidden">
+        {filteredEnquiries.length === 0 ? (
+          <div className="py-16 px-5 text-center text-gray-400">
+            <MessageSquare size={48} className="mb-4 opacity-30 mx-auto block" />
+            <p className="m-0">No enquiries found.</p>
+          </div>
+        ) : filteredEnquiries.map((enq) => (
+          <div key={enq._id} className="bg-white border border-gray-200 rounded-2xl p-4.5 flex flex-col gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <div>
+                <div className="font-bold text-gray-900 text-[15px] mb-1.5">{enq.name}</div>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500"><Mail size={12} /> {enq.email}</div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500"><Phone size={12} /> {enq.contactNo}</div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500"><Calendar size={12} /> {new Date(enq.createdAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => deleteEnquiry(enq._id)}
+                className="p-2 text-red-500 bg-red-50 border border-red-200 rounded-lg cursor-pointer shrink-0"
+              ><Trash2 size={16} /></button>
+            </div>
+
+            <p className="text-[13px] text-gray-700 leading-relaxed m-0 p-3 bg-gray-50 rounded-xl">
+              {enq.message}
+            </p>
+
+            <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-gray-100 flex-wrap">
+              <span className="text-xs font-semibold text-gray-500">Update Status:</span>
+              <select
+                value={enq.status}
+                onChange={(e) => updateStatus(enq._id, e.target.value)}
+                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold border-none cursor-pointer outline-none ${getStatusSelectStyle(enq.status)}`}
+              >
+                <option value="New">New</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

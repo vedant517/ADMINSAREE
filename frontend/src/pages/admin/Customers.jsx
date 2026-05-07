@@ -16,9 +16,6 @@ import {
 const G       = "#1a6b3c";
 const LIGHT_G = "#e8f5ee";
 
-/* ─────────────────────────────────────────────
-   resolveCustomer
-───────────────────────────────────────────── */
 function resolveCustomer(raw) {
   const clean = (v) => (v && typeof v === "string" && v.trim() ? v.trim() : null);
   const id    = clean(raw?._id?.toString()) || clean(raw?.id?.toString()) || null;
@@ -33,44 +30,25 @@ function resolveCustomer(raw) {
 /* ── Stat Card ── */
 function StatCard({ title, value, badge, badgeUp, sub, loading, icon }) {
   return (
-    <div style={{
-      background: "#fff",
-      borderRadius: "12px",
-      border: "1px solid #e2e8f0",
-      padding: "16px 20px",
-      cursor: "pointer",
-      transition: "box-shadow 0.2s",
-    }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)"}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
+    <div
+      className="bg-white rounded-xl border border-slate-200 px-5 py-4 cursor-pointer transition-shadow hover:shadow-xl"
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-        <div style={{
-          width: "34px", height: "34px", borderRadius: "10px",
-          background: "#f0fdf4", border: "1px solid #d1fae5",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
+      <div className="flex justify-between items-start mb-3">
+        <div className="w-8 h-8 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center">
           {icon}
         </div>
-        <MoreHorizontal size={14} color="#cbd5e1" />
+        <MoreHorizontal size={14} className="text-slate-300" />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-        <span style={{ fontSize: "24px", fontWeight: "800", color: "#0f172a" }}>
-          {loading ? "…" : (value ?? 0)}
-        </span>
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="text-[24px] font-extrabold text-slate-900">{loading ? "…" : (value ?? 0)}</span>
         {badge && (
-          <span style={{
-            fontSize: "10px", fontWeight: "700",
-            padding: "2px 7px", borderRadius: "20px",
-            background: badgeUp ? "#e8f5ee" : "#fce8e8",
-            color: badgeUp ? G : "#c0392b",
-          }}>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${badgeUp ? 'bg-[#e8f5ee] text-[#1a6b3c]' : 'bg-red-100 text-red-600'}`}>
             {badge}
           </span>
         )}
       </div>
-      <div style={{ fontSize: "11px", fontWeight: "700", color: "#475569" }}>{title}</div>
-      <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{sub}</div>
+      <div className="text-[11px] font-bold text-slate-500">{title}</div>
+      <div className="text-[10px] text-slate-400 mt-0.5">{sub}</div>
     </div>
   );
 }
@@ -79,12 +57,11 @@ function StatCard({ title, value, badge, badgeUp, sub, loading, icon }) {
 function CustomerWeeklyChart({ data, loading }) {
   if (loading) {
     return (
-      <div style={{ height: "220px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: "28px", height: "28px", border: "3px solid #e2e8f0", borderTopColor: G, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <div className="h-[220px] flex items-center justify-center">
+        <div className="w-7 h-7 border-[3px] border-slate-200 border-t-[#1a6b3c] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
-
   const chartData = data.length > 0
     ? data
     : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({ day, count: 0 }));
@@ -93,7 +70,7 @@ function CustomerWeeklyChart({ data, loading }) {
   const yMax = maxVal === 0 ? 5 : Math.ceil(maxVal * 1.4);
 
   return (
-    <div style={{ width: "100%", height: "220px" }}>
+    <div className="w-full h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
@@ -103,45 +80,20 @@ function CustomerWeeklyChart({ data, loading }) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis
-            dataKey="day"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
-            dy={6}
-            interval={0}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
-            domain={[0, yMax]}
-            allowDecimals={false}
-            width={30}
-          />
+          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }} dy={6} interval={0} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 10 }} domain={[0, yMax]} allowDecimals={false} width={30} />
           <Tooltip
             cursor={{ stroke: G, strokeWidth: 1, strokeDasharray: "3 3" }}
             content={({ active, payload, label }) =>
               active && payload?.length ? (
-                <div style={{
-                  background: `linear-gradient(135deg, ${G}, #4c9f70)`,
-                  color: "#fff", fontSize: "12px", fontWeight: "700",
-                  padding: "8px 14px", borderRadius: "10px", textAlign: "center",
-                  boxShadow: "0 4px 16px rgba(26,107,60,0.35)",
-                }}>
-                  <div style={{ fontSize: "10px", opacity: 0.85 }}>{label}</div>
+                <div style={{ background: `linear-gradient(135deg, ${G}, #4c9f70)` }} className="text-white text-xs font-bold px-3.5 py-2 rounded-xl text-center shadow-lg">
+                  <div className="text-[10px] opacity-85">{label}</div>
                   <div>{payload[0].value} customer{payload[0].value !== 1 ? "s" : ""}</div>
                 </div>
               ) : null
             }
           />
-          <Area
-            type="monotone"
-            dataKey="count"
-            stroke={G}
-            strokeWidth={2.5}
-            fill="url(#cgGrad)"
-            fillOpacity={1}
+          <Area type="monotone" dataKey="count" stroke={G} strokeWidth={2.5} fill="url(#cgGrad)" fillOpacity={1}
             dot={{ r: 4, fill: "#fff", stroke: G, strokeWidth: 2 }}
             activeDot={{ r: 6, fill: G, stroke: "#fff", strokeWidth: 2 }}
             isAnimationActive
@@ -158,123 +110,67 @@ function CustomerDetailsModal({ customer, onClose }) {
   const { id, email, phone, name, displayName, avatarLetter } = resolveCustomer(customer);
 
   const InfoRow = ({ icon, label, value, mono, accent }) => (
-    <div style={{
-      display: "flex", alignItems: "flex-start", gap: "10px",
-      padding: "9px 0", borderBottom: "1px solid #f8fafc",
-    }}>
-      <div style={{
-        width: "26px", height: "26px", borderRadius: "7px",
-        background: "#f0fdf4", display: "flex",
-        alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "2px" }}>
-          {label}
-        </div>
+    <div className="flex items-start gap-2.5 py-2 border-b border-slate-50">
+      <div className="w-[26px] h-[26px] rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">{label}</div>
         {value ? (
-          <div style={{
-            fontSize: "12px", fontWeight: "700",
-            color: accent ? G : "#0f172a",
-            fontFamily: mono ? "monospace" : "inherit",
-            wordBreak: "break-all",
-          }}>
-            {value}
-          </div>
+          <div className={`text-xs font-bold break-all ${accent ? 'text-[#1a6b3c]' : 'text-slate-900'} ${mono ? 'font-mono' : ''}`}>{value}</div>
         ) : (
-          <div style={{ fontSize: "11px", color: "#cbd5e1", fontStyle: "italic" }}>—</div>
+          <div className="text-[11px] text-slate-300 italic">—</div>
         )}
       </div>
     </div>
   );
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 50, padding: "16px",
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: "20px",
-        width: "100%", maxWidth: "440px",
-        maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.18)",
-      }}>
-        <div style={{
-          padding: "18px 22px", borderBottom: "1px solid #f1f5f9",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          position: "sticky", top: 0, background: "#fff", zIndex: 2,
-          borderRadius: "20px 20px 0 0",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{
-              width: "46px", height: "46px", borderRadius: "50%",
-              background: `linear-gradient(135deg, ${G}, #4c9f70)`,
-              display: "flex", alignItems: "center",
-              justifyContent: "center", fontSize: "18px", fontWeight: "800",
-              color: "#fff", flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(26,107,60,0.3)",
-            }}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[18px] font-extrabold text-white flex-shrink-0 shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${G}, #4c9f70)`, boxShadow: '0 4px 12px rgba(26,107,60,0.3)' }}>
               {avatarLetter}
             </div>
             <div>
-              <h2 style={{ fontSize: "14px", fontWeight: "900", color: "#0f172a", margin: 0 }}>
-                {displayName}
-              </h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
-                <span style={{
-                  fontSize: "10px", fontWeight: "700",
-                  padding: "2px 8px", borderRadius: "20px",
-                  background: "#f0fdf4", color: G,
-                  border: "1px solid #d1fae5",
-                }}>
+              <h2 className="text-sm font-black text-slate-900 m-0">{displayName}</h2>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-[#1a6b3c] border border-green-100">
                   {customer.status || "Standard"}
                 </span>
               </div>
             </div>
           </div>
-          <button onClick={onClose} style={{
-            background: "#f8fafc", border: "1px solid #e2e8f0",
-            borderRadius: "10px", padding: "6px", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <X size={15} color="#64748b" />
+          <button onClick={onClose} className="bg-slate-50 border border-slate-200 rounded-xl p-1.5 cursor-pointer flex items-center justify-center hover:bg-slate-100">
+            <X size={15} className="text-slate-500" />
           </button>
         </div>
 
-        <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            <div style={{ background: "#f8fafc", borderRadius: "10px", padding: "12px", textAlign: "center", border: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b" }}>{customer.orderCount ?? 0}</div>
-              <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>Total Orders</div>
+        <div className="px-5 py-4 flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-200">
+              <div className="text-[22px] font-extrabold text-slate-800">{customer.orderCount ?? 0}</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Total Orders</div>
             </div>
-            <div style={{ background: "#f8fafc", borderRadius: "10px", padding: "12px", textAlign: "center", border: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: "16px", fontWeight: "800", color: "#1e293b" }}>{formatINR(customer.totalSpend ?? 0)}</div>
-              <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>Total Spent</div>
+            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-200">
+              <div className="text-base font-extrabold text-slate-800">{formatINR(customer.totalSpend ?? 0)}</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Total Spent</div>
             </div>
           </div>
 
-          <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "4px 8px" }}>
-            <p style={{ fontSize: "9px", fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", padding: "8px 6px 2px", margin: 0 }}>
-              Identity
-            </p>
-            <InfoRow icon={<Hash  size={12} color={G} />} label="User ID"  value={id}    mono accent />
-            <InfoRow icon={<Mail  size={12} color={G} />} label="Email"    value={email} />
-            <InfoRow icon={<Phone size={12} color={G} />} label="Phone"    value={phone} />
+          <div className="bg-slate-50 rounded-xl px-2 py-1">
+            <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest px-1.5 pt-2 pb-0.5 m-0">Identity</p>
+            <InfoRow icon={<Hash size={12} color={G} />}  label="User ID" value={id}    mono accent />
+            <InfoRow icon={<Mail size={12} color={G} />}  label="Email"   value={email} />
+            <InfoRow icon={<Phone size={12} color={G} />} label="Phone"   value={phone} />
           </div>
 
           {(customer.orderIds || []).filter(Boolean).length > 0 && (
-            <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "8px 14px" }}>
-              <p style={{ fontSize: "9px", fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>
-                Order IDs
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div className="bg-slate-50 rounded-xl px-3.5 py-2">
+              <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 m-0">Order IDs</p>
+              <div className="flex flex-col gap-1.5">
                 {customer.orderIds.filter(Boolean).slice(0, 8).map((oid, i) => (
-                  <div key={i} style={{
-                    fontFamily: "monospace", fontSize: "11px", fontWeight: "600",
-                    color: G, background: "#e8f5ee", padding: "4px 10px", borderRadius: "6px",
-                  }}>
+                  <div key={i} className="font-mono text-[11px] font-semibold text-[#1a6b3c] bg-green-50 px-2.5 py-1 rounded-md">
                     #{typeof oid === "string" ? oid : oid?._id || String(oid)}
                   </div>
                 ))}
@@ -282,22 +178,14 @@ function CustomerDetailsModal({ customer, onClose }) {
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button onClick={onClose} style={{
-              flex: 1, padding: "10px", border: "1px solid #e2e8f0",
-              borderRadius: "10px", background: "none",
-              fontSize: "12px", cursor: "pointer", color: "#475569", fontWeight: "600",
-            }}>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl bg-transparent text-xs cursor-pointer text-slate-500 font-semibold hover:bg-slate-50">
               Close
             </button>
             <button
               onClick={() => alert(`View orders for: ${id}`)}
-              style={{
-                flex: 1, padding: "10px", border: "none",
-                borderRadius: "10px", background: `linear-gradient(135deg, ${G}, #4c9f70)`,
-                color: "#fff", fontSize: "12px", fontWeight: "700", cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(26,107,60,0.3)",
-              }}
+              className="flex-1 py-2.5 border-0 rounded-xl text-white text-xs font-bold cursor-pointer hover:opacity-90"
+              style={{ background: `linear-gradient(135deg, ${G}, #4c9f70)`, boxShadow: '0 4px 12px rgba(26,107,60,0.3)' }}
             >
               View Orders
             </button>
@@ -308,9 +196,7 @@ function CustomerDetailsModal({ customer, onClose }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════ */
+/* ── Main Component ── */
 export default function Customers() {
   const [currentPage,      setCurrentPage]      = useState(1);
   const [searchQuery,      setSearchQuery]      = useState("");
@@ -331,72 +217,48 @@ export default function Customers() {
     return 0;
   }, [stats]);
 
-  const newCustomers = useMemo(() => {
-    if (!stats) return 0;
-    return stats?.data?.newCustomers ?? stats?.newCustomers ?? 0;
-  }, [stats]);
-
-  const repeatCustomers = useMemo(() => {
-    if (!stats) return 0;
-    return stats?.data?.repeatCustomers ?? stats?.repeatCustomers ?? 0;
-  }, [stats]);
+  const newCustomers    = useMemo(() => { if (!stats) return 0; return stats?.data?.newCustomers ?? stats?.newCustomers ?? 0; }, [stats]);
+  const repeatCustomers = useMemo(() => { if (!stats) return 0; return stats?.data?.repeatCustomers ?? stats?.repeatCustomers ?? 0; }, [stats]);
 
   const customers  = data?.data || [];
   const totalPages = data?.pagination?.pages || 1;
+  const displayTotalCustomers = totalCustomers > 0 ? totalCustomers : (data?.pagination?.total ?? data?.total ?? customers.length ?? 0);
 
-  const displayTotalCustomers = totalCustomers > 0
-    ? totalCustomers
-    : (data?.pagination?.total ?? data?.total ?? customers.length ?? 0);
-
-  /* ── Weekly chart data — dynamic using real customer stats ── */
   const weeklyData = useMemo(() => {
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-
     const now = new Date();
     const todayDay = now.getDay();
     const diffToMonday = (todayDay === 0 ? -6 : 1 - todayDay);
     const startOfThisWeek = new Date(now);
     startOfThisWeek.setDate(now.getDate() + diffToMonday + (weekOffset * 7));
     startOfThisWeek.setHours(0, 0, 0, 0);
-
     const endOfWeek = new Date(startOfThisWeek);
     endOfWeek.setDate(startOfThisWeek.getDate() + 7);
 
-    // 1. Try server-provided weeklyGrowth (array of {day, count})
     const serverWeekly = stats?.weeklyGrowth || stats?.data?.weeklyGrowth || null;
     if (Array.isArray(serverWeekly) && serverWeekly.length > 0 && weekOffset === 0) {
       serverWeekly.forEach(item => {
         const dayName = item.day || item._id;
-        if (counts.hasOwnProperty(dayName)) {
-          counts[dayName] = item.count ?? 0;
-        }
+        if (counts.hasOwnProperty(dayName)) counts[dayName] = item.count ?? 0;
       });
       return dayNames.map(day => ({ day, count: counts[day] }));
     }
 
-    // 2. Try to spread the newCustomers count across today's day of the week
-    //    This makes the chart reflect real data even without per-day breakdown.
     if (weekOffset === 0 && newCustomers > 0) {
       const shortDay = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const todayName = shortDay[now.getDay()];
-      if (counts.hasOwnProperty(todayName)) {
-        counts[todayName] = newCustomers;
-      }
+      if (counts.hasOwnProperty(todayName)) counts[todayName] = newCustomers;
     }
 
-    // 3. Derive from customer list createdAt if available
     const shortDay = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
     const allCustomersForChart = customers.length > 0 ? customers : [];
     allCustomersForChart.forEach(c => {
       if (!c.createdAt) return;
       const d = new Date(c.createdAt);
       if (d >= startOfThisWeek && d < endOfWeek) {
         const dayName = shortDay[d.getDay()];
-        if (counts.hasOwnProperty(dayName)) {
-          counts[dayName] += 1;
-        }
+        if (counts.hasOwnProperty(dayName)) counts[dayName] += 1;
       }
     });
 
@@ -406,9 +268,7 @@ export default function Customers() {
       const d = new Date(c.createdAt);
       if (d >= startOfThisWeek && d < endOfWeek) {
         const dayName = shortDay[d.getDay()];
-        if (counts.hasOwnProperty(dayName)) {
-          counts[dayName] += 1;
-        }
+        if (counts.hasOwnProperty(dayName)) counts[dayName] += 1;
       }
     });
 
@@ -437,21 +297,19 @@ export default function Customers() {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case "VIP":     return { background: "#f0fdf4", color: G, border: "1px solid #d1fae5" };
-      case "Active":  return { background: "#f0fdf4", color: G, border: "1px solid #d1fae5" };
-      default:        return { background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" };
+      case "VIP":
+      case "Active": return "bg-green-50 text-[#1a6b3c] border border-green-100";
+      default:       return "bg-slate-50 text-slate-500 border border-slate-200";
     }
   };
 
   if (statsError || customersError) {
     return (
-      <div style={{ width: "100%", minHeight: "calc(100vh - 60px)", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ background: "#fff", borderRadius: "12px", border: "1px solid #fecaca", padding: "24px", textAlign: "center" }}>
-          <p style={{ color: "#ef4444", marginBottom: "8px" }}>Error loading data</p>
-          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>
-            {statsError?.message || customersError?.message || "Please check your API connection"}
-          </p>
-          <button onClick={() => window.location.reload()} style={{ padding: "8px 20px", background: G, color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", cursor: "pointer" }}>
+      <div className="w-full min-h-[calc(100vh-60px)] bg-slate-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl border border-red-200 p-6 text-center">
+          <p className="text-red-500 mb-2">Error loading data</p>
+          <p className="text-xs text-slate-500 mb-4">{statsError?.message || customersError?.message || "Please check your API connection"}</p>
+          <button onClick={() => window.location.reload()} className="px-5 py-2 text-white border-0 rounded-lg text-xs cursor-pointer hover:opacity-90" style={{ background: G }}>
             Retry
           </button>
         </div>
@@ -460,55 +318,50 @@ export default function Customers() {
   }
 
   return (
-    <div style={{ width: "100%", minHeight: "calc(100vh - 60px)", background: "#f8fafc", fontFamily: "sans-serif" }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .cust-row:hover { background: #f8fafc !important; }
-      `}</style>
-      <div style={{ padding: "20px" }}>
+    <div className="w-full min-h-[calc(100vh-60px)] bg-slate-50 font-sans">
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } .cust-row:hover { background: #f8fafc !important; }`}</style>
+      <div className="p-5">
 
-        {/* ── Top bar ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-5 flex-wrap gap-2.5">
           <div>
-            <span style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a" }}>Customer Dashboard</span>
-            <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>Manage and monitor your customer base</p>
+            <span className="text-lg font-extrabold text-slate-900">Customer Dashboard</span>
+            <p className="text-[11px] text-slate-400 mt-0.5 mb-0">Manage and monitor your customer base</p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "8px 14px", width: "240px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-              <Search size={13} color="#94a3b8" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3.5 py-2 w-60 shadow-sm">
+              <Search size={13} className="text-slate-400" />
               <input
-                type="text"
-                placeholder="Search by name, email or phone…"
+                type="text" placeholder="Search by name, email or phone…"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                style={{ border: "none", outline: "none", width: "100%", background: "transparent", fontSize: "12px", color: "#0f172a" }}
+                className="border-0 outline-none w-full bg-transparent text-xs text-slate-900"
               />
             </div>
-            <Bell size={18} color="#64748b" style={{ cursor: "pointer" }} />
-            <Zap  size={18} color="#64748b" style={{ cursor: "pointer" }} />
-            <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: `linear-gradient(135deg, ${G}, #4c9f70)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", color: "#fff", cursor: "pointer", boxShadow: "0 2px 8px rgba(26,107,60,0.3)" }}>
-              A
-            </div>
+            <Bell size={18} className="text-slate-500 cursor-pointer" />
+            <Zap  size={18} className="text-slate-500 cursor-pointer" />
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold text-white cursor-pointer"
+              style={{ background: `linear-gradient(135deg, ${G}, #4c9f70)`, boxShadow: '0 2px 8px rgba(26,107,60,0.3)' }}
+            >A</div>
           </div>
         </div>
 
-        {/* ── Section header ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <span style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>Overview</span>
-          <div style={{ position: "relative" }}>
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-bold text-slate-900">Overview</span>
+          <div className="relative">
             <button
               onClick={() => setShowMoreActions(!showMoreActions)}
-              style={{ display: "flex", alignItems: "center", gap: "4px", background: "#fff", color: "#475569", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "7px 14px", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}
+              className="flex items-center gap-1 bg-white text-slate-500 border border-slate-200 rounded-lg px-3.5 py-1.5 text-xs cursor-pointer font-semibold hover:bg-slate-50"
             >
               More Action <ChevronDown size={12} />
             </button>
             {showMoreActions && (
-              <div style={{ position: "absolute", top: "100%", right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "6px 0", minWidth: "160px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 10, marginTop: "4px" }}>
+              <div className="absolute top-full right-0 bg-white border border-slate-200 rounded-xl py-1.5 min-w-[160px] shadow-xl z-10 mt-1">
                 {["Export CSV", "Import", "Bulk Email", "Bulk SMS", "Settings"].map(a => (
-                  <div key={a} onClick={() => { alert(`${a} clicked`); setShowMoreActions(false); }} style={{ padding: "9px 14px", fontSize: "12px", cursor: "pointer", color: "#475569" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
+                  <div key={a} onClick={() => { alert(`${a} clicked`); setShowMoreActions(false); }}
+                    className="px-3.5 py-2 text-xs cursor-pointer text-slate-500 hover:bg-slate-50">
                     {a}
                   </div>
                 ))}
@@ -517,63 +370,34 @@ export default function Customers() {
           </div>
         </div>
 
-        {/* ── Stat Cards ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px", marginBottom: "20px" }}>
-          <StatCard
-            title="Total Customers" value={displayTotalCustomers}
-            badge="↑ 12.5%" badgeUp sub="vs last month"
-            loading={statsLoading && isLoading}
-            icon={<Users size={16} color={G} />}
-          />
-          <StatCard
-            title="New Customers" value={newCustomers}
-            badge="↑ 23%" badgeUp sub="This month"
-            loading={statsLoading}
-            icon={<TrendingUp size={16} color={G} />}
-          />
-          <StatCard
-            title="Repeat Customers" value={repeatCustomers}
-            badge="↑ 8.2%" badgeUp sub="Returning rate"
-            loading={statsLoading}
-            icon={<UserCheck size={16} color={G} />}
-          />
-          <StatCard
-            title="Growth" value="24%"
-            badge="↑ 5%" badgeUp sub="vs last month"
-            loading={false}
-            icon={<BarChart2 size={16} color={G} />}
-          />
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <StatCard title="Total Customers" value={displayTotalCustomers} badge="↑ 12.5%" badgeUp sub="vs last month" loading={statsLoading && isLoading} icon={<Users size={16} color={G} />} />
+          <StatCard title="New Customers"   value={newCustomers}          badge="↑ 23%"   badgeUp sub="This month"    loading={statsLoading}           icon={<TrendingUp size={16} color={G} />} />
+          <StatCard title="Repeat Customers" value={repeatCustomers}      badge="↑ 8.2%"  badgeUp sub="Returning rate" loading={statsLoading}          icon={<UserCheck size={16} color={G} />} />
+          <StatCard title="Growth"           value="24%"                  badge="↑ 5%"    badgeUp sub="vs last month"  loading={false}                 icon={<BarChart2 size={16} color={G} />} />
         </div>
 
-        {/* ── Weekly Growth Chart ── */}
-        <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", padding: "20px", marginBottom: "20px", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+        {/* Weekly Growth Chart */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>Customer Growth</span>
-              <p style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px", marginBottom: 0 }}>
-                Weekly new customer activity · {weekRangeLabel}
-              </p>
+              <span className="text-sm font-bold text-slate-900">Customer Growth</span>
+              <p className="text-[10px] text-slate-400 mt-0.5 mb-0">Weekly new customer activity · {weekRangeLabel}</p>
             </div>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <div style={{ display: "flex", border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" }}>
-                <button
-                  onClick={() => setWeekOffset(w => w - 1)}
-                  style={{ padding: "5px 10px", background: "none", border: "none", cursor: "pointer", color: "#475569", display: "flex", alignItems: "center", borderRight: "1px solid #e2e8f0" }}
-                >
+            <div className="flex gap-2 items-center">
+              <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+                <button onClick={() => setWeekOffset(w => w - 1)}
+                  className="px-2.5 py-1 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center border-r border-slate-200 hover:bg-slate-50">
                   <ChevronLeft size={13} />
                 </button>
-                <span style={{ padding: "5px 12px", fontSize: "11px", fontWeight: "600", color: "#1e293b", display: "flex", alignItems: "center", background: "#f8fafc", whiteSpace: "nowrap" }}>
-                  {weekLabel}
-                </span>
-                <button
-                  onClick={() => setWeekOffset(w => Math.min(0, w + 1))}
-                  disabled={weekOffset === 0}
-                  style={{ padding: "5px 10px", background: "none", border: "none", cursor: weekOffset === 0 ? "not-allowed" : "pointer", color: weekOffset === 0 ? "#cbd5e1" : "#475569", display: "flex", alignItems: "center", borderLeft: "1px solid #e2e8f0" }}
-                >
+                <span className="px-3 py-1 text-[11px] font-semibold text-slate-800 flex items-center bg-slate-50 whitespace-nowrap">{weekLabel}</span>
+                <button onClick={() => setWeekOffset(w => Math.min(0, w + 1))} disabled={weekOffset === 0}
+                  className="px-2.5 py-1 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center border-l border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronRight size={13} />
                 </button>
               </div>
-              <button style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: "7px", padding: "5px 10px", background: "none", cursor: "pointer", fontWeight: "600" }}>
+              <button className="flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-lg px-2.5 py-1 bg-transparent cursor-pointer font-semibold hover:bg-slate-50">
                 <Filter size={11} /> Filter
               </button>
             </div>
@@ -581,30 +405,22 @@ export default function Customers() {
 
           <CustomerWeeklyChart data={weeklyData} loading={statsLoading} />
 
-          {/* Summary footer */}
           {!statsLoading && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "14px", paddingTop: "14px", borderTop: "1px solid #f1f5f9", flexWrap: "wrap", gap: "8px" }}>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-slate-100 flex-wrap gap-2">
+              <div className="flex gap-2.5 flex-wrap">
                 {weeklyData.filter(d => d.count > 0).map(d => (
-                  <div key={d.day} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: G }} />
-                    <span style={{ fontSize: "10px", color: "#475569", fontWeight: "600" }}>
-                      {d.day}: <strong>{d.count}</strong>
-                    </span>
+                  <div key={d.day} className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full" style={{ background: G }} />
+                    <span className="text-[10px] text-slate-500 font-semibold">{d.day}: <strong>{d.count}</strong></span>
                   </div>
                 ))}
-                {weeklyData.every(d => d.count === 0) && (
-                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>No new customers this week.</span>
-                )}
+                {weeklyData.every(d => d.count === 0) && <span className="text-[10px] text-slate-400">No new customers this week.</span>}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {/* Show total new customers from stats as context */}
+              <div className="flex items-center gap-2">
                 {newCustomers > 0 && totalForWeek === 0 && weekOffset === 0 && (
-                  <div style={{ fontSize: "10px", color: "#94a3b8", fontStyle: "italic" }}>
-                    {newCustomers} new this month
-                  </div>
+                  <div className="text-[10px] text-slate-400 italic">{newCustomers} new this month</div>
                 )}
-                <div style={{ fontSize: "11px", fontWeight: "700", color: G, background: "#f0fdf4", padding: "4px 12px", borderRadius: "20px", border: "1px solid #d1fae5" }}>
+                <div className="text-[11px] font-bold text-[#1a6b3c] bg-green-50 px-3 py-1 rounded-full border border-green-100">
                   {totalForWeek > 0 ? `${totalForWeek} this week` : newCustomers > 0 && weekOffset === 0 ? `${newCustomers} new customers` : "0 this week"}
                 </div>
               </div>
@@ -612,33 +428,33 @@ export default function Customers() {
           )}
         </div>
 
-        {/* ── Customer Table ── */}
-        <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", padding: "20px", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        {/* Customer Table */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>Customer List</span>
-              <p style={{ fontSize: "10px", color: "#94a3b8", margin: "2px 0 0" }}>
+              <span className="text-sm font-bold text-slate-900">Customer List</span>
+              <p className="text-[10px] text-slate-400 mt-0.5 mb-0">
                 {isFetching ? "Refreshing…" : `${displayTotalCustomers} total · ${customers.length} shown`}
               </p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <SlidersHorizontal size={15} color="#64748b" style={{ cursor: "pointer" }} />
-              <ArrowLeftRight    size={15} color="#64748b" style={{ cursor: "pointer" }} />
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal size={15} className="text-slate-500 cursor-pointer" />
+              <ArrowLeftRight    size={15} className="text-slate-500 cursor-pointer" />
             </div>
           </div>
 
           {isLoading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "40px" }}>
-              <div style={{ width: "32px", height: "32px", border: "3px solid #e2e8f0", borderTopColor: G, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <div className="flex justify-center p-10">
+              <div className="w-8 h-8 border-[3px] border-slate-200 border-t-[#1a6b3c] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
             </div>
           ) : (
             <>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-xs" style={{ minWidth: '700px' }}>
                   <thead>
-                    <tr style={{ background: "#f0fdf4" }}>
+                    <tr className="bg-green-50">
                       {["No", "Customer", "Phone", "Email", "Orders", "Spend", "Status", ""].map((h, i) => (
-                        <th key={i} style={{ padding: "10px 12px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                        <th key={i} className="px-3 py-2.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                           {h}
                         </th>
                       ))}
@@ -647,8 +463,8 @@ export default function Customers() {
                   <tbody>
                     {customers.length === 0 ? (
                       <tr>
-                        <td colSpan="8" style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>
-                          <Users size={32} color="#e2e8f0" style={{ display: "block", margin: "0 auto 8px" }} />
+                        <td colSpan="8" className="p-10 text-center text-slate-400">
+                          <Users size={32} className="text-slate-200 block mx-auto mb-2" />
                           No customers found
                         </td>
                       </tr>
@@ -658,79 +474,56 @@ export default function Customers() {
                         return (
                           <tr
                             key={id || idx}
-                            className="cust-row"
-                            style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer", transition: "background 0.15s" }}
+                            className="cust-row border-b border-slate-100 cursor-pointer transition-colors"
                             onClick={() => setSelectedCustomer(customer)}
                           >
-                            <td style={{ padding: "12px", color: "#94a3b8", fontSize: "11px", fontWeight: "600" }}>
+                            <td className="px-3 py-3 text-slate-400 text-[11px] font-semibold">
                               {(currentPage - 1) * itemsPerPage + idx + 1}
                             </td>
-
-                            <td style={{ padding: "12px" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "140px" }}>
-                                <div style={{
-                                  width: "32px", height: "32px", borderRadius: "50%",
-                                  background: `linear-gradient(135deg, ${G}, #4c9f70)`,
-                                  display: "flex", alignItems: "center", justifyContent: "center",
-                                  fontSize: "13px", fontWeight: "700", color: "#fff", flexShrink: 0,
-                                }}>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-2.5 min-w-[140px]">
+                                <div
+                                  className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0"
+                                  style={{ background: `linear-gradient(135deg, ${G}, #4c9f70)` }}
+                                >
                                   {avatarLetter}
                                 </div>
                                 <div>
-                                  <div style={{ fontSize: "12px", fontWeight: "700", color: "#0f172a", whiteSpace: "nowrap", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                    {displayName}
-                                  </div>
-                                  <div style={{ fontFamily: "monospace", fontSize: "9px", fontWeight: "600", color: G, opacity: 0.8 }}>
-                                    {id ? `…${id.slice(-8)}` : "—"}
-                                  </div>
+                                  <div className="text-xs font-bold text-slate-900 whitespace-nowrap max-w-[120px] overflow-hidden text-ellipsis">{displayName}</div>
+                                  <div className="font-mono text-[9px] font-semibold text-[#1a6b3c] opacity-80">{id ? `…${id.slice(-8)}` : "—"}</div>
                                 </div>
                               </div>
                             </td>
-
-                            <td style={{ padding: "12px", whiteSpace: "nowrap" }}>
+                            <td className="px-3 py-3 whitespace-nowrap">
                               {phone ? (
-                                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                  <Phone size={11} color="#94a3b8" />
-                                  <span style={{ fontSize: "11px", color: "#475569", fontWeight: "600" }}>{phone}</span>
+                                <div className="flex items-center gap-1">
+                                  <Phone size={11} className="text-slate-400" />
+                                  <span className="text-[11px] text-slate-500 font-semibold">{phone}</span>
                                 </div>
-                              ) : (
-                                <span style={{ color: "#cbd5e1", fontSize: "11px" }}>—</span>
-                              )}
+                              ) : <span className="text-[11px] text-slate-300">—</span>}
                             </td>
-
-                            <td style={{ padding: "12px", color: "#475569", fontSize: "11px", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={email || ""}>
+                            <td className="px-3 py-3 text-slate-500 text-[11px] max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap" title={email || ""}>
                               {email ? (
-                                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                  <Mail size={11} color="#94a3b8" />
-                                  <span>{email}</span>
+                                <div className="flex items-center gap-1">
+                                  <Mail size={11} className="text-slate-400" /><span>{email}</span>
                                 </div>
-                              ) : (
-                                <span style={{ color: "#cbd5e1" }}>—</span>
-                              )}
+                              ) : <span className="text-slate-300">—</span>}
                             </td>
-
-                            <td style={{ padding: "12px", color: "#475569", fontWeight: "700" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                <ShoppingBag size={11} color="#94a3b8" />
+                            <td className="px-3 py-3 text-slate-500 font-bold">
+                              <div className="flex items-center gap-1">
+                                <ShoppingBag size={11} className="text-slate-400" />
                                 {customer.orderCount ?? 0}
                               </div>
                             </td>
-
-                            <td style={{ padding: "12px", fontWeight: "700", color: "#0f172a" }}>
-                              {formatINR(customer.totalSpend ?? 0)}
-                            </td>
-
-                            <td style={{ padding: "12px" }}>
-                              <span style={{ fontSize: "10px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px", ...getStatusStyle(customer.status) }}>
+                            <td className="px-3 py-3 font-bold text-slate-900">{formatINR(customer.totalSpend ?? 0)}</td>
+                            <td className="px-3 py-3">
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${getStatusStyle(customer.status)}`}>
                                 {customer.status || "Inactive"}
                               </span>
                             </td>
-
-                            <td style={{ padding: "12px" }}>
-                              <button
-                                onClick={e => { e.stopPropagation(); setSelectedCustomer(customer); }}
-                                style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
-                              >
+                            <td className="px-3 py-3">
+                              <button onClick={e => { e.stopPropagation(); setSelectedCustomer(customer); }}
+                                className="bg-transparent border-0 cursor-pointer text-slate-400 hover:text-slate-600">
                                 <MoreHorizontal size={14} />
                               </button>
                             </td>
@@ -742,44 +535,39 @@ export default function Customers() {
                 </table>
               </div>
 
-              {/* ── Pagination ── */}
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px", paddingTop: "12px", borderTop: "1px solid #f1f5f9" }}>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", fontSize: "12px", fontWeight: "600", color: currentPage === 1 ? "#cbd5e1" : "#475569", cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
+                    className="flex items-center gap-1 bg-transparent border-0 text-xs font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                    style={{ color: currentPage === 1 ? undefined : '#475569' }}
                   >
                     <ChevronLeft size={14} /> Previous
                   </button>
-
-                  <div style={{ display: "flex", gap: "4px" }}>
+                  <div className="flex gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        style={{ width: "30px", height: "30px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "11px", fontWeight: "700", cursor: "pointer", background: currentPage === p ? G : "none", color: currentPage === p ? "#fff" : "#475569" }}
-                      >
-                        {p}
-                      </button>
+                      <button key={p} onClick={() => setCurrentPage(p)}
+                        className="w-7 h-7 rounded-lg border border-slate-200 text-[11px] font-bold cursor-pointer transition-colors"
+                        style={{ background: currentPage === p ? G : 'transparent', color: currentPage === p ? '#fff' : '#475569' }}
+                      >{p}</button>
                     ))}
                     {totalPages > 5 && (
                       <>
-                        <span style={{ display: "flex", alignItems: "center", padding: "0 4px", fontSize: "12px", color: "#94a3b8" }}>…</span>
-                        <button
-                          onClick={() => setCurrentPage(totalPages)}
-                          style={{ width: "30px", height: "30px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "11px", fontWeight: "700", cursor: "pointer", background: currentPage === totalPages ? G : "none", color: currentPage === totalPages ? "#fff" : "#475569" }}
-                        >
-                          {totalPages}
-                        </button>
+                        <span className="flex items-center px-1 text-xs text-slate-400">…</span>
+                        <button onClick={() => setCurrentPage(totalPages)}
+                          className="w-7 h-7 rounded-lg border border-slate-200 text-[11px] font-bold cursor-pointer"
+                          style={{ background: currentPage === totalPages ? G : 'transparent', color: currentPage === totalPages ? '#fff' : '#475569' }}
+                        >{totalPages}</button>
                       </>
                     )}
                   </div>
-
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", fontSize: "12px", fontWeight: "600", color: currentPage === totalPages ? "#cbd5e1" : "#475569", cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
+                    className="flex items-center gap-1 bg-transparent border-0 text-xs font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                    style={{ color: currentPage === totalPages ? undefined : '#475569' }}
                   >
                     Next <ChevronRight size={14} />
                   </button>
@@ -791,10 +579,7 @@ export default function Customers() {
       </div>
 
       {selectedCustomer && (
-        <CustomerDetailsModal
-          customer={selectedCustomer}
-          onClose={() => setSelectedCustomer(null)}
-        />
+        <CustomerDetailsModal customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} />
       )}
     </div>
   );

@@ -29,7 +29,6 @@ export default function Login({ setIsAuthenticated }) {
       const data = res.data;
 
       if (res.status === 200) {
-        // We only care about role now, token is in the httpOnly cookie
         dispatch(setCredentials({ role: data.role }));
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('role', data.role);
@@ -46,132 +45,64 @@ export default function Login({ setIsAuthenticated }) {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      padding: '24px'
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '400px',
-        background: '#fff',
-        padding: '40px',
-        borderRadius: '24px',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        border: '1px solid rgba(255, 255, 255, 0.8)'
-      }}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200 p-6">
+      <div className="w-full max-w-sm bg-white p-10 rounded-3xl shadow-2xl border border-white/80">
+
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '24px',
-            margin: '0 auto 16px',
-            boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.4)'
-          }}>D</div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>Welcome Back</h1>
-          <p style={{ fontSize: '14px', color: '#64748b' }}>Please enter your details to sign in</p>
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-extrabold text-2xl mx-auto mb-4 shadow-lg shadow-emerald-500/40">
+            D
+          </div>
+          <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Welcome Back</h1>
+          <p className="text-sm text-slate-500">Please enter your details to sign in</p>
         </div>
 
         {error && (
-          <div style={{
-            padding: '12px',
-            borderRadius: '12px',
-            background: '#fef2f2',
-            border: '1px solid #fee2e2',
-            color: '#ef4444',
-            fontSize: '13px',
-            marginBottom: '20px',
-            textAlign: 'center',
-            fontWeight: 500
-          }}>
+          <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-[13px] mb-5 text-center font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Email Address</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <label className="block text-[13px] font-semibold text-slate-500 mb-2">Email Address</label>
+            <div className="relative">
+              <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@gmail.com"
-
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 40px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  color: '#0f172a',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
+                className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 outline-none transition-all box-border focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
               />
             </div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <label className="block text-[13px] font-semibold text-slate-500 mb-2">Password</label>
+            <div className="relative">
+              <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                style={{
-                  width: '100%',
-                  padding: '12px 40px 12px 40px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  color: '#0f172a',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
+                className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 outline-none transition-all box-border focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#94a3b8',
-                  padding: '4px'
-                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate-400 p-1"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="button" style={{ fontSize: '13px', fontWeight: 600, color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <div className="flex justify-end">
+            <button type="button" className="text-[13px] font-semibold text-emerald-500 bg-transparent border-none cursor-pointer">
               Forgot password?
             </button>
           </div>
@@ -179,31 +110,18 @@ export default function Login({ setIsAuthenticated }) {
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.4)'
-            }}
+            className="w-full py-3 bg-gradient-to-r from-emerald-400 to-emerald-600 text-white border-none rounded-xl text-[15px] font-bold cursor-pointer transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-400/40 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Sign In'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '32px' }}>
-          <p style={{ fontSize: '13px', color: '#64748b' }}>
-            Don't have an account? <button style={{ fontWeight: 700, color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}>Contact support</button>
+        <div className="text-center mt-8">
+          <p className="text-[13px] text-slate-500">
+            Don't have an account?{' '}
+            <button className="font-bold text-emerald-500 bg-transparent border-none cursor-pointer">
+              Contact support
+            </button>
           </p>
         </div>
       </div>

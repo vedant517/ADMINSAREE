@@ -49,169 +49,38 @@ const Products = () => {
 
   return (
     <>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-        .products-wrapper {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          padding: 24px;
-        }
-
-        /* ── Header ── */
-        .products-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-        .products-header-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-        .products-header-right {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .products-search-wrap {
-          position: relative;
-        }
-        .products-search-wrap svg {
-          position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          pointer-events: none;
-          color: #94a3b8;
-        }
-        .products-search-input {
-          padding: 12px 16px 12px 42px;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 14px;
-          font-size: 14px;
-          font-weight: 500;
-          outline: none;
-          width: 240px;
-        }
-
-        /* ── Table toolbar ── */
-        .products-toolbar {
-          padding: 20px 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 12px;
-          border-bottom: 1px solid #f8fafc;
-          background: rgba(248,250,252,0.5);
-        }
-        .products-tabs {
-          display: flex;
-          gap: 4px;
-          background: #f1f5f9;
-          padding: 4px;
-          border-radius: 14px;
-          flex-wrap: wrap;
-        }
-
-        /* ── Pagination footer ── */
-        .products-footer {
-          padding: 20px 24px;
-          background: rgba(248,250,252,0.5);
-          border-top: 1px solid #f8fafc;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        /* ── Responsive breakpoints ── */
-        @media (max-width: 768px) {
-          .products-wrapper {
-            padding: 16px;
-            gap: 16px;
-          }
-          .products-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          .products-header-right {
-            width: 100%;
-          }
-          .products-search-input {
-            width: 100%;
-          }
-          .products-search-wrap {
-            width: 100%;
-          }
-          .products-toolbar {
-            padding: 16px;
-          }
-          .products-tabs {
-            width: 100%;
-          }
-          .products-footer {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 16px;
-          }
-          /* Hide less important table columns on mobile */
-          .col-taxonomy { display: none; }
-          .col-availability-label { display: none; }
-        }
-
-        @media (max-width: 480px) {
-          .products-header-right {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          .products-header-right button {
-            justify-content: center;
-          }
-          /* On very small screens also collapse price column */
-          .col-price { display: none; }
-        }
-      `}</style>
-
-      <div className="products-wrapper">
+      <div className="flex-1 min-w-0 flex flex-col gap-6 p-6 max-sm:p-4 max-sm:gap-4">
 
         {/* Header */}
-        <div className="products-header">
-          <div className="products-header-left">
-            <div style={{ width: '48px', height: '48px', background: '#10b981', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div className="flex justify-between items-center flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shrink-0">
               <Package size={24} color="white" />
             </div>
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>Products Catalog</h1>
-              <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '4px', marginBottom: 0 }}>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight m-0">Products Catalog</h1>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 mb-0">
                 Currently Managing {filtered.length} Unique Items
               </p>
             </div>
           </div>
 
-          <div className="products-header-right">
-            <div className="products-search-wrap">
-              <Search size={16} color="#94a3b8" />
+          <div className="flex items-center gap-3 flex-wrap max-sm:w-full max-sm:flex-col max-sm:items-stretch">
+            <div className="relative max-sm:w-full">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Deep catalog search..."
-                className="products-search-input"
+                className="pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none w-60 max-sm:w-full"
               />
             </div>
             <button
               onClick={() => navigate('/add-product')}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#10b981', color: 'white', padding: '12px 20px', borderRadius: '14px', border: 'none', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              className="flex items-center justify-center gap-2 bg-emerald-500 text-white px-5 py-3 rounded-2xl border-0 text-xs font-extrabold uppercase tracking-wide cursor-pointer whitespace-nowrap hover:bg-emerald-600 transition-colors max-sm:w-full"
             >
               <Plus size={18} strokeWidth={3} /> Add Product
             </button>
@@ -219,24 +88,31 @@ const Products = () => {
         </div>
 
         {/* Table Card */}
-        <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-md overflow-hidden">
 
           {/* Toolbar */}
-          <div className="products-toolbar">
-            <div className="products-tabs">
+          <div className="px-6 py-5 flex justify-between items-center flex-wrap gap-3 border-b border-slate-50 bg-slate-50/50 max-sm:px-4">
+            <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl flex-wrap">
               {['All Stock', 'Low Inventory', 'Out of Stock'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setFilterType(tab)}
-                  style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: filterType === tab ? 800 : 600, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: filterType === tab ? 'white' : 'transparent', color: filterType === tab ? '#10b981' : '#64748b', boxShadow: filterType === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}
+                  className={`px-4 py-2 rounded-xl text-sm border-0 cursor-pointer transition-all whitespace-nowrap ${
+                    filterType === tab
+                      ? 'bg-white font-extrabold text-emerald-500 shadow-sm'
+                      : 'bg-transparent font-semibold text-slate-500'
+                  }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               {[Filter, MoreHorizontal].map((Icon, i) => (
-                <button key={i} style={{ padding: '10px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '12px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button
+                  key={i}
+                  className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-500 cursor-pointer flex items-center justify-center hover:bg-slate-50 transition-colors"
+                >
                   <Icon size={18} />
                 </button>
               ))}
@@ -244,23 +120,23 @@ const Products = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '480px' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse" style={{ minWidth: '480px' }}>
               <thead>
-                <tr style={{ background: '#fafafa', borderBottom: '1px solid #f1f5f9' }}>
-                  <th style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                <tr className="bg-gray-50 border-b border-slate-100">
+                  <th className="px-5 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest text-left whitespace-nowrap">
                     Product Details
                   </th>
-                  <th className="col-taxonomy" style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                  <th className="px-5 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest text-left whitespace-nowrap max-md:hidden">
                     Taxonomy
                   </th>
-                  <th className="col-price" style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <th className="px-5 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest text-center whitespace-nowrap max-xs:hidden">
                     Price Points
                   </th>
-                  <th style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <th className="px-5 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">
                     Availability
                   </th>
-                  <th style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <th className="px-5 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -268,97 +144,98 @@ const Products = () => {
               <tbody>
                 {loading && filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ padding: '60px', textAlign: 'center' }}>
-                      <div style={{ width: '44px', height: '44px', border: '4px solid #d1fae5', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Syncing Catalog...</span>
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="w-11 h-11 border-4 border-emerald-100 border-t-emerald-500 rounded-full mx-auto mb-3" style={{ animation: 'spin 0.8s linear infinite' }} />
+                      <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Syncing Catalog...</span>
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ padding: '60px', textAlign: 'center' }}>
-                      <div style={{ width: '64px', height: '64px', background: '#f1f5f9', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                        <Package size={30} color="#94a3b8" />
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-3">
+                        <Package size={30} className="text-slate-400" />
                       </div>
-                      <p style={{ fontSize: '11px', fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em' }}>No products matched your parameters</p>
+                      <p className="text-xs font-extrabold text-slate-300 uppercase tracking-widest">No products matched your parameters</p>
                     </td>
                   </tr>
                 ) : (
                   filtered.map((product) => (
                     <tr
                       key={product._id}
-                      style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.1s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#fafafa'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      className="border-b border-slate-50 transition-colors hover:bg-gray-50"
                     >
-                      <td style={{ padding: '16px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                          <div style={{ width: '56px', height: '56px', background: '#f8fafc', borderRadius: '16px', overflow: 'hidden', border: '1px solid #f1f5f9', flexShrink: 0 }}>
+                      {/* Product Details */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shrink-0">
                             <img
                               src={product?.image && product.image.startsWith('http') ? product.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`}
                               onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`; }}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              className="w-full h-full object-cover"
                               alt={product?.name}
                             />
                           </div>
-                          <div style={{ minWidth: 0 }}>
-                            <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight m-0 overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
                               {product?.name || 'Unknown Item'}
                             </h4>
-                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 0 }}>
+                            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest mb-0">
                               UID: {product?._id ? product._id.slice(-6) : 'N/A'}
                             </p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="col-taxonomy" style={{ padding: '16px 20px' }}>
+                      {/* Taxonomy */}
+                      <td className="px-5 py-4 max-md:hidden">
                         <div>
-                          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#1e293b' }}>{product.mainCategory || 'General'}</div>
-                          <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginTop: '3px', textTransform: 'uppercase' }}>
+                          <div className="text-xs font-extrabold uppercase tracking-wide text-slate-800">{product.mainCategory || 'General'}</div>
+                          <div className="text-xs font-bold text-slate-400 mt-0.5 uppercase">
                             {product.categories?.join(', ') || 'Unassigned'}
                           </div>
                         </div>
                       </td>
 
-                      <td className="col-price" style={{ padding: '16px 20px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {/* Price */}
+                      <td className="px-5 py-4 text-center max-xs:hidden">
+                        <div className="flex flex-col items-center">
                           {product.discountPrice && product.discountPrice > 0 ? (
                             <>
-                              <span style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>{formatINR(product.discountPrice)}</span>
-                              <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', textDecoration: 'line-through' }}>{formatINR(product.price)}</span>
+                              <span className="text-lg font-black text-slate-900 tracking-tight">{formatINR(product.discountPrice)}</span>
+                              <span className="text-xs font-medium text-slate-400 line-through">{formatINR(product.price)}</span>
                             </>
                           ) : (
-                            <span style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>{formatINR(product.price)}</span>
+                            <span className="text-lg font-black text-slate-900 tracking-tight">{formatINR(product.price)}</span>
                           )}
                         </div>
                       </td>
 
-                      <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                        <span style={{
-                          display: 'inline-block', padding: '5px 14px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                          background: product.stock > 10 ? '#f0fdf4' : product.stock > 0 ? '#fffbeb' : '#fff1f2',
-                          color: product.stock > 10 ? '#059669' : product.stock > 0 ? '#d97706' : '#e11d48',
-                        }}>
+                      {/* Availability */}
+                      <td className="px-5 py-4 text-center">
+                        <span className={`inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide ${
+                          product.stock > 10
+                            ? 'bg-green-50 text-emerald-600'
+                            : product.stock > 0
+                            ? 'bg-yellow-50 text-yellow-600'
+                            : 'bg-red-50 text-rose-600'
+                        }`}>
                           {product.stock > 0 ? 'Available' : 'Depleted'}
                         </span>
-                        <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', marginTop: '4px', textTransform: 'uppercase' }}>{product.stock} units</div>
+                        <div className="text-xs font-extrabold text-slate-400 mt-1 uppercase">{product.stock} units</div>
                       </td>
 
-                      <td style={{ padding: '16px 20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      {/* Actions */}
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
                           <button
                             onClick={() => navigate(`/edit-product/${product._id}`)}
-                            style={{ padding: '8px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '10px', color: '#94a3b8', cursor: 'pointer', display: 'flex', transition: 'all 0.15s' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#94a3b8'; }}
+                            className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 cursor-pointer flex transition-all hover:bg-blue-50 hover:text-blue-500 hover:border-blue-100"
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(product._id)}
-                            style={{ padding: '8px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '10px', color: '#94a3b8', cursor: 'pointer', display: 'flex', transition: 'all 0.15s' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2'; e.currentTarget.style.color = '#e11d48'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#94a3b8'; }}
+                            className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 cursor-pointer flex transition-all hover:bg-red-50 hover:text-rose-600 hover:border-red-100"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -372,40 +249,40 @@ const Products = () => {
           </div>
 
           {/* Pagination Footer */}
-          <div className="products-footer">
-            <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#94a3b8', margin: 0 }}>
-              Records <span style={{ color: '#0f172a' }}>1 - {filtered.length}</span> of {(products || []).length} entries
+          <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-50 flex justify-between items-center flex-wrap gap-3 max-sm:flex-col max-sm:items-start max-sm:px-4">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-400 m-0">
+              Records <span className="text-slate-900">1 - {filtered.length}</span> of {(products || []).length} entries
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button style={{ padding: '8px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', cursor: 'not-allowed', opacity: 0.5 }}>Previous</button>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#10b981', color: 'white', border: 'none', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }}>1</button>
-                <button style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'white', border: '1px solid #f1f5f9', color: '#94a3b8', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>2</button>
+            <div className="flex items-center gap-2">
+              <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-400 cursor-not-allowed opacity-50">Previous</button>
+              <div className="flex gap-1.5">
+                <button className="w-9 h-9 rounded-xl bg-emerald-500 text-white border-0 text-sm font-extrabold cursor-pointer">1</button>
+                <button className="w-9 h-9 rounded-xl bg-white border border-slate-100 text-slate-400 text-sm font-bold cursor-pointer hover:bg-slate-50">2</button>
               </div>
-              <button style={{ padding: '8px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#475569', cursor: 'pointer' }}>Next</button>
+              <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors">Next</button>
             </div>
           </div>
         </div>
 
         {/* Delete Confirm Modal */}
         {deleteConfirm && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(8px)' }}>
-            <div style={{ background: 'white', padding: '40px', borderRadius: '28px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
-              <div style={{ width: '72px', height: '72px', background: '#fff1f2', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                <AlertCircle size={36} color="#e11d48" />
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-lg">
+            <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+              <div className="w-18 h-18 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-5" style={{ width: 72, height: 72 }}>
+                <AlertCircle size={36} className="text-rose-600" />
               </div>
-              <h3 style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: 0 }}>Purge Product?</h3>
-              <p style={{ fontSize: '14px', color: '#64748b', marginTop: '12px', lineHeight: 1.5 }}>This record will be permanently deleted from the primary database cluster.</p>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '28px' }}>
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight m-0">Purge Product?</h3>
+              <p className="text-sm text-slate-500 mt-3 leading-relaxed">This record will be permanently deleted from the primary database cluster.</p>
+              <div className="flex gap-3 mt-7">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '16px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer' }}
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-500 border-0 rounded-2xl text-xs font-extrabold uppercase tracking-wide cursor-pointer hover:bg-slate-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  style={{ flex: 1, padding: '14px', background: '#e11d48', color: 'white', border: 'none', borderRadius: '16px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer' }}
+                  className="flex-1 py-3.5 bg-rose-600 text-white border-0 rounded-2xl text-xs font-extrabold uppercase tracking-wide cursor-pointer hover:bg-rose-700 transition-colors"
                 >
                   Confirm Purge
                 </button>
@@ -416,9 +293,9 @@ const Products = () => {
 
         {/* Success Toast */}
         {successMessage && (
-          <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 1000, background: '#10b981', color: 'white', padding: '16px 24px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="fixed bottom-8 right-8 z-[1000] bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-lg shadow-emerald-400/30 flex items-center gap-3">
             <CheckCircle2 size={22} />
-            <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{successMessage}</span>
+            <span className="text-xs font-extrabold uppercase tracking-wide">{successMessage}</span>
           </div>
         )}
       </div>

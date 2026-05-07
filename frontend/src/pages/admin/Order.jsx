@@ -29,17 +29,16 @@ import {
 } from '../../features/orders/orderApi';
 import { formatINR } from '../../utils/currency';
 
-/* ── Status badge styles ── */
 const statusStyle = {
-  Delivered: { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' },
-  Pending:   { background: '#dbeafe', color: '#1e40af', border: '1px solid #bfdbfe' },
-  Shipped:   { background: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' },
-  Cancelled: { background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' },
+  Delivered: { bg: 'bg-green-100 text-green-800 border border-green-200' },
+  Pending:   { bg: 'bg-blue-100 text-blue-800 border border-blue-200' },
+  Shipped:   { bg: 'bg-yellow-100 text-yellow-800 border border-yellow-100' },
+  Cancelled: { bg: 'bg-red-100 text-red-800 border border-red-200' },
 };
 
-const paymentDot = {
-  Paid:   '#16a34a',
-  Unpaid: '#ea580c',
+const paymentDotColor = {
+  Paid:   'bg-green-600',
+  Unpaid: 'bg-orange-500',
 };
 
 /* ── Stat Card ── */
@@ -47,35 +46,26 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-slate-200 cursor-pointer hover:shadow-lg hover:border-slate-300 transition-all duration-200"
-      style={{ padding: '20px 24px' }}
+      className="bg-white rounded-2xl border border-slate-200 cursor-pointer hover:shadow-lg hover:border-slate-300 transition-all duration-200 px-4 py-4 min-w-0"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          {title}
-        </span>
-        <MoreHorizontal size={15} color="#cbd5e1" />
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em] truncate pr-1">{title}</span>
+        <MoreHorizontal size={15} className="text-slate-300 shrink-0" />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
         {loading ? (
-          <div style={{ width: '60px', height: '32px', background: '#f1f5f9', borderRadius: '8px' }} />
+          <div className="w-14 h-7 bg-slate-100 rounded-lg" />
         ) : (
-          <span style={{ fontSize: '28px', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{value}</span>
+          <span className="text-[24px] font-black text-slate-900 leading-none">{value}</span>
         )}
         {badge && !loading && (
-          <span style={{
-            fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px',
-            whiteSpace: 'nowrap', lineHeight: 1,
-            background: badgeUp ? '#dcfce7' : '#fee2e2',
-            color: badgeUp ? '#166534' : '#991b1b',
-            display: 'flex', alignItems: 'center', gap: '3px',
-          }}>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap leading-none flex items-center gap-0.5 ${badgeUp ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
             {badgeUp ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
             {badge}
           </span>
         )}
       </div>
-      <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>{sub}</span>
+      <span className="text-[11px] text-slate-400 font-medium">{sub}</span>
     </div>
   );
 }
@@ -83,13 +73,9 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading }) {
 /* ── Info Row helper ── */
 function InfoRow({ label, value, valueColor }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-      <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-        {label}
-      </span>
-      <span style={{ fontSize: '13px', fontWeight: 600, color: valueColor || '#1e293b' }}>
-        {value || 'N/A'}
-      </span>
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.1em]">{label}</span>
+      <span className={`text-[13px] font-semibold ${valueColor || 'text-slate-800'}`}>{value || 'N/A'}</span>
     </div>
   );
 }
@@ -110,89 +96,65 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
     : (order.orderItems || []).reduce((sum, item) => sum + (Number(item.price) * Number(item.qty || item.quantity || 1)), 0);
 
   const statusColors = {
-    Delivered: { bg: '#dcfce7', color: '#166534' },
-    Pending:   { bg: '#dbeafe', color: '#1e40af' },
-    Shipped:   { bg: '#fef9c3', color: '#854d0e' },
-    Cancelled: { bg: '#fee2e2', color: '#991b1b' },
+    Delivered: 'bg-green-100 text-green-800',
+    Pending:   'bg-blue-100 text-blue-800',
+    Shipped:   'bg-yellow-100 text-yellow-800',
+    Cancelled: 'bg-red-100 text-red-800',
   };
-  const sc = statusColors[order.status] || { bg: '#f1f5f9', color: '#475569' };
+  const sc = statusColors[order.status] || 'bg-slate-100 text-slate-600';
 
   return (
     <div
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)',
-        backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', zIndex: 50, padding: '16px',
-      }}
+      className="fixed inset-0 bg-slate-900/55 backdrop-blur-[6px] flex items-center justify-center z-50 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{
-        background: 'white', borderRadius: '24px',
-        width: '100%', maxWidth: '560px',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.18)',
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
-        overflow: 'hidden',
-      }}>
+      <div className="bg-white rounded-3xl w-full max-w-[560px] shadow-2xl max-h-[92vh] flex flex-col overflow-hidden">
 
-        {/* ── Modal Header ── */}
-        <div style={{
-          padding: '20px 24px 16px',
-          borderBottom: '1px solid #f1f5f9',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          flexShrink: 0,
-        }}>
+        {/* Modal Header */}
+        <div className="px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between shrink-0">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <div style={{ width: '32px', height: '32px', background: '#f0fdf4', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Package size={16} color="#16a34a" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center">
+                <Package size={16} className="text-green-600" />
               </div>
-              <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a', margin: 0 }}>Order Details</h3>
+              <h3 className="text-base font-black text-slate-900 m-0">Order Details</h3>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Order ID:</span>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#059669', background: '#f0fdf4', padding: '2px 10px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-slate-500 font-medium">Order ID:</span>
+              <span className="text-xs font-extrabold text-emerald-600 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200">
                 #{order.orderId || order.id}
               </span>
-              <span style={{
-                fontSize: '10px', fontWeight: 800, padding: '2px 10px', borderRadius: '999px',
-                background: sc.bg, color: sc.color, textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>
+              <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-[0.06em] ${sc}`}>
                 {order.status}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{ width: '32px', height: '32px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+            className="w-8 h-8 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center cursor-pointer shrink-0 ml-3"
           >
-            <X size={15} color="#64748b" />
+            <X size={15} className="text-slate-500" />
           </button>
         </div>
 
-        {/* ── Scrollable Body ── */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '20px 24px' }}>
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto flex-1 px-6 py-5">
 
           {/* Order Meta */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <InfoRow label="User ID" value={order.userId || order.user} />
             <InfoRow label="Order Date" value={order.date || (order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : 'N/A')} />
-            <InfoRow
-              label="Payment Status"
-              value={order.payment || 'Unpaid'}
-              valueColor={order.payment === 'Paid' ? '#16a34a' : '#ea580c'}
-            />
+            <InfoRow label="Payment Status" value={order.payment || 'Unpaid'} valueColor={order.payment === 'Paid' ? 'text-green-600' : 'text-orange-500'} />
             <InfoRow label="Payment Method" value={order.paymentMethod || 'COD'} />
           </div>
 
           {/* Shipping Address */}
-          <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '14px 16px', marginBottom: '16px', border: '1px solid #f1f5f9' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-              <MapPin size={13} color="#059669" />
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                Shipping Address
-              </span>
+          <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <MapPin size={13} className="text-emerald-600" />
+              <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-[0.1em]">Shipping Address</span>
             </div>
-            <div style={{ display: 'grid', gap: '4px' }}>
+            <div className="flex flex-col gap-1">
               {[
                 ['Name', order.shippingAddress?.fullName],
                 ['Address', order.shippingAddress?.address],
@@ -200,161 +162,110 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
                 ['Postal Code', order.shippingAddress?.postalCode],
                 ['Country', order.shippingAddress?.country],
               ].map(([label, val]) => (
-                <div key={label} style={{ display: 'flex', gap: '6px', fontSize: '12px' }}>
-                  <span style={{ color: '#94a3b8', fontWeight: 600, minWidth: '80px' }}>{label}:</span>
-                  <span style={{ color: '#334155', fontWeight: 600 }}>{val || 'N/A'}</span>
+                <div key={label} className="flex gap-1.5 text-xs">
+                  <span className="text-slate-400 font-semibold min-w-[80px]">{label}:</span>
+                  <span className="text-slate-700 font-semibold">{val || 'N/A'}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Purchased Items */}
-          <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '14px 16px', marginBottom: '16px', border: '1px solid #f1f5f9' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-              <ShoppingCart size={13} color="#059669" />
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
+            <div className="flex items-center gap-1.5 mb-3">
+              <ShoppingCart size={13} className="text-emerald-600" />
+              <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-[0.1em]">
                 Purchased Items ({order.orderItems?.length || 0})
               </span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '180px', overflowY: 'auto' }}>
+            <div className="flex flex-col gap-2.5 max-h-[180px] overflow-y-auto">
               {order.orderItems?.length > 0 ? order.orderItems.map((item, idx) => {
                 const qty   = Number(item.qty || item.quantity || 1);
                 const price = Number(item.price) || 0;
                 return (
-                  <div key={idx} style={{
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                    paddingBottom: idx < order.orderItems.length - 1 ? '10px' : 0,
-                    borderBottom: idx < order.orderItems.length - 1 ? '1px solid #e2e8f0' : 'none',
-                  }}>
-                    <div style={{ width: '44px', height: '44px', flexShrink: 0, borderRadius: '10px', overflow: 'hidden', background: '#e2e8f0', border: '1px solid #e2e8f0' }}>
+                  <div key={idx} className={`flex items-center gap-3 ${idx < order.orderItems.length - 1 ? 'pb-2.5 border-b border-slate-200' : ''}`}>
+                    <div className="w-11 h-11 shrink-0 rounded-xl overflow-hidden bg-slate-200 border border-slate-200">
                       {item.image
-                        ? <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>📦</div>
+                        ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
                       }
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {item.name}
-                      </p>
-                      <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: 500 }}>
-                        Qty: {qty} × {formatINR(price)}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-bold text-slate-800 m-0 mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</p>
+                      <p className="text-[11px] text-slate-500 m-0 font-medium">Qty: {qty} × {formatINR(price)}</p>
                     </div>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', flexShrink: 0 }}>
-                      {formatINR(qty * price)}
-                    </span>
+                    <span className="text-[13px] font-extrabold text-slate-900 shrink-0">{formatINR(qty * price)}</span>
                   </div>
                 );
               }) : (
-                <p style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'center', padding: '12px 0' }}>No items found</p>
+                <p className="text-xs text-slate-400 text-center py-3">No items found</p>
               )}
             </div>
           </div>
 
           {/* Price Breakdown */}
-          <div style={{ background: '#eff6ff', borderRadius: '14px', padding: '14px 16px', marginBottom: '20px', border: '1px solid #dbeafe' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-              <Receipt size={13} color="#2563eb" />
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                Price Breakdown
-              </span>
+          <div className="bg-blue-50 rounded-2xl p-4 mb-5 border border-blue-100">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Receipt size={13} className="text-blue-600" />
+              <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-[0.1em]">Price Breakdown</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="flex flex-col gap-2">
               {[
                 { label: 'Items Total', value: derivedItemsTotal },
                 { label: 'Shipping Charge', value: shippingCost },
                 { label: 'Tax (GST)', value: taxAmount },
               ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>{label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: value > 0 ? '#1e293b' : '#94a3b8' }}>
-                    {value > 0 ? formatINR(value) : <span style={{ fontSize: '11px' }}>—</span>}
+                <div key={label} className="flex justify-between items-center">
+                  <span className="text-xs text-slate-500 font-medium">{label}</span>
+                  <span className={`text-[13px] font-bold ${value > 0 ? 'text-slate-800' : 'text-slate-400'}`}>
+                    {value > 0 ? formatINR(value) : <span className="text-[11px]">—</span>}
                   </span>
                 </div>
               ))}
-              <div style={{ borderTop: '1px solid #bfdbfe', marginTop: '4px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>Total Amount</span>
-                <span style={{ fontSize: '16px', fontWeight: 900, color: '#2563eb' }}>{formatINR(grandTotal)}</span>
+              <div className="border-t border-blue-200 mt-1 pt-2.5 flex justify-between items-center">
+                <span className="text-[13px] font-extrabold text-slate-800">Total Amount</span>
+                <span className="text-base font-black text-blue-600">{formatINR(grandTotal)}</span>
               </div>
             </div>
           </div>
 
           {/* Status Update */}
           <div>
-            <label style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '8px' }}>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.1em] block mb-2">
               Update Status
             </label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               disabled={isUpdating}
-              style={{
-                width: '100%', padding: '11px 14px',
-                background: isUpdating ? '#f8fafc' : 'white',
-                border: '1.5px solid #e2e8f0',
-                borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: '#1e293b',
-                outline: 'none', cursor: isUpdating ? 'not-allowed' : 'pointer',
-                appearance: 'auto', opacity: isUpdating ? 0.7 : 1,
-                transition: 'opacity 0.15s',
-              }}
+              className="w-full px-3.5 py-2.5 bg-white border-[1.5px] border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 outline-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        {/* ── Footer Actions ── */}
-        <div style={{
-          padding: '16px 24px',
-          borderTop: '1px solid #f1f5f9',
-          display: 'flex', gap: '12px',
-          flexShrink: 0,
-        }}>
+        {/* Footer Actions */}
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 shrink-0">
           <button
             onClick={onClose}
             disabled={isUpdating}
-            style={{
-              flex: 1, padding: '11px', background: '#f8fafc',
-              border: '1px solid #e2e8f0', borderRadius: '12px',
-              fontSize: '12px', fontWeight: 700, color: '#475569',
-              cursor: isUpdating ? 'not-allowed' : 'pointer',
-              transition: 'all 0.15s', opacity: isUpdating ? 0.6 : 1,
-            }}
-            onMouseEnter={(e) => { if (!isUpdating) e.currentTarget.style.background = '#f1f5f9'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
+            className="flex-1 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 cursor-pointer hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
             Cancel
           </button>
           <button
             onClick={() => onUpdate(order, selectedStatus)}
             disabled={isUpdating || selectedStatus === order.status}
-            style={{
-              flex: 2, padding: '11px',
-              background: isUpdating ? '#4ade80' : selectedStatus === order.status ? '#94a3b8' : '#1a6b3c',
-              border: 'none', borderRadius: '12px',
-              fontSize: '12px', fontWeight: 800, color: 'white',
-              cursor: (isUpdating || selectedStatus === order.status) ? 'not-allowed' : 'pointer',
-              transition: 'all 0.15s',
-              boxShadow: isUpdating || selectedStatus === order.status ? 'none' : '0 4px 12px rgba(26,107,60,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            }}
-            onMouseEnter={(e) => { if (!isUpdating && selectedStatus !== order.status) e.currentTarget.style.background = '#145a32'; }}
-            onMouseLeave={(e) => { if (!isUpdating && selectedStatus !== order.status) e.currentTarget.style.background = '#1a6b3c'; }}
+            className={`flex-[2] py-2.5 rounded-xl text-xs font-extrabold text-white border-none flex items-center justify-center gap-2 transition-all
+              ${isUpdating ? 'bg-green-400 cursor-not-allowed' : selectedStatus === order.status ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#1a6b3c] cursor-pointer hover:bg-[#145a32] shadow-lg shadow-green-900/30'}`}
           >
             {isUpdating ? (
               <>
-                <span style={{
-                  width: '13px', height: '13px',
-                  border: '2px solid rgba(255,255,255,0.4)',
-                  borderTopColor: 'white', borderRadius: '50%',
-                  animation: 'spin 0.7s linear infinite',
-                  flexShrink: 0,
-                }} />
+                <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
                 Updating...
               </>
-            ) : (
-              'Update Status'
-            )}
+            ) : 'Update Status'}
           </button>
         </div>
       </div>
@@ -371,8 +282,6 @@ export default function OrderManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showMoreActions, setShowMoreActions] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  // Track optimistic status overrides locally — key = raw _id, value = new status
   const [statusOverrides, setStatusOverrides] = useState({});
 
   const tabs = ['All order', 'Completed', 'Pending', 'Canceled'];
@@ -414,32 +323,30 @@ export default function OrderManagement() {
   const orders = useMemo(() =>
     ordersResponse?.data?.map((order) => {
       const firstItem = order.orderItems?.[0] || {};
-      // Use raw _id as the stable key for overrides, orderId for display
-      const rawId    = order._id;
+      const rawId = order._id;
       const displayId = order.orderId || order._id;
       const resolvedStatus = statusOverrides[rawId] || order.status || (order.isDelivered ? 'Delivered' : 'Pending');
       return {
-        // Keep both so we always have the raw _id for the API call
-        _id:           rawId,
-        id:            displayId,
-        orderId:       order.orderId,
-        product:       firstItem.name || 'Product Asset',
-        variant:       firstItem.variant || '',
-        image:         firstItem.image,
-        emoji:         getProductEmoji(firstItem.name),
-        date:          new Date(order.createdAt).toLocaleDateString('en-GB'),
-        price:         order.totalPrice || order.price || 0,
-        itemsPrice:    order.itemsPrice    || 0,
+        _id: rawId,
+        id: displayId,
+        orderId: order.orderId,
+        product: firstItem.name || 'Product Asset',
+        variant: firstItem.variant || '',
+        image: firstItem.image,
+        emoji: getProductEmoji(firstItem.name),
+        date: new Date(order.createdAt).toLocaleDateString('en-GB'),
+        price: order.totalPrice || order.price || 0,
+        itemsPrice: order.itemsPrice || 0,
         shippingPrice: order.shippingPrice || 0,
-        taxPrice:      order.taxPrice      || 0,
-        totalPrice:    order.totalPrice    || order.price || 0,
-        payment:        order.isPaid ? 'Paid' : 'Unpaid',
-        paymentMethod:  order.paymentMethod || 'COD',
-        status:         resolvedStatus,
-        userId:         order.user || order.userId,
-        createdAt:      order.createdAt,
+        taxPrice: order.taxPrice || 0,
+        totalPrice: order.totalPrice || order.price || 0,
+        payment: order.isPaid ? 'Paid' : 'Unpaid',
+        paymentMethod: order.paymentMethod || 'COD',
+        status: resolvedStatus,
+        userId: order.user || order.userId,
+        createdAt: order.createdAt,
         shippingAddress: order.shippingAddress || {},
-        orderItems:     order.orderItems || [],
+        orderItems: order.orderItems || [],
       };
     }) || [],
     [ordersResponse, statusOverrides]);
@@ -456,33 +363,15 @@ export default function OrderManagement() {
     filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
     [filteredOrders, currentPage]);
 
-  /**
-   * FIX: Accept the full order object so we always have access to the raw _id.
-   * The mutation payload uses _id (MongoDB ObjectId) which is what the backend route
-   * expects — e.g. PUT /api/orders/:id/status.  orderId is a human-readable display
-   * field and may not match the route param.
-   */
   const handleUpdateStatus = async (order, newStatus) => {
-    // Resolve the correct ID to send to the API.
-    // Prefer the raw MongoDB _id; fall back to orderId / id.
-    const apiId  = order._id || order.orderId || order.id;
-    // The override key must be consistent with what we store in the orders memo.
+    const apiId = order._id || order.orderId || order.id;
     const overrideKey = order._id || order.orderId || order.id;
 
     try {
-      // ── Call the RTK-Query mutation ──────────────────────────────────────────
-      // Pass both id fields so the mutation can pick whichever matches the slice.
       await updateStatus({ id: apiId, orderId: apiId, status: newStatus }).unwrap();
-
-      // ── Optimistic local update ──────────────────────────────────────────────
       setStatusOverrides((prev) => ({ ...prev, [overrideKey]: newStatus }));
-
-      // ── Reflect in the open modal immediately ────────────────────────────────
       setSelectedOrder((prev) => prev ? { ...prev, status: newStatus } : prev);
-
       toast.success(`Order status updated to "${newStatus}"`);
-
-      // ── Re-sync from server in background, then clear the override ───────────
       refetch().then(() => {
         setStatusOverrides((prev) => {
           const next = { ...prev };
@@ -490,11 +379,8 @@ export default function OrderManagement() {
           return next;
         });
       });
-
-      // Close modal after user can see the change
       setTimeout(() => setSelectedOrder(null), 600);
     } catch (err) {
-      // Roll back the optimistic override on error
       setStatusOverrides((prev) => {
         const next = { ...prev };
         delete next[overrideKey];
@@ -525,168 +411,74 @@ export default function OrderManagement() {
 
   return (
     <>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-        .orders-wrapper {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
+      <div className="w-full min-w-0 flex flex-col gap-5 p-4 md:p-5">
 
-        /* ── Header ── */
-        .orders-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-        .orders-header-actions {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-        .orders-search-wrap {
-          position: relative;
-        }
-        .orders-search-wrap svg {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #94a3b8;
-          pointer-events: none;
-        }
-        .orders-search-input {
-          padding-left: 34px;
-          padding-right: 16px;
-          padding-top: 9px;
-          padding-bottom: 9px;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          font-size: 12px;
-          width: 230px;
-          outline: none;
-          color: #1e293b;
-        }
-
-        /* ── Tabs toolbar ── */
-        .orders-tabs-row {
-          padding: 16px 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 12px;
-          border-bottom: 1px solid #f8fafc;
-        }
-        .orders-tabs {
-          display: flex;
-          gap: 4px;
-          background: #f8fafc;
-          padding: 4px;
-          border-radius: 12px;
-          border: 1px solid #e2e8f0;
-          flex-wrap: wrap;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 768px) {
-          .orders-header { flex-direction: column; }
-          .orders-header-actions { width: 100%; }
-          .orders-search-input { width: 100%; }
-          .orders-search-wrap { width: 100%; flex: 1; }
-          .orders-tabs-row { padding: 12px 16px; }
-          .col-date    { display: none; }
-          .col-payment { display: none; }
-        }
-
-        @media (max-width: 540px) {
-          .col-price { display: none; }
-          .col-num   { display: none; }
-          .orders-header-actions { flex-direction: column; align-items: stretch; }
-        }
-      `}</style>
-
-      <div className="orders-wrapper">
-
-        {/* ── Header ── */}
-        <div className="orders-header">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
-              Order Management
-            </h1>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', fontWeight: 500, marginBottom: 0 }}>
-              Control and track all customer transactions
-            </p>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight m-0">Order Management</h1>
+            <p className="text-xs text-slate-400 mt-1 font-medium mb-0">Control and track all customer transactions</p>
           </div>
 
-          <div className="orders-header-actions">
-            <div className="orders-search-wrap">
-              <Search size={13} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search by ID or Product..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="orders-search-input"
+                className="pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs w-48 md:w-56 outline-none text-slate-800"
               />
             </div>
-            <div style={{ position: 'relative', padding: '9px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', cursor: 'pointer', lineHeight: 0, flexShrink: 0 }}>
-              <Bell size={17} color="#64748b" />
-              <span style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }} />
+            <div className="relative p-2 bg-white border border-slate-200 rounded-xl cursor-pointer leading-none shrink-0">
+              <Bell size={16} className="text-slate-500" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
             </div>
-            <div style={{ padding: '9px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', cursor: 'pointer', lineHeight: 0, flexShrink: 0 }}>
-              <Zap size={17} color="#64748b" />
+            <div className="p-2 bg-white border border-slate-200 rounded-xl cursor-pointer leading-none shrink-0">
+              <Zap size={16} className="text-slate-500" />
             </div>
           </div>
         </div>
 
-        {/* ── Stat Cards ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard title="Total Orders"  value={statsData?.total     ?? 0} badge="14.4%" badgeUp    sub="Last 30 days"           onClick={() => setActiveTab('All order')} loading={statsLoading} />
           <StatCard title="New Orders"    value={statsData?.pending   ?? 0} badge="20%"   badgeUp    sub="Needs processing"       onClick={() => setActiveTab('Pending')}   loading={statsLoading} />
           <StatCard title="Completed"     value={statsData?.delivered ?? 0} badge="83%"   badgeUp    sub="Successfully delivered" onClick={() => setActiveTab('Completed')} loading={statsLoading} />
           <StatCard title="Cancelled"     value={statsData?.cancelled ?? 0} badge="3.2%"  badgeUp={false} sub="Lost opportunities" onClick={() => setActiveTab('Canceled')}  loading={statsLoading} />
         </div>
 
-        {/* ── Order Table Card ── */}
-        <div style={{ background: 'white', borderRadius: '20px', border: '1px solid #f1f5f9', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+        {/* Order Table Card */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
           {/* Top bar */}
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Order Repository
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="px-4 md:px-6 py-4 border-b border-slate-50 flex justify-between items-center flex-wrap gap-3">
+            <span className="text-xs font-black text-slate-800 uppercase tracking-[0.1em]">Order Repository</span>
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={handleManualOrder}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a6b3c', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                className="flex items-center gap-1.5 bg-[#1a6b3c] text-white border-none rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer whitespace-nowrap"
               >
                 <Plus size={13} strokeWidth={3} /> Add Order
               </button>
-              <div style={{ position: 'relative' }}>
+              <div className="relative">
                 <button
                   onClick={() => setShowMoreActions(!showMoreActions)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  className="flex items-center gap-1.5 bg-white text-slate-500 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer whitespace-nowrap"
                 >
                   More Actions
-                  <ChevronDown size={13} style={{ transform: showMoreActions ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  <ChevronDown size={13} className={`transition-transform duration-200 ${showMoreActions ? 'rotate-180' : ''}`} />
                 </button>
                 {showMoreActions && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '6px', minWidth: '160px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 20 }}>
+                  <div className="absolute top-[calc(100%+6px)] right-0 bg-white border border-slate-200 rounded-2xl p-1.5 min-w-[160px] shadow-xl z-20">
                     {['Export Data', 'Print Manifest', 'Bulk Approval', 'Settings'].map((action) => (
                       <div
                         key={action}
                         onClick={() => { if (action.includes('Export')) handleExport(); setShowMoreActions(false); }}
-                        style={{ padding: '9px 14px', fontSize: '11px', fontWeight: 700, color: '#475569', cursor: 'pointer', borderRadius: '9px', transition: 'all 0.1s' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = '#f0fdf4'; e.currentTarget.style.color = '#1a6b3c'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                        className="px-3.5 py-2 text-[11px] font-bold text-slate-500 cursor-pointer rounded-xl hover:bg-green-50 hover:text-[#1a6b3c] transition-all"
                       >
                         {action}
                       </div>
@@ -698,22 +490,16 @@ export default function OrderManagement() {
           </div>
 
           {/* Tabs + filters */}
-          <div className="orders-tabs-row">
-            <div className="orders-tabs">
+          <div className="px-4 md:px-6 py-3 flex justify-between items-center flex-wrap gap-3 border-b border-slate-50">
+            <div className="flex gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200 flex-wrap">
               {tabs.map((tab) => {
                 const active = activeTab === tab;
                 return (
                   <button
                     key={tab}
                     onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                    style={{
-                      padding: '7px 16px', fontSize: '11px', fontWeight: 800,
-                      borderRadius: '9px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                      transition: 'all 0.15s',
-                      background: active ? 'white' : 'transparent',
-                      color: active ? '#059669' : '#94a3b8',
-                      boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                    }}
+                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-xl border-none cursor-pointer whitespace-nowrap transition-all
+                      ${active ? 'bg-white text-emerald-600 shadow-sm' : 'bg-transparent text-slate-400'}`}
                   >
                     {tab}
                   </button>
@@ -721,9 +507,9 @@ export default function OrderManagement() {
               })}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               {[{ icon: <SlidersHorizontal size={13} />, label: 'Filters' }, { icon: <ArrowLeftRight size={13} />, label: 'Relational' }].map(({ icon, label }) => (
-                <button key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '11px', fontWeight: 700, color: '#64748b', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <button key={label} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-500 cursor-pointer whitespace-nowrap">
                   {icon} {label}
                 </button>
               ))}
@@ -731,33 +517,29 @@ export default function OrderManagement() {
           </div>
 
           {/* Table area */}
-          <div style={{ overflowX: 'auto', minHeight: '340px', padding: '0 24px 24px' }}>
+          <div className="overflow-x-auto min-h-[300px] px-4 md:px-6 pb-6">
             {ordersLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '16px' }}>
-                <div style={{ width: '44px', height: '44px', border: '4px solid #d1fae5', borderTopColor: '#059669', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="w-11 h-11 border-4 border-green-100 border-t-emerald-600 rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">
                   Synchronizing Local Cluster...
                 </span>
               </div>
             ) : (
               <>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+                <table className="w-full border-collapse" style={{ minWidth: '500px' }}>
                   <thead>
                     <tr>
                       {[
-                        { label: '#',        align: 'left',   cls: 'col-num' },
-                        { label: 'Order ID', align: 'left',   cls: '' },
-                        { label: 'Product',  align: 'left',   cls: '' },
-                        { label: 'Date',     align: 'center', cls: 'col-date' },
-                        { label: 'Price',    align: 'center', cls: 'col-price' },
-                        { label: 'Payment',  align: 'center', cls: 'col-payment' },
-                        { label: 'Status',   align: 'center', cls: '' },
+                        { label: '#',        align: 'text-left',   cls: 'hidden sm:table-cell' },
+                        { label: 'Order ID', align: 'text-left',   cls: '' },
+                        { label: 'Product',  align: 'text-left',   cls: '' },
+                        { label: 'Date',     align: 'text-center', cls: 'hidden md:table-cell' },
+                        { label: 'Price',    align: 'text-center', cls: 'hidden sm:table-cell' },
+                        { label: 'Payment',  align: 'text-center', cls: 'hidden md:table-cell' },
+                        { label: 'Status',   align: 'text-center', cls: '' },
                       ].map(({ label, align, cls }) => (
-                        <th key={label} className={cls} style={{
-                          padding: '14px 12px', fontSize: '10px', fontWeight: 800, color: '#4c9f70',
-                          textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: align,
-                          whiteSpace: 'nowrap', background: '#fafafa', borderBottom: '1px solid #f1f5f9',
-                        }}>
+                        <th key={label} className={`px-3 py-3.5 text-[10px] font-extrabold text-[#4c9f70] uppercase tracking-[0.08em] ${align} whitespace-nowrap bg-gray-50 border-b border-slate-100 ${cls}`}>
                           {label}
                         </th>
                       ))}
@@ -766,9 +548,9 @@ export default function OrderManagement() {
                   <tbody>
                     {paginatedOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={7} style={{ textAlign: 'center', padding: '60px 0', color: '#cbd5e1' }}>
-                          <ArrowLeftRight size={40} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.25 }} />
-                          <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No orders found</span>
+                        <td colSpan={7} className="text-center py-16 text-slate-300">
+                          <ArrowLeftRight size={40} className="mx-auto mb-2.5 block opacity-25" />
+                          <span className="text-[11px] font-bold uppercase tracking-[0.1em]">No orders found</span>
                         </td>
                       </tr>
                     ) : (
@@ -776,60 +558,47 @@ export default function OrderManagement() {
                         <tr
                           key={o._id || o.id}
                           onClick={() => setSelectedOrder(o)}
-                          style={{ borderBottom: '1px solid #f8fafc', cursor: 'pointer', transition: 'background 0.12s' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#fafafa'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          className="border-b border-slate-50 cursor-pointer hover:bg-gray-50 transition-colors"
                         >
-                          <td className="col-num" style={{ padding: '14px 12px', fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>
+                          <td className="hidden sm:table-cell px-3 py-3 text-[11px] font-bold text-slate-400">
                             {(currentPage - 1) * itemsPerPage + i + 1}
                           </td>
-                          <td style={{ padding: '14px 12px', fontSize: '11px', fontWeight: 800, color: '#1a6b3c', whiteSpace: 'nowrap' }}>
+                          <td className="px-3 py-3 text-[11px] font-extrabold text-[#1a6b3c] whitespace-nowrap">
                             #{o.id}
                           </td>
-                          <td style={{ padding: '14px 12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div style={{ width: '40px', height: '40px', flexShrink: 0, background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-9 h-9 shrink-0 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200">
                                 {o.image ? (
-                                  <img src={o.image} alt={o.product} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <img src={o.image} alt={o.product} className="w-full h-full object-cover" />
                                 ) : (
-                                  <span style={{ fontSize: '18px' }}>{o.emoji}</span>
+                                  <span className="text-base">{o.emoji}</span>
                                 )}
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <div className="min-w-0">
+                                <span className="text-[12px] font-bold text-slate-800 max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap block">
                                   {o.product}
                                 </span>
                                 {o.variant && (
-                                  <span style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>Variant: {o.variant}</span>
+                                  <span className="text-[10px] font-semibold text-slate-500">Variant: {o.variant}</span>
                                 )}
                               </div>
                             </div>
                           </td>
-                          <td className="col-date" style={{ padding: '14px 12px', fontSize: '11px', fontWeight: 600, color: '#64748b', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <td className="hidden md:table-cell px-3 py-3 text-[11px] font-semibold text-slate-500 text-center whitespace-nowrap">
                             {o.date}
                           </td>
-                          <td className="col-price" style={{ padding: '14px 12px', fontSize: '13px', fontWeight: 900, color: '#0f172a', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <td className="hidden sm:table-cell px-3 py-3 text-[13px] font-black text-slate-900 text-center whitespace-nowrap">
                             {formatINR(o.price)}
                           </td>
-                          <td className="col-payment" style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '5px',
-                              padding: '4px 12px', borderRadius: '999px',
-                              background: '#f8fafc', border: '1px solid #e2e8f0',
-                              fontSize: '10px', fontWeight: 800, color: '#475569',
-                              textTransform: 'uppercase', whiteSpace: 'nowrap',
-                            }}>
-                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0, background: paymentDot[o.payment] || '#94a3b8' }} />
+                          <td className="hidden md:table-cell px-3 py-3 text-center">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-[10px] font-extrabold text-slate-500 uppercase whitespace-nowrap">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${paymentDotColor[o.payment] || 'bg-slate-400'}`} />
                               {o.payment}
                             </span>
                           </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              display: 'inline-block', padding: '4px 14px', borderRadius: '999px',
-                              fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                              whiteSpace: 'nowrap',
-                              ...(statusStyle[o.status] || {}),
-                            }}>
+                          <td className="px-3 py-3 text-center">
+                            <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.06em] whitespace-nowrap ${statusStyle[o.status]?.bg || 'bg-slate-100 text-slate-600'}`}>
                               {o.status}
                             </span>
                           </td>
@@ -841,37 +610,22 @@ export default function OrderManagement() {
 
                 {/* Pagination */}
                 {filteredOrders.length > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '24px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div className="flex items-center justify-between pt-5 flex-wrap gap-3">
                     <button
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '4px',
-                        padding: '8px 16px', background: 'white',
-                        border: '1px solid #e2e8f0', borderRadius: '12px',
-                        fontSize: '11px', fontWeight: 800, color: '#1a6b3c',
-                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                        opacity: currentPage === 1 ? 0.35 : 1,
-                        textTransform: 'uppercase', letterSpacing: '0.05em',
-                      }}
+                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#1a6b3c] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <ChevronLeft size={15} /> Prev
+                      <ChevronLeft size={14} /> Prev
                     </button>
 
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <div className="flex gap-1 flex-wrap">
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <button
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
-                          style={{
-                            width: '32px', height: '32px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            borderRadius: '10px', fontSize: '12px', fontWeight: 800,
-                            border: currentPage === i + 1 ? 'none' : '1px solid #e2e8f0',
-                            background: currentPage === i + 1 ? '#1a6b3c' : 'white',
-                            color: currentPage === i + 1 ? 'white' : '#64748b',
-                            cursor: 'pointer',
-                          }}
+                          className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-extrabold cursor-pointer
+                            ${currentPage === i + 1 ? 'bg-[#1a6b3c] text-white border-none' : 'bg-white border border-slate-200 text-slate-500'}`}
                         >
                           {i + 1}
                         </button>
@@ -881,17 +635,9 @@ export default function OrderManagement() {
                     <button
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '4px',
-                        padding: '8px 16px', background: 'white',
-                        border: '1px solid #e2e8f0', borderRadius: '12px',
-                        fontSize: '11px', fontWeight: 800, color: '#1a6b3c',
-                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                        opacity: currentPage === totalPages ? 0.35 : 1,
-                        textTransform: 'uppercase', letterSpacing: '0.05em',
-                      }}
+                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#1a6b3c] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      Next <ChevronRight size={15} />
+                      Next <ChevronRight size={14} />
                     </button>
                   </div>
                 )}
