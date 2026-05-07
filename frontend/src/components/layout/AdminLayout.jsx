@@ -6,7 +6,6 @@ import {
   Users,
   Ticket,
   Receipt,
-  Bookmark,
   Layers,
   PlusCircle,
   Image as ImageIcon,
@@ -67,160 +66,139 @@ export default function AdminLayout({ setIsAuthenticated }) {
     else window.location.href = '/';
   };
 
-  /* ── Sidebar inner content – kept as inline styles to preserve pixel-exact look ── */
-  const SidebarContent = () => (
+  const NavLinks = () => (
     <>
-      {/* Logo */}
-      <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid #f8fafc' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: 'linear-gradient(135deg,#10b981,#059669)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 700, fontSize: '16px', flexShrink: 0,
-          }}>D</div>
-          <span style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '-0.5px', color: '#0f172a' }}>
-            DEALP<span style={{ color: '#10b981' }}>◉</span>RT
-          </span>
+      {navGroups.map((group) => (
+        <div key={group.title} className="mb-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-2 mb-1.5 select-none">
+            {group.title}
+          </p>
+          {group.items.map((item) => {
+            const isActive = location.pathname === item.path;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                className={[
+                  'flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-[13px] font-medium no-underline transition-all duration-150 select-none',
+                  isActive
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+                ].join(' ')}
+              >
+                <Icon size={16} className="shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                {isActive && <ChevronRight size={14} className="shrink-0" />}
+              </Link>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Nav Groups */}
-      <nav style={{ flex: 1, padding: '12px', overflow: 'auto' }}>
-        {navGroups.map((group) => (
-          <div key={group.title} style={{ marginBottom: '20px' }}>
-            <div style={{
-              fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
-              color: '#94a3b8', textTransform: 'uppercase',
-              padding: '0 8px', marginBottom: '6px',
-            }}>
-              {group.title}
-            </div>
-
-            {group.items.map((item) => {
-              const isActive = location.pathname === item.path;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 12px', borderRadius: '8px', marginBottom: '2px',
-                    textDecoration: 'none', fontSize: '13px', fontWeight: 500,
-                    transition: 'all 0.15s',
-                    background: isActive ? '#10b981' : 'transparent',
-                    color: isActive ? '#fff' : '#475569',
-                  }}
-                >
-                  <Icon size={16} style={{ flexShrink: 0 }} />
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                  {isActive && <ChevronRight size={14} />}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      {/* Logout Footer */}
-      <div style={{ borderTop: '1px solid #f1f5f9', padding: '16px' }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            padding: '12px', width: '100%', cursor: 'pointer',
-            border: '1px solid #fecaca', borderRadius: '8px',
-            fontSize: '13px', fontWeight: 700, color: '#ef4444',
-            background: '#fef2f2', transition: 'all 0.2s',
-          }}
-          onMouseOver={(e) => e.currentTarget.style.background = '#fee2e2'}
-          onMouseOut={(e)  => e.currentTarget.style.background = '#fef2f2'}
-        >
-          <LogOut size={16} />
-          Secure Logout
-        </button>
-      </div>
+      ))}
     </>
   );
 
   return (
     /*
-      Shell layout uses Tailwind for the flex/overflow structure.
-      Sidebar internals use inline styles (unchanged from original)
-      so the visual appearance is guaranteed pixel-perfect.
+      ROOT: fixed inset-0 — locks the shell to exactly the viewport.
+      This prevents any child with min-h-screen from pushing the document
+      scroll and breaking the sidebar/main split.
     */
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 flex bg-slate-50">
 
-      {/* ── Desktop Sidebar (md and above) ── */}
-      <aside
-        className="hidden md:flex flex-col shrink-0 overflow-y-auto overflow-x-hidden"
-        style={{
-          width: '240px',
-          minWidth: '240px',
-          height: '100vh',
-          background: '#fff',
-          borderRight: '1px solid #f1f5f9',
-        }}
-      >
-        <SidebarContent />
+      {/* ── Desktop Sidebar (md+) ── */}
+      <aside className="hidden md:flex flex-col w-60 shrink-0 bg-white border-r border-slate-100">
+        {/* Logo */}
+        <div className="px-5 py-4 border-b border-slate-100 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-base shrink-0">
+              D
+            </div>
+            <span className="font-extrabold text-base tracking-tight text-slate-900 select-none">
+              DEALP<span className="text-emerald-500">◉</span>RT
+            </span>
+          </div>
+        </div>
+
+        {/* Scrollable Nav — min-h-0 is required so flex-1 can shrink */}
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3">
+          <NavLinks />
+        </nav>
+
+        {/* Logout */}
+        <div className="shrink-0 border-t border-slate-100 p-4">
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-500 text-[13px] font-bold cursor-pointer transition-colors hover:bg-red-100"
+          >
+            <LogOut size={15} />
+            Secure Logout
+          </button>
+        </div>
       </aside>
 
       {/* ── Mobile Overlay Sidebar (below md) ── */}
       {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-[100]">
+        <div className="md:hidden fixed inset-0 z-50 flex">
           {/* Backdrop */}
           <div
-            className="absolute inset-0"
-            style={{ background: 'rgba(15,23,42,0.5)', transition: 'opacity 0.25s' }}
+            className="absolute inset-0 bg-slate-900/50"
             onClick={() => setSidebarOpen(false)}
           />
           {/* Drawer */}
-          <div
-            className="absolute top-0 left-0 bottom-0 flex flex-col overflow-y-auto overflow-x-hidden"
-            style={{
-              width: '240px',
-              background: '#fff',
-              boxShadow: '4px 0 24px rgba(0,0,0,0.12)',
-              transition: 'transform 0.25s ease',
-            }}
-          >
-            <SidebarContent />
+          <div className="relative z-10 flex flex-col w-60 bg-white shadow-2xl">
+            <div className="px-5 py-4 border-b border-slate-100 shrink-0 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-base shrink-0">
+                  D
+                </div>
+                <span className="font-extrabold text-base tracking-tight text-slate-900">
+                  DEALP<span className="text-emerald-500">◉</span>RT
+                </span>
+              </div>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3">
+              <NavLinks />
+            </nav>
+            <div className="shrink-0 border-t border-slate-100 p-4">
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-500 text-[13px] font-bold cursor-pointer transition-colors hover:bg-red-100"
+              >
+                <LogOut size={15} />
+                Secure Logout
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* ── Right Column ── */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex flex-col flex-1 min-w-0">
 
-        {/* Mobile Top Bar (below md only) */}
-        <div
-          className="flex md:hidden items-center gap-3 shrink-0"
-          style={{
-            padding: '12px 16px',
-            background: '#fff',
-            borderBottom: '1px solid #f1f5f9',
-          }}
-        >
+        {/* Mobile Top Bar */}
+        <header className="md:hidden flex items-center gap-3 shrink-0 px-4 py-3 bg-white border-b border-slate-100">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: '#475569', display: 'flex', alignItems: 'center',
-              padding: '4px', borderRadius: '6px',
-            }}
+            className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
           >
             <Menu size={22} />
           </button>
-          <span style={{ fontWeight: 800, fontSize: '15px', letterSpacing: '-0.5px', color: '#0f172a' }}>
-            DEALP<span style={{ color: '#10b981' }}>◉</span>RT
+          <span className="font-extrabold text-[15px] tracking-tight text-slate-900">
+            DEALP<span className="text-emerald-500">◉</span>RT
           </span>
-        </div>
+        </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Page Content — ONLY this area scrolls */}
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>

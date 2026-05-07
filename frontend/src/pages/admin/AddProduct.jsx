@@ -9,6 +9,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
 import { fetchMetadata } from '../../features/products/categorySlice';
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
 const AddProduct = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
@@ -37,6 +39,7 @@ const AddProduct = () => {
   const [images, setImages]                   = useState([]);
   const [previews, setPreviews]               = useState([]);
   const [saleResult, setSaleResult]           = useState(0);
+  const [imageError, setImageError]           = useState('');
 
   const fileInputRef     = useRef(null);
   const variantImageRefs = useRef([]);
@@ -87,10 +90,21 @@ const AddProduct = () => {
     });
   };
 
+  // ── Fixed: validate file types before accepting ──
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    const invalidFiles = files.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type));
+    if (invalidFiles.length > 0) {
+      setImageError('Only image files are allowed (JPG, PNG, WEBP, GIF)');
+      // Reset input so the same file can be re-selected after correction
+      e.target.value = '';
+      return;
+    }
+    setImageError('');
     setImages((prev) => [...prev, ...files]);
     setPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    // Reset input value so same file can be selected again if needed
+    e.target.value = '';
   };
 
   const removeImage = (index) => {
@@ -104,15 +118,23 @@ const AddProduct = () => {
     setVariants(nv);
   };
 
+  // ── Fixed: validate variant image file types too ──
   const handleVariantImageChange = (index, e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Only image files are allowed (JPG, PNG, WEBP, GIF)');
+      e.target.value = '';
+      return;
+    }
+    setImageError('');
     const newImages   = [...variantImages];
     const newPreviews = [...variantPreviews];
     newImages[index]   = file;
     newPreviews[index] = URL.createObjectURL(file);
     setVariantImages(newImages);
     setVariantPreviews(newPreviews);
+    e.target.value = '';
   };
 
   const removeVariantImage = (index) => {
@@ -201,10 +223,26 @@ const AddProduct = () => {
         </div>
       </div>
 
-      {/* Error */}
+      {/* Redux error */}
       {error && (
         <div className="mx-4 mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-semibold flex items-center gap-2">
           <X size={16} /> {error}
+        </div>
+      )}
+
+      {/* Image validation error */}
+      {imageError && (
+        <div className="mx-4 mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-semibold flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <X size={16} /> {imageError}
+          </div>
+          <button
+            type="button"
+            onClick={() => setImageError('')}
+            className="text-red-400 hover:text-red-600 bg-transparent border-0 cursor-pointer p-0 leading-none"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -457,7 +495,16 @@ const AddProduct = () => {
                   <Plus size={16} />
                 </button>
               </div>
-              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleImageChange} />
+
+              {/* ── Fixed: added accept="image/*" to restrict file picker to images only ── */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
             </div>
           </div>
 

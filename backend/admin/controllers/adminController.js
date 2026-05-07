@@ -21,15 +21,12 @@ export const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id: admin._id.toString(),
-        role: admin.role
-      },
+      { id: admin._id.toString(), role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // Set Cookie
+    // Keep cookie for same-origin setups
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -38,9 +35,11 @@ export const loginUser = async (req, res) => {
       path: "/",
     });
 
+    // Also send token in body so frontend can store and send as Bearer header
     res.status(200).json({
       message: "Login successful",
-      role: admin.role
+      role: admin.role,
+      token, // ← ADD THIS
     });
 
   } catch (error) {
@@ -53,4 +52,3 @@ export const logoutUser = (req, res) => {
   res.clearCookie("token", { path: "/" });
   res.status(200).json({ message: "Logged out successfully" });
 };
-

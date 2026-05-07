@@ -25,13 +25,12 @@ const isExpiring = (d) => {
   return diff > 0 && diff < 3 * 24 * 60 * 60 * 1000;
 };
 
-async function apiFetch(path, options = {}) {
-  const method = (options.method || 'GET').toLowerCase();
+// ── Fixed apiFetch: cleanly separates method, data, and avoids spreading raw options ──
+async function apiFetch(path, { method = 'GET', body } = {}) {
   const res = await api({
     url: `${API_BASE}${path}`,
-    method,
-    data: options.body ? JSON.parse(options.body) : undefined,
-    ...options
+    method: method.toLowerCase(),
+    ...(body !== undefined ? { data: body } : {}),
   });
   return res.data;
 }
@@ -419,16 +418,20 @@ export default function CouponManagement() {
   useEffect(() => { fetchCoupons(true); }, [fetchCoupons]);
 
   const handleSave = async (form) => {
-    if (editCoupon) {
-      await apiFetch(`/${editCoupon._id}`, { method: 'PUT', body: JSON.stringify(form) });
-      toast.success('Coupon updated!');
-    } else {
-      await apiFetch('', { method: 'POST', body: JSON.stringify(form) });
-      toast.success('Coupon created!');
+    try {
+      if (editCoupon) {
+        await apiFetch(`/${editCoupon._id}`, { method: 'PUT', body: form });
+        toast.success('Coupon updated!');
+      } else {
+        await apiFetch('/', { method: 'POST', body: form });
+        toast.success('Coupon created!');
+      }
+      setModalOpen(false);
+      setEditCoupon(null);
+      fetchCoupons();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || 'Failed to save coupon');
     }
-    setModalOpen(false);
-    setEditCoupon(null);
-    fetchCoupons();
   };
 
   const handleDelete = async (id) => {
