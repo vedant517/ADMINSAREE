@@ -20,6 +20,17 @@ const CategoryShowcase = () => {
     fetchCategories();
   }, []);
 
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return path;
+  };
+
+  const handleImageError = (e, name) => {
+    e.target.onerror = null;
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Category')}&background=random&size=400&bold=true`;
+  };
+
   if (loading) return null;
 
   return (
@@ -69,10 +80,10 @@ const CategoryShowcase = () => {
               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <img 
-                  src={cat.image} 
+                  src={getImageUrl(cat.image)} 
                   alt={cat.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=400` }}
+                  onError={(e) => handleImageError(e, cat.name)}
                 />
               </div>
               <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
