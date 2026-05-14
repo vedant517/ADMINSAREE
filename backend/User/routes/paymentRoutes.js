@@ -22,12 +22,26 @@ router.post("/create-order", protect, async (req, res) => {
     const { amount, currency = "INR", orderId } = req.body;
     console.log(`[RAZORPAY-DEBUG] Creating order. Received Amount: ${amount}`);
 
-    if (!amount) {
-      return res.status(400).json({ success: false, message: "Amount is required" });
+    let paymentAmount = Number(amount);
+    let dbOrderId = undefined;
+
+    if (orderId) {
+      const dbOrder = mongoose.Types.ObjectId.isValid(orderId)
+        ? await Order.findById(orderId)
+        : await Order.findOne({ orderId });
+
+      if (dbOrder) {
+        dbOrderId = dbOrder._id;
+        paymentAmount = Number(dbOrder.totalPrice);
+      }
+    }
+
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+      return res.status(400).json({ success: false, message: "Valid amount is required" });
     }
 
     const options = {
-      amount: Math.round(amount), // amount in smallest currency unit (paise)
+      amount: Math.round(paymentAmount * 100), // Razorpay expects amount in paise
       currency,
       receipt: orderId || `receipt_${Date.now()}`,
     };
@@ -40,21 +54,11 @@ router.post("/create-order", protect, async (req, res) => {
 
     // Create a transaction record so Admin panel can show it
     try {
-      let dbOrderId = undefined;
-      if (orderId) {
-        if (mongoose.Types.ObjectId.isValid(orderId)) {
-          dbOrderId = orderId;
-        } else {
-          const dbOrder = await Order.findOne({ orderId: orderId });
-          if (dbOrder) dbOrderId = dbOrder._id;
-        }
-      }
-
       await Transaction.create({
         user: req.user._id,
         order: dbOrderId,
         razorpayOrderId: order.id,
-        amount: amount,
+        amount: paymentAmount,
         currency,
         status: "created",
         receipt: options.receipt,
@@ -66,7 +70,7 @@ router.post("/create-order", protect, async (req, res) => {
         user: req.user._id,
         order: dbOrderId,
         razorpayOrderId: order.id,
-        amount: amount,
+        amount: paymentAmount,
         currency,
         status: "created",
         receipt: options.receipt,

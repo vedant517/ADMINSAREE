@@ -31,7 +31,7 @@ const Categories = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/categories');
+      const { data } = await api.get('/categoriegs');
       setCategories(data.data);
       setImgErrors({});
     } catch (error) {

@@ -6,6 +6,8 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import dns from "node:dns";
 
@@ -20,6 +22,8 @@ try {
 }
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ==============================
 // ✅ MIDDLEWARES
@@ -138,9 +142,18 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
-app.get("/", (req, res) => {
-  res.send("Unified API is running...");
-});
+if (process.env.NODE_ENV === "production") {
+  const frontendDistPath = path.resolve(__dirname, "../frontend/dist");
+  app.use(express.static(frontendDistPath));
+  app.get(/.*/, (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.send("Unified API is running...");
+  });
+}
 
 // ==============================
 // ✅ ERROR HANDLING

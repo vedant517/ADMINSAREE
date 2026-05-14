@@ -1,6 +1,41 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import Transaction from "../models/Transaction.js";
+import Address from "../../models/Address.js";
+
+const shouldSaveAddress = (body) => {
+  return Boolean(
+    body.saveAddress ||
+    body.saveForFuture ||
+    body.saveForFutureUse ||
+    body.saveAddressForFuture ||
+    body.saveThisAddress
+  );
+};
+
+const splitName = (fullName = "") => {
+  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || "",
+    lastName: parts.slice(1).join(" ") || parts[0] || "",
+  };
+};
+
+const buildSavedAddress = (body, shippingAddress, userId) => {
+  const nameParts = splitName(body.fullName || shippingAddress?.fullName);
+  return {
+    user: userId,
+    firstName: body.firstName || shippingAddress?.firstName || nameParts.firstName,
+    lastName: body.lastName || shippingAddress?.lastName || nameParts.lastName,
+    email: body.email || shippingAddress?.email,
+    phoneNumber: body.phoneNumber || body.phone || shippingAddress?.phone || shippingAddress?.phoneNumber,
+    address: body.address || shippingAddress?.address,
+    country: body.country || shippingAddress?.country || "India",
+    state: body.state || shippingAddress?.state,
+    city: body.city || shippingAddress?.city,
+    zipCode: body.zipCode || body.postalCode || shippingAddress?.zipCode || shippingAddress?.postalCode,
+  };
+};
 
 // CREATE ORDER
 export const createOrder = async (req, res) => {
@@ -96,6 +131,27 @@ export const createOrder = async (req, res) => {
     }
 
     const order = await Order.create(orderData);
+
+    if (req.user?.id && shouldSaveAddress(req.body)) {
+      const addressData = buildSavedAddress(req.body, shippingAddress, req.user.id);
+      const hasRequiredAddressFields = [
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "address",
+        "country",
+        "state",
+        "city",
+        "zipCode",
+      ].every((field) => Boolean(addressData[field]));
+
+      if (hasRequiredAddressFields) {
+        await Address.create(addressData);
+      } else {
+        console.warn("Address not saved from checkout because required fields were missing:", addressData);
+      }
+    }
     
     // Create transaction based on payment method
     if (paymentMethod.toUpperCase() === 'COD' || paymentMethod.toLowerCase().includes('cash on delivery')) {

@@ -21,10 +21,10 @@ export const createRazorpayOrder = async (req, res) => {
   console.log('--- RECV: createRazorpayOrder ---');
   console.log('Body:', JSON.stringify(req.body, null, 2));
   try {
-    const { amount, currency = 'INR', orderId, notes = {} } = req.body;
+    const { amount, totalPrice, grandTotal, orderTotal, currency = 'INR', orderId, notes = {} } = req.body;
     const razorpay = getRazorpayInstance();
 
-    let paymentAmount = amount;
+    let paymentAmount = Number(amount ?? totalPrice ?? grandTotal ?? orderTotal);
     let dbOrder = null;
 
     // 1. Try to fetch amount from DB if orderId is provided
@@ -37,13 +37,13 @@ export const createRazorpayOrder = async (req, res) => {
       }
       
       if (dbOrder) {
-        paymentAmount = dbOrder.totalPrice;
+        paymentAmount = Number(dbOrder.totalPrice);
         console.log(`Found order ${orderId}, using total price from DB: ${paymentAmount}`);
       }
     }
 
     // 2. Validate that we have a valid amount now
-    if (!paymentAmount || paymentAmount <= 0) {
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
       return res.status(400).json({ 
         success: false, 
         message: orderId && !dbOrder 

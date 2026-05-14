@@ -4,6 +4,31 @@ import Address from "../../models/Address.js";
 
 const router = express.Router();
 
+const splitName = (fullName = "") => {
+  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || "",
+    lastName: parts.slice(1).join(" ") || parts[0] || "",
+  };
+};
+
+const normalizeAddressPayload = (body) => {
+  const shipping = body.shippingAddress || {};
+  const nameParts = splitName(body.fullName || shipping.fullName);
+
+  return {
+    firstName: body.firstName || shipping.firstName || nameParts.firstName,
+    lastName: body.lastName || shipping.lastName || nameParts.lastName,
+    email: body.email || shipping.email || body.contact?.emailOrPhone,
+    phoneNumber: body.phoneNumber || body.phone || shipping.phone || shipping.phoneNumber,
+    address: body.address || shipping.address,
+    country: body.country || shipping.country || "India",
+    state: body.state || shipping.state,
+    city: body.city || shipping.city,
+    zipCode: body.zipCode || body.postalCode || shipping.zipCode || shipping.postalCode,
+  };
+};
+
 // @route   POST /api/addresses
 // @desc    Add a new shipping address (checkout form)
 // @access  Private
@@ -16,10 +41,10 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    const { 
+    const {
       firstName, lastName, email, phoneNumber,
-      address, country, state, city, zipCode 
-    } = req.body;
+      address, country, state, city, zipCode
+    } = normalizeAddressPayload(req.body);
 
     // Validate required fields
     if (!firstName || !lastName || !email || !phoneNumber || !address || !country || !state || !city || !zipCode) {
@@ -77,7 +102,7 @@ router.put("/:id", protect, async (req, res) => {
       return res.status(404).json({ success: false, message: "Address not found" });
     }
 
-    const { firstName, lastName, email, phoneNumber, address: addr, country, state, city, zipCode } = req.body;
+    const { firstName, lastName, email, phoneNumber, address: addr, country, state, city, zipCode } = normalizeAddressPayload(req.body);
     const updated = await Address.findByIdAndUpdate(
       req.params.id,
       { firstName, lastName, email, phoneNumber, address: addr, country, state, city, zipCode },

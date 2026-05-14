@@ -105,7 +105,7 @@ export default function AdminLayout({ setIsAuthenticated }) {
       This prevents any child with min-h-screen from pushing the document
       scroll and breaking the sidebar/main split.
     */
-    <div className="fixed inset-0 flex bg-slate-50">
+    <div className="admin-shell fixed inset-0 flex bg-slate-50">
 
       {/* ── Desktop Sidebar (md+) ── */}
       <aside className="hidden md:flex flex-col w-60 shrink-0 bg-white border-r border-slate-100">
@@ -198,7 +198,7 @@ export default function AdminLayout({ setIsAuthenticated }) {
         </header>
 
         {/* Page Content — ONLY this area scrolls */}
-        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <main className="admin-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>
