@@ -10,22 +10,29 @@ export const registerUser = async (req, res) => {
     if (!req.body) {
       return res.status(400).json({ message: "Request body is missing." });
     }
-    const { name, phonenum } = req.body;
+    const { name, phonenum, email } = req.body;
 
-    if (!name || !phonenum) {
-      return res.status(400).json({ message: "Name and Mobile number are required." });
+    if (!name || !phonenum || !email) {
+      return res.status(400).json({ message: "Name, Mobile number, and Email are required." });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ phonenum });
-    if (existingUser) {
+    // Check if user already exists with mobile
+    const existingMobile = await User.findOne({ phonenum });
+    if (existingMobile) {
       return res.status(400).json({ message: "User already exists with this mobile number. Please login." });
+    }
+
+    // Check if user already exists with email
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: "User already exists with this email address." });
     }
 
     // Create user
     const user = await User.create({
       name,
       phonenum,
+      email,
       role: 'user'
     });
 
@@ -35,7 +42,8 @@ export const registerUser = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        phonenum: user.phonenum
+        phonenum: user.phonenum,
+        email: user.email
       }
     });
   } catch (err) {
@@ -113,16 +121,17 @@ export const verifyOTP = async (req, res) => {
 
     // Create JWT
     const token = jwt.sign(
-      { id: user._id, role: user.role }, 
+      { id: user._id.toString(), role: user.role }, 
       process.env.JWT_SECRET || "fallback_secret", 
       { expiresIn: "7d" }
     );
 
     // Set Cookie
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Required for cross-origin cookies on Render
-      sameSite: "None", // Required for cross-origin cookies on Render
+      secure: isProduction, // Only secure in production
+      sameSite: isProduction ? "None" : "Lax", // None requires Secure, Lax is fine for local
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -145,10 +154,11 @@ export const verifyOTP = async (req, res) => {
 
 // LOGOUT
 export const logoutUser = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("token", { 
     path: "/",
-    secure: true,
-    sameSite: "None"
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax"
   });
   res.status(200).json({ 
     success: true,

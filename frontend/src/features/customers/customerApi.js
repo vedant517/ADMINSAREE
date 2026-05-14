@@ -14,18 +14,18 @@ export const customerApi = createApi({
   endpoints: (builder) => ({
     // Stats
     getCustomerStats: builder.query({
-      query: () => "/customers/stats",
+      query: () => "/admin/customers/stats",
     }),
 
     // Customer List
     getCustomers: builder.query({
       query: ({ page = 1, search = "" }) =>
-        `/customers?page=${page}&limit=5&search=${search}`,
+        `/admin/customers?page=${page}&limit=5&search=${search}`,
     }),
 
     // Single Customer
     getCustomerById: builder.query({
-      query: (id) => `/customers/${id}`,
+      query: (id) => `/admin/customers/${id}`,
     }),
   }),
 });

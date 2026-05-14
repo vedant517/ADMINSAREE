@@ -20,6 +20,8 @@ try {
 }
 
 const app = express();
+app.set("trust proxy", 1);
+
 
 // ==============================
 // ✅ MIDDLEWARES
@@ -51,88 +53,14 @@ app.use((req, res, next) => {
 app.use("/uploads", express.static("uploads"));
 
 // ==============================
-// ✅ ADMIN ROUTES
+// ✅ ROUTES
 // ==============================
-import productRoutes from "./admin/routes/productRoutes.js";
-import configRoutes from "./admin/routes/configRoutes.js";
-import adminRoutes from "./admin/routes/adminRoutes.js";
-import orderRoutes from "./admin/routes/orderRoutes.js";
-import paymentRoutes from "./admin/routes/paymentRoutes.js";
-import transactionRoutes from "./admin/routes/transactionRoutes.js";
-import customerRoutes from "./admin/routes/customer.routes.js";
-import addressRoutes from "./admin/routes/address.routes.js";
-import offerRoutes from "./admin/routes/offerRoutes.js";
-import adminProfileRoutes from "./admin/routes/adminProfile.routes.js";
-import couponRoutes from "./admin/routes/Couponroutes.js";
-import adminCategoryRoutes from "./admin/routes/categoryRoutes.js";
-import enquiryRoutes from "./User/routes/enquiryRoutes.js";
-import adminEnquiryRoutes from "./admin/routes/adminEnquiryRoutes.js";
-import shippingRoutes from "./admin/routes/shippingRoutes.js";
+import adminRoutes from "./admin/routes/index.js";
+import userRoutes from "./User/routes/index.js";
 
-
-
-
-
-// ==============================
-// ✅ USER ROUTES (Migrated from 'server' folder)
-// ==============================
-import authRoutes from "./User/routes/authRoutes.js";
-import cartRoutes from "./User/routes/cartRoutes.js";
-import wishlistRoutes from "./User/routes/wishlistRoutes.js";
-import userOrderRoutes from "./User/routes/orderRoutes.js"; // New order routes from 'server'
-import userProductRoutes from "./User/routes/productRoutes.js";
-import userAddressRoutes from "./User/routes/addressRoutes.js";
-import userCouponRoutes from "./User/routes/couponRoutes.js";
-import userOfferRoutes from "./User/routes/offerRoutes.js";
-import userPaymentRoutes from "./User/routes/paymentRoutes.js";
-import userRoutes from "./User/routes/userRoutes.js";
-import reviewRoutes from "./User/routes/reviewRoutes.js";
-import buyNowRoutes from "./User/routes/buyNowRoutes.js";
-import metadataRoutes from "./User/routes/metadataRoutes.js";
-
-
-// ==============================
-// ✅ ROUTE MAPPING (Consolidated)
-// ==============================
-
-// Products (Public & Admin)
-app.use("/api/products", productRoutes); 
-
-// Auth
-app.use("/api/auth", authRoutes);
-
-// Orders
-app.use("/api/admin/orders", orderRoutes);
-app.use("/api/user/orders", userOrderRoutes);
-app.use("/api/orders", orderRoutes); 
-
-// Metadata & Categories
-app.use("/api/categories", adminCategoryRoutes);
-app.use("/api", metadataRoutes);
-
-
-
-// User Features
-app.use("/api/cart", cartRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/addresses", userAddressRoutes);
-app.use("/api/coupons", couponRoutes);
-app.use("/api/offers", offerRoutes); // Use admin offer routes for listing too
-app.use("/api/payments", paymentRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/buynow", buyNowRoutes);
-
-
-// Monitoring & Stats
-app.use("/api/admin", adminRoutes); // Register admin auth routes (login)
-app.use("/api/transactions", transactionRoutes);
-app.use("/api/customers", customerRoutes);
-app.use("/api/enquiries", enquiryRoutes);
-app.use("/api/admin/enquiries", adminEnquiryRoutes);
-app.use("/api/admin/profile", adminProfileRoutes);
-app.use("/api/config", configRoutes);
-app.use("/api/shipping", shippingRoutes);
+// Mount Routers
+app.use("/api/admin", adminRoutes);
+app.use("/api", userRoutes);
 // ==============================
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });

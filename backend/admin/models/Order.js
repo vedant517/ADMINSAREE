@@ -60,6 +60,11 @@ const orderSchema = new mongoose.Schema({
     required: true,
     default: 0.0,
   },
+  discountPrice: {
+    type: Number,
+    required: true,
+    default: 0.0,
+  },
   isPaid: {
     type: Boolean,
     required: true,
@@ -78,7 +83,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: { // Added for dashboard compatibility
     type: String,
-    enum: ["Pending", "Delivered", "Cancelled", "Shipped"],
+    enum: ["Pending", "Delivered", "Cancelled", "Shipped", "Out for Delivery"],
     default: "Pending",
   },
 }, {

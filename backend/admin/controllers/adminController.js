@@ -30,10 +30,11 @@ export const loginUser = async (req, res) => {
     );
 
     // Set Cookie
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Required for cross-origin cookies on Render
-      sameSite: "None", // Required for cross-origin cookies on Render
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -50,10 +51,11 @@ export const loginUser = async (req, res) => {
 };
 
 export const logoutUser = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("token", { 
     path: "/",
-    secure: true,
-    sameSite: "None"
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax"
   });
   res.status(200).json({ message: "Logged out successfully" });
 };

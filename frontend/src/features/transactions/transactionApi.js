@@ -14,7 +14,7 @@ export const transactionApi = createApi({
   endpoints: (builder) => ({
     getTransactions: builder.query({
       query: ({ status, page = 1, limit = 20 } = {}) => {
-        let url = '/transactions?';
+        let url = '/admin/transactions?';
         if (status) url += `status=${status}&`;
         url += `page=${page}&limit=${limit}`;
         return url;
@@ -28,16 +28,16 @@ export const transactionApi = createApi({
           : [{ type: 'Transaction', id: 'LIST' }],
     }),
     getTransactionStats: builder.query({
-      query: () => '/transactions/stats',
+      query: () => '/admin/transactions/stats',
       providesTags: ['TransactionStats'],
     }),
     getTransactionById: builder.query({
-      query: (id) => `/transactions/${id}`,
+      query: (id) => `/admin/transactions/${id}`,
       providesTags: (result, error, id) => [{ type: 'Transaction', id }],
     }),
     refundTransaction: builder.mutation({
       query: ({ id, amount, reason }) => ({
-        url: `/transactions/${id}/refund`,
+        url: `/admin/transactions/${id}/refund`,
         method: 'POST',
         body: { amount, reason },
       }),

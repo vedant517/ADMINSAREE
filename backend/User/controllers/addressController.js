@@ -1,6 +1,6 @@
 import Address from "../../models/Address.js";
 
-// ✅ 1. CREATE ADDRESS
+// ADD ADDRESS
 export const createAddress = async (req, res) => {
   try {
     const { 
@@ -35,31 +35,20 @@ export const createAddress = async (req, res) => {
   }
 };
 
-// ✅ 2. GET ALL ADDRESSES (Admin)
-export const getAddresses = async (req, res) => {
+// GET USER ADDRESSES
+export const getMyAddresses = async (req, res) => {
   try {
-    const addresses = await Address.find({}).sort({ createdAt: -1 });
+    const addresses = await Address.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json({ success: true, data: addresses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ✅ 3. GET ADDRESSES BY USER (Admin)
-export const getAddressesByUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const addresses = await Address.find({ user: userId }).sort({ createdAt: -1 });
-    res.json({ success: true, data: addresses });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// ✅ 4. UPDATE ADDRESS
+// UPDATE ADDRESS
 export const updateAddress = async (req, res) => {
   try {
-    const address = await Address.findById(req.params.id);
+    const address = await Address.findOne({ _id: req.params.id, user: req.user.id });
     if (!address) {
       return res.status(404).json({ success: false, message: "Address not found" });
     }
@@ -75,16 +64,42 @@ export const updateAddress = async (req, res) => {
   }
 };
 
-// ✅ 5. DELETE ADDRESS
+// DELETE ADDRESS
 export const deleteAddress = async (req, res) => {
   try {
-    const { id } = req.params;
-    const address = await Address.findById(id);
+    const address = await Address.findOne({ _id: req.params.id, user: req.user.id });
     if (!address) {
-      return res.status(404).json({ success: false, message: "Address not found" });
+      return res.status(404).json({ success: false, message: "Address not found or not authorized" });
     }
-    await Address.findByIdAndDelete(id);
+    await Address.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: "Address removed" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// PINCODE LOOKUP
+export const lookupPincode = async (req, res) => {
+  const { pincode } = req.params;
+  if (!pincode || pincode.length !== 6) {
+    return res.status(400).json({ success: false, message: "Invalid 6-digit PIN code." });
+  }
+  try {
+    const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+    const data = await response.json();
+    if (data[0].Status === "Success") {
+      const postOffice = data[0].PostOffice[0];
+      return res.json({ 
+        success: true, 
+        data: {
+          city: postOffice.Block,
+          district: postOffice.District,
+          state: postOffice.State,
+          country: "India"
+        } 
+      });
+    }
+    res.status(404).json({ success: false, message: "No details found for this PIN code." });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

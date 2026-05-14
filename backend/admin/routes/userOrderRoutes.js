@@ -3,7 +3,7 @@ import {
   createOrder,
   getUserOrders,
   cancelOrder
-} from "../controllers/userOrderController.js";
+} from "../../User/controllers/orderController.js";
 import { protect } from "../../User/middleware/authMiddleware.js";
 
 const router = express.Router();

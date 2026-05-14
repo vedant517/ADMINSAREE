@@ -49,7 +49,7 @@ export const addProduct = createAsyncThunk(
         });
       }
 
-      const response = await api.post(API_URL, formData, {
+      const response = await api.post('/admin/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -75,7 +75,7 @@ export const updateProduct = createAsyncThunk(
         });
       }
 
-      const response = await api.put(`${API_URL}/${id}`, formData, {
+      const response = await api.put(`/admin/products/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -95,7 +95,7 @@ export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
   async (id, thunkAPI) => {
     try {
-      await api.delete(`${API_URL}/${id}`);
+      await api.delete(`/admin/products/${id}`);
       return id;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);

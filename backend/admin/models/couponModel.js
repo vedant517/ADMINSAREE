@@ -30,8 +30,13 @@ const couponSchema = new mongoose.Schema(
     usageLimit:    { type: Number, default: null, min: 1 },
     usagePerUser:  { type: Number, default: 1, min: 1 },
     usedCount:     { type: Number, default: 0 },
-    // Unified usedBy — store just user ObjectIds
-    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    // Unified usedBy — store userId and when they used it
+    usedBy: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        usedAt: { type: Date, default: Date.now }
+      }
+    ],
     validFrom:  { type: Date, default: Date.now },
     validUntil: { type: Date, required: [true, "Expiry date is required"] },
     isActive:   { type: Boolean, default: true },

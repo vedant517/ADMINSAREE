@@ -59,6 +59,12 @@ export const updateOrder = async (req, res) => {
       }
     }
 
+    // Set isDelivered and deliveredAt if status is Delivered
+    if (status === "Delivered") {
+      req.body.isDelivered = true;
+      req.body.deliveredAt = Date.now();
+    }
+
     // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(order._id, req.body, { new: true });
 

@@ -50,43 +50,34 @@ const toggleCoupon = asyncHandler(async (req, res) => {
 
 /* ================= USER ================= */
 
-const applyCoupon = asyncHandler(async (req, res) => {
-  const { code, orderTotal, userId } = req.body;
-
-  if (!code || orderTotal == null) {
-    return res.status(400).json({ success: false, message: "Coupon code and order total are required" });
-  }
-
+export const calculateDiscount = async (code, orderTotal, userId) => {
   const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
 
   if (!coupon) {
-    return res.status(404).json({ success: false, message: "Invalid or inactive coupon" });
+    throw new Error("Invalid or inactive coupon");
   }
 
   const now = new Date();
   if (now < coupon.validFrom) {
-    return res.status(400).json({ success: false, message: "Coupon is not yet valid" });
+    throw new Error("Coupon is not yet valid");
   }
   if (now > coupon.validUntil) {
-    return res.status(400).json({ success: false, message: "Coupon has expired" });
+    throw new Error("Coupon has expired");
   }
 
   if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-    return res.status(400).json({ success: false, message: "Coupon usage limit reached" });
+    throw new Error("Coupon usage limit reached");
   }
 
   if (orderTotal < coupon.minOrderValue) {
-    return res.status(400).json({ 
-      success: false, 
-      message: `Minimum order value of ₹${coupon.minOrderValue} required for this coupon` 
-    });
+    throw new Error(`Minimum order value of ₹${coupon.minOrderValue} required for this coupon`);
   }
 
   // Check usage per user
   if (userId && coupon.usagePerUser) {
     const userUsageCount = coupon.usedBy.filter(u => u.userId.toString() === userId.toString()).length;
     if (userUsageCount >= coupon.usagePerUser) {
-      return res.status(400).json({ success: false, message: "You have already used this coupon maximum times" });
+      throw new Error("You have already used this coupon maximum times");
     }
   }
 
@@ -103,18 +94,33 @@ const applyCoupon = asyncHandler(async (req, res) => {
   // Discount shouldn't exceed order total
   discountAmount = Math.min(discountAmount, orderTotal);
 
-  const finalTotal = orderTotal - discountAmount;
+  return {
+    code: coupon.code,
+    discountAmount,
+    discountType: coupon.discountType,
+    discountValue: coupon.discountValue
+  };
+};
 
-  res.json({
-    success: true,
-    data: {
-      code: coupon.code,
-      discountAmount,
-      finalTotal,
-      discountType: coupon.discountType,
-      discountValue: coupon.discountValue
-    },
-  });
+const applyCoupon = asyncHandler(async (req, res) => {
+  const { code, orderTotal, userId } = req.body;
+
+  if (!code || orderTotal == null) {
+    return res.status(400).json({ success: false, message: "Coupon code and order total are required" });
+  }
+
+  try {
+    const result = await calculateDiscount(code, orderTotal, userId);
+    res.json({
+      success: true,
+      data: {
+        ...result,
+        finalTotal: orderTotal - result.discountAmount
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
 const markCouponUsed = asyncHandler(async (req, res) => {

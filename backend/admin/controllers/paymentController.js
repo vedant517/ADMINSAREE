@@ -52,6 +52,10 @@ export const createRazorpayOrder = async (req, res) => {
       });
     }
 
+    // Fetch user details for Razorpay notes
+    const User = (await import('../../models/User.js')).default;
+    const user = await User.findById(req.user?.id);
+
     const options = {
       amount: Math.round(paymentAmount * 100), // Razorpay expects amount in paise
       currency,
@@ -59,6 +63,9 @@ export const createRazorpayOrder = async (req, res) => {
       notes: {
         orderId: orderId || '',
         userId: req.user?._id?.toString() || '',
+        userName: user?.name || '',
+        userEmail: user?.email || '',
+        userPhone: user?.phonenum || '',
         ...notes,
       },
     };

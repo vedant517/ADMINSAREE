@@ -4,7 +4,7 @@ import {
   updateOrder, 
   getOrderStats 
 } from "../controllers/orderController.js";
-import { createOrder, getUserOrders, cancelOrder } from "../controllers/userOrderController.js";
+import { createOrder, getUserOrders, cancelOrder } from "../../User/controllers/orderController.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

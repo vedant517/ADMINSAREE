@@ -44,3 +44,5 @@ const dropIndex = async () => {
 };
 
 dropIndex();
+const include = { dropIndeces: dropIndex };
+export default include;

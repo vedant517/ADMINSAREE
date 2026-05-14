@@ -1,9 +1,25 @@
 import BuyNow from "../models/BuyNow.js";
+import jwt from "jsonwebtoken";
 
 export const createBuyNow = async (req, res) => {
   try {
+    // Get user from cookie token
+    const token = req.cookies?.token;
+    let userId = null;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (err) {
+        return res.status(401).json({ success: false, message: "Invalid or expired token" });
+      }
+    }
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Login required to Buy Now" });
+    }
+
     const {
-      user,
       productId,
       name,
       image,
@@ -13,17 +29,17 @@ export const createBuyNow = async (req, res) => {
       addressId,
     } = req.body;
 
-    if (!user || !productId || !name || !price) {
+    if (!productId || !name || !price) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields (user, productId, name, price)",
+        message: "Missing required fields (productId, name, price)",
       });
     }
 
     const totalAmount = price * (quantity || 1);
 
     const order = await BuyNow.create({
-      user,
+      user: userId,
       productId,
       name,
       image,
@@ -43,8 +59,7 @@ export const createBuyNow = async (req, res) => {
     console.error("Buy Now Error:", error);
     res.status(500).json({
       success: false,
-      message: "Server Error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      message: error.message,
     });
   }
 };
