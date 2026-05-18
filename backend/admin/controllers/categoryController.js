@@ -11,7 +11,7 @@ export const getCategories = async (req, res) => {
 
 export const createCategory = async (req, res) => {
   try {
-    const { name, isMain } = req.body;
+    const { name, isMain, categories } = req.body;
     const slug = name.toLowerCase().replace(/\s+/g, "-");
     
     // Support both Cloudinary file upload and direct URL
@@ -29,7 +29,8 @@ export const createCategory = async (req, res) => {
       name,
       slug,
       image,
-      isMain: isMain === 'true' || isMain === true
+      isMain: isMain === 'true' || isMain === true,
+      categories: categories ? (typeof categories === 'string' ? categories.split(',').map(c => c.trim()).filter(c => c !== '') : categories) : []
     });
     
     res.status(201).json({ success: true, data: category });
@@ -40,7 +41,7 @@ export const createCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   try {
-    const { name, isMain } = req.body;
+    const { name, isMain, categories } = req.body;
     console.log(`[CategoryUpdate] Updating ID: ${req.params.id}, Name: ${name}, isMain: ${isMain}`);
     
     const slug = name ? name.toLowerCase().replace(/\s+/g, "-") : undefined;
@@ -50,6 +51,9 @@ export const updateCategory = async (req, res) => {
     if (name) updateData.name = name;
     if (slug) updateData.slug = slug;
     if (isMain !== undefined) updateData.isMain = isMain === 'true' || isMain === true;
+    if (categories !== undefined) {
+      updateData.categories = typeof categories === 'string' ? categories.split(',').map(c => c.trim()).filter(c => c !== '') : categories;
+    }
     
     if (req.file) {
       const normalizedPath = req.file.path.replace(/\\/g, "/");
@@ -88,6 +92,35 @@ export const deleteCategory = async (req, res) => {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
     res.json({ success: true, message: "Category deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const toggleCategoryStatus = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    category.isActive = !category.isActive;
+    await category.save();
+
+    res.json({
+      success: true,
+      message: `Category ${category.isActive ? "enabled" : "disabled"} successfully`,
+      data: category,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getActiveCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({ isActive: { $ne: false } }).sort({ name: 1 });
+    res.json({ success: true, data: categories });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

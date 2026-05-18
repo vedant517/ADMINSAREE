@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-const API_URL = '/products';
+const API_URL = '/admin/products';
 
 // Removed manual getAuthHeader since cookies are used automatically
 
@@ -49,7 +49,7 @@ export const addProduct = createAsyncThunk(
         });
       }
 
-      const response = await api.post('/admin/products', formData, {
+      const response = await api.post(API_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -75,7 +75,7 @@ export const updateProduct = createAsyncThunk(
         });
       }
 
-      const response = await api.put(`/admin/products/${id}`, formData, {
+      const response = await api.put(`${API_URL}/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -95,7 +95,7 @@ export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
   async (id, thunkAPI) => {
     try {
-      await api.delete(`/admin/products/${id}`);
+      await api.delete(`${API_URL}/${id}`);
       return id;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);

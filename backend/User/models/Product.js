@@ -47,7 +47,11 @@ const productSchema = new mongoose.Schema(
         color: { type: String },
         price: { type: Number },
         fabric: { type: String },
+        image: { type: String }, // Optional variant image
+        images: [String], // Optional variant images array
       },
+
+
     ],
     sku: { type: String, unique: true, sparse: true },
     isActive: { type: Boolean, default: true },

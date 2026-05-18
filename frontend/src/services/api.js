@@ -6,7 +6,9 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   withCredentials: true, // Crucial for sending cookies automatically
-  headers: {},
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Global response error handler

@@ -6,7 +6,7 @@ import User from "../../models/User.js";
 export const getMainCategories = async (req, res) => {
   try {
     const Category = (await import("../models/Category.js")).default;
-    const categories = await Category.find({ isMain: true });
+    const categories = await Category.find({ isMain: true, isActive: { $ne: false } });
     res.json({ success: true, data: categories });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -17,7 +17,7 @@ export const getMainCategories = async (req, res) => {
 export const getSubCategories = async (req, res) => {
   try {
     const Category = (await import("../models/Category.js")).default;
-    const categories = await Category.find({ isMain: false });
+    const categories = await Category.find({ isMain: false, isActive: { $ne: false } });
     res.json({ success: true, data: categories.map(c => c.name) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

@@ -9,6 +9,7 @@ const categorySchema = new mongoose.Schema(
     image: { type: String },
     isMain: { type: Boolean, default: false },
     categories: [{ type: String }],
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

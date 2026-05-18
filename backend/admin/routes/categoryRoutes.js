@@ -3,7 +3,8 @@ import {
   getCategories, 
   createCategory, 
   updateCategory, 
-  deleteCategory 
+  deleteCategory,
+  toggleCategoryStatus
 } from "../controllers/categoryController.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
@@ -18,5 +19,6 @@ router.get("/", getCategories);
 router.post("/", protect, authorize('admin'), upload.single('image'), createCategory);
 router.put("/:id", protect, authorize('admin'), upload.single('image'), updateCategory);
 router.delete("/:id", protect, authorize('admin'), deleteCategory);
+router.patch("/:id/toggle-status", protect, authorize('admin'), toggleCategoryStatus);
 
 export default router;

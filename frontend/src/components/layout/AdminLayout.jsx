@@ -1,28 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingCart,
   Users,
   Ticket,
-  Grid3X3,
   Receipt,
-  Bookmark,
   Layers,
   PlusCircle,
   Image as ImageIcon,
   List,
   Star,
   ShieldCheck,
-  Lock,
-  Search,
-  Bell,
-  Settings,
-  ExternalLink,
   LogOut,
   ChevronRight,
-  Moon,
-  MessageSquare
+  MessageSquare,
+  Menu,
+  X,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -52,55 +46,55 @@ const navGroups = [
     title: 'Admin',
     items: [
       { icon: ShieldCheck, label: 'Admin role', path: '/roles' },
-
     ],
   },
 ];
 
 export default function AdminLayout({ setIsAuthenticated }) {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  
+  const toggleGroup = (title) => {
+    setCollapsedGroups(prev => ({ ...prev, [title]: !prev[title] }));
+  };
 
-  return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#f8fafc' }}>
+  const handleLogout = async () => {
+    try {
+      await api.post('/admin/logout');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('role');
+    if (setIsAuthenticated) setIsAuthenticated(false);
+    else window.location.href = '/';
+  };
 
-      {/* ─── SIDEBAR ─── */}
-      <aside style={{
-        width: '240px',
-        minWidth: '240px',
-        height: '100vh',
-        background: '#fff',
-        borderRight: '1px solid #f1f5f9',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        flexShrink: 0,
-      }}>
-        {/* Logo */}
-        <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid #f8fafc' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '8px',
-              background: 'linear-gradient(135deg,#10b981,#059669)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 700, fontSize: '16px', flexShrink: 0
-            }}>D</div>
-            <span style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '-0.5px', color: '#0f172a' }}>
-              DEALP<span style={{ color: '#10b981' }}>◉</span>RT
-            </span>
-          </div>
-        </div>
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-        {/* Nav Groups */}
-        <nav style={{ flex: 1, padding: '12px 12px', overflow: 'auto' }}>
-          {navGroups.map((group) => (
-            <div key={group.title} style={{ marginBottom: '20px' }}>
-              <div style={{
-                fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
-                color: '#94a3b8', textTransform: 'uppercase',
-                padding: '0 8px', marginBottom: '6px'
-              }}>{group.title}</div>
-
+  const NavLinks = () => (
+    <>
+      {navGroups.map((group) => {
+        const isCollapsed = collapsedGroups[group.title];
+        return (
+          <div key={group.title} className="mb-4">
+            {!isSidebarCollapsed && (
+              <div 
+                onClick={() => toggleGroup(group.title)}
+                className="flex items-center justify-between px-2 mb-1.5 cursor-pointer hover:bg-black/5 rounded-md py-1 transition-colors group"
+              >
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#938359]/70 m-0 select-none">
+                  {group.title}
+                </p>
+                <ChevronRight 
+                  size={12} 
+                  className={`text-[#938359]/50 transition-transform duration-200 ${isCollapsed ? 'rotate-0' : 'rotate-90'}`} 
+                />
+              </div>
+            )}
+            
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed && !isSidebarCollapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'}`}>
               {group.items.map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
@@ -108,62 +102,142 @@ export default function AdminLayout({ setIsAuthenticated }) {
                   <Link
                     key={item.path}
                     to={item.path}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '8px 12px', borderRadius: '8px', marginBottom: '2px',
-                      textDecoration: 'none', fontSize: '13px', fontWeight: 500,
-                      transition: 'all 0.15s',
-                      background: isActive ? '#10b981' : 'transparent',
-                      color: isActive ? '#fff' : '#475569',
-                    }}
+                    onClick={() => setSidebarOpen(false)}
+                    className={[
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-[13px] font-semibold no-underline transition-all duration-150 select-none relative group/item',
+                      isActive
+                        ? 'bg-[#938359] text-white shadow-md'
+                        : 'text-slate-500 hover:bg-white/60 hover:text-slate-800',
+                      isSidebarCollapsed ? 'justify-center' : '',
+                    ].join(' ')}
                   >
-                    <Icon size={16} style={{ flexShrink: 0 }} />
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    {isActive && <ChevronRight size={14} />}
+                    <Icon size={16} className="shrink-0" />
+                    {!isSidebarCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+                    {!isSidebarCollapsed && isActive && <ChevronRight size={14} className="shrink-0" />}
+                    
+                    {isSidebarCollapsed && (
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                        {item.label}
+                      </div>
+                    )}
                   </Link>
                 );
               })}
             </div>
-          ))}
+          </div>
+        );
+      })}
+    </>
+  );
+
+  return (
+    <div className="fixed inset-0 flex bg-slate-50">
+
+      {/* ── Desktop Sidebar (md+) ── */}
+      <aside className={`hidden md:flex flex-col shrink-0 bg-[#FFF5E2] border-r border-amber-100/50 transition-all duration-300 ${isSidebarCollapsed ? 'w-[72px]' : 'w-60'}`}>
+        {/* Logo */}
+        <div className="px-5 py-4 border-b border-amber-100/50 shrink-0 relative">
+          <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+            {!isSidebarCollapsed && (
+              <span className="font-black text-lg tracking-tight text-slate-900 select-none uppercase truncate">
+                SHEETALYA
+              </span>
+            )}
+          </div>
+          
+          {/* Collapse Toggle */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-amber-100 rounded-full flex items-center justify-center text-[#938359] shadow-sm hover:shadow-md cursor-pointer transition-transform hover:scale-110 z-10"
+          >
+            <ChevronRight size={14} className={`transition-transform duration-300 ${isSidebarCollapsed ? '' : 'rotate-180'}`} />
+          </button>
+        </div>
+
+        {/* Scrollable Nav */}
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3">
+          <NavLinks />
         </nav>
 
-        {/* Profile Footer */}
-        <div style={{ borderTop: '1px solid #f1f5f9', padding: '16px' }}>
+        {/* Logout */}
+        <div className="shrink-0 border-t border-amber-100/50 p-4">
           <button
-            onClick={async () => {
-              try {
-                await api.post('/admin/logout');
-              } catch (err) {
-                console.error('Logout failed:', err);
-              }
-              localStorage.removeItem('isLoggedIn');
-              localStorage.removeItem('role');
-              if (setIsAuthenticated) setIsAuthenticated(false);
-              else window.location.href = '/';
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              padding: '12px', width: '100%', cursor: 'pointer',
-              border: '1px solid #fecaca', borderRadius: '8px',
-              fontSize: '13px', fontWeight: 700, color: '#ef4444',
-              background: '#fef2f2', transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#fee2e2'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#fef2f2'}
+            onClick={handleLogout}
+            className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-500 text-[13px] font-bold cursor-pointer transition-all hover:bg-red-100 ${isSidebarCollapsed ? 'px-0' : ''}`}
           >
-            <LogOut size={16} />
-            Secure Logout
+            <LogOut size={15} />
+            {!isSidebarCollapsed && <span>Secure Logout</span>}
           </button>
         </div>
       </aside>
 
-      {/* ─── RIGHT COLUMN ─── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        {/* Page Content */}
-        <main style={{ flex: 1, overflowY: 'auto' }}>
+      {/* ── Mobile Overlay Sidebar (below md) ── */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-slate-900/50"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="relative z-10 flex flex-col w-60 bg-[#FFF5E2] shadow-2xl">
+            <div className="px-5 py-4 border-b border-amber-100/50 shrink-0 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+                <span className="font-black text-lg tracking-tight text-slate-900 uppercase">
+                  SHEETALYA
+                </span>
+              </div>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3">
+              <NavLinks />
+            </nav>
+            <div className="shrink-0 border-t border-amber-100/50 p-4">
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-500 text-[13px] font-bold cursor-pointer transition-colors hover:bg-red-100"
+              >
+                <LogOut size={15} />
+                Secure Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Right Column ── */}
+      <div className="flex flex-col flex-1 min-w-0">
+
+        {/* Mobile Top Bar */}
+        <header className="md:hidden flex items-center gap-3 shrink-0 px-4 py-3 bg-white border-b border-slate-100">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
+            className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="Logo" className="w-7 h-7 object-contain" />
+            <span className="font-extrabold text-[15px] tracking-tight text-slate-900 uppercase">
+              SHEETALYA
+            </span>
+          </div>
+        </header>
+
+        {/* Page Content — ONLY this area scrolls */}
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>
+
     </div>
   );
 }

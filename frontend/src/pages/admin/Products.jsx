@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Plus, Search, Filter, Edit, Trash2,
   AlertCircle, CheckCircle2, ChevronDown, MoreHorizontal, Package,
+  ToggleLeft, ToggleRight
 } from 'lucide-react';
 import {
   fetchProducts, deleteProduct,
@@ -11,6 +12,7 @@ import {
 import { fetchCategories } from '../../features/products/categorySlice';
 import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
+import api from '../../services/api';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -23,7 +25,7 @@ const Products = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchProducts({ isAdmin: true }));
     dispatch(fetchCategories());
   }, [dispatch]);
 
@@ -39,231 +41,298 @@ const Products = () => {
     setDeleteConfirm(null);
   };
 
+  const handleToggle = async (id) => {
+    try {
+      await api.patch(`/admin/products/${id}/toggle-status`);
+      dispatch(fetchProducts({ isAdmin: true }));
+    } catch (error) {
+      alert('Error toggling product status');
+    }
+  };
+
   const filtered = (products || []).filter((p) => {
     const matchesSearch = (p?.name || '').toLowerCase().includes((search || '').toLowerCase());
     if (!matchesSearch) return false;
-
     if (filterType === 'Low Inventory') return (p.stock || 0) > 0 && (p.stock || 0) <= 10;
     if (filterType === 'Out of Stock') return (p.stock || 0) === 0;
-
-    return true; // All Stock
+    return true;
   });
 
   return (
-    <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '24px' }}>
+    <>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '48px', height: '48px', background: '#10b981', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Package size={24} color="white" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>Products Catalog</h1>
-            <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '4px' }}>
-              Currently Managing {filtered.length} Unique Items
-            </p>
-          </div>
-        </div>
+      <div className="flex-1 min-w-0 flex flex-col gap-6 p-6 max-sm:p-4 max-sm:gap-4">
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Deep catalog search..."
-              style={{ paddingLeft: '42px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '14px', fontSize: '14px', fontWeight: 500, outline: 'none', width: '240px' }} />
+        {/* Header */}
+        <div className="flex justify-between items-center flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#938359] rounded-2xl flex items-center justify-center shrink-0">
+              <Package size={24} color="white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight m-0">Products Catalog</h1>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 mb-0">
+                Currently Managing {filtered.length} Unique Items
+              </p>
+            </div>
           </div>
-          <button onClick={() => navigate('/add-product')}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#10b981', color: 'white', padding: '12px 20px', borderRadius: '14px', border: 'none', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', cursor: 'pointer' }}>
-            <Plus size={18} strokeWidth={3} /> Add Product
-          </button>
-        </div>
-      </div>
 
-      {/* Table Card */}
-      <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-
-        {/* Toolbar */}
-        <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #f8fafc', background: 'rgba(248,250,252,0.5)' }}>
-          <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '4px', borderRadius: '14px' }}>
-            {['All Stock', 'Low Inventory', 'Out of Stock'].map((tab) => (
-              <button key={tab}
-                onClick={() => setFilterType(tab)}
-                style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: filterType === tab ? 800 : 600, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: filterType === tab ? 'white' : 'transparent', color: filterType === tab ? '#10b981' : '#64748b', boxShadow: filterType === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {[Filter, MoreHorizontal].map((Icon, i) => (
-              <button key={i} style={{ padding: '10px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '12px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={18} />
-              </button>
-            ))}
+          <div className="flex items-center gap-3 flex-wrap max-sm:w-full max-sm:flex-col max-sm:items-stretch">
+            <div className="relative max-sm:w-full">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Deep catalog search..."
+                className="pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none w-60 max-sm:w-full"
+              />
+            </div>
+            <button
+              onClick={() => navigate('/add-product')}
+              className="flex items-center justify-center gap-2 bg-[#938359] text-white px-5 py-3 rounded-2xl border-0 text-xs font-extrabold uppercase tracking-wide cursor-pointer whitespace-nowrap hover:bg-[#7a6d4a] transition-colors max-sm:w-full"
+            >
+              <Plus size={18} strokeWidth={3} /> Add Product
+            </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#fafafa', borderBottom: '1px solid #f1f5f9' }}>
-                {[
-                  { label: 'Product Details', align: 'left' },
-                  { label: 'Taxonomy', align: 'left' },
-                  { label: 'Price Points', align: 'center' },
-                  { label: 'Availability', align: 'center' },
-                  { label: 'Actions', align: 'right' },
-                ].map(({ label, align }) => (
-                  <th key={label} style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: align, whiteSpace: 'nowrap' }}>
-                    {label}
+        {/* Table Card */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-md overflow-hidden">
+
+          {/* Toolbar */}
+          <div className="px-6 py-5 flex justify-between items-center flex-wrap gap-3 border-b border-slate-50 bg-slate-50/50 max-sm:px-4">
+            <div className="flex gap-1 bg-[#FFF5E2] p-1 rounded-2xl border border-amber-50 flex-wrap">
+              {['All Stock', 'Low Inventory', 'Out of Stock'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setFilterType(tab)}
+                  className={`px-4 py-2 rounded-xl text-sm border-0 cursor-pointer transition-all whitespace-nowrap ${
+                    filterType === tab
+                      ? 'bg-white font-black text-[#938359] shadow-sm'
+                      : 'bg-transparent font-extrabold text-slate-500 hover:text-[#938359]'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {[Filter, MoreHorizontal].map((Icon, i) => (
+                <button
+                  key={i}
+                  className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-500 cursor-pointer flex items-center justify-center hover:bg-slate-50 transition-colors"
+                >
+                  <Icon size={18} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse" style={{ minWidth: '480px' }}>
+              <thead>
+                <tr className="bg-gray-50 border-b border-slate-100">
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left whitespace-nowrap">
+                    Product Details
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading && filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: '60px', textAlign: 'center' }}>
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                    <div style={{ width: '44px', height: '44px', border: '4px solid #d1fae5', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Syncing Catalog...</span>
-                  </td>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left whitespace-nowrap max-md:hidden">
+                    Taxonomy
+                  </th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center whitespace-nowrap max-xs:hidden">
+                    Price Points
+                  </th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">
+                    Availability
+                  </th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">
+                    Actions
+                  </th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: '60px', textAlign: 'center' }}>
-                    <div style={{ width: '64px', height: '64px', background: '#f1f5f9', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                      <Package size={30} color="#94a3b8" />
-                    </div>
-                    <p style={{ fontSize: '11px', fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em' }}>No products matched your parameters</p>
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((product) => (
-                  <tr key={product._id} style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.1s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#fafafa'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '16px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{ width: '56px', height: '56px', background: '#f8fafc', borderRadius: '16px', overflow: 'hidden', border: '1px solid #f1f5f9', flexShrink: 0 }}>
-                          <img
-                            src={product?.image && product.image.startsWith('http') ? product.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`}
-                            onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true` }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            alt={product?.name}
-                          />
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>
-                            {product?.name || 'Unknown Item'}
-                          </h4>
-                          <p style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                            UID: {product?._id ? product._id.slice(-6) : 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px 20px' }}>
-                      <div>
-                        <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#1e293b' }}>{product.mainCategory || 'General'}</div>
-                        <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginTop: '3px', textTransform: 'uppercase' }}>
-                          {product.categories?.join(', ') || 'Unassigned'}
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {product.discountPrice && product.discountPrice > 0 ? (
-                          <>
-                            <span style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>{formatINR(product.discountPrice)}</span>
-                            <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', textDecoration: 'line-through' }}>{formatINR(product.price)}</span>
-                          </>
-                        ) : (
-                          <span style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>{formatINR(product.price)}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                      <span style={{
-                        display: 'inline-block', padding: '5px 14px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                        background: product.stock > 10 ? '#f0fdf4' : product.stock > 0 ? '#fffbeb' : '#fff1f2',
-                        color: product.stock > 10 ? '#059669' : product.stock > 0 ? '#d97706' : '#e11d48',
-                      }}>
-                        {product.stock > 0 ? 'Available' : 'Depleted'}
-                      </span>
-                      <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', marginTop: '4px', textTransform: 'uppercase' }}>{product.stock} units</div>
-                    </td>
-                    <td style={{ padding: '16px 20px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <button onClick={() => navigate(`/edit-product/${product._id}`)}
-                          style={{ padding: '8px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '10px', color: '#94a3b8', cursor: 'pointer', display: 'flex', transition: 'all 0.15s' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#94a3b8'; }}>
-                          <Edit size={16} />
-                        </button>
-                        <button onClick={() => setDeleteConfirm(product._id)}
-                          style={{ padding: '8px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '10px', color: '#94a3b8', cursor: 'pointer', display: 'flex', transition: 'all 0.15s' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2'; e.currentTarget.style.color = '#e11d48'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#94a3b8'; }}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {loading && filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="w-11 h-11 border-4 border-amber-100 border-t-[#938359] rounded-full mx-auto mb-3" style={{ animation: 'spin 0.8s linear infinite' }} />
+                      <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Syncing Catalog...</span>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-3">
+                        <Package size={30} className="text-slate-400" />
+                      </div>
+                      <p className="text-xs font-extrabold text-slate-300 uppercase tracking-widest">No products matched your parameters</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((product) => (
+                    <tr
+                      key={product._id}
+                      className="border-b border-slate-50 transition-colors hover:bg-gray-50"
+                    >
+                      {/* Product Details */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shrink-0">
+                            <img
+                              src={product?.image && product.image.startsWith('http') ? product.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`}
+                              onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`; }}
+                              className="w-full h-full object-cover"
+                              alt={product?.name}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight m-0 overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
+                              {product?.name || 'Unknown Item'}
+                            </h4>
+                            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest mb-0">
+                              UID: {product?._id ? product._id.slice(-6) : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
 
-        {/* Pagination Footer */}
-        <div style={{ padding: '20px 24px', background: 'rgba(248,250,252,0.5)', borderTop: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#94a3b8', margin: 0 }}>
-            Records <span style={{ color: '#0f172a' }}>1 - {filtered.length}</span> of {(products || []).length} entries
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button style={{ padding: '8px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', cursor: 'not-allowed', opacity: 0.5 }}>Previous</button>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#10b981', color: 'white', border: 'none', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }}>1</button>
-              <button style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'white', border: '1px solid #f1f5f9', color: '#94a3b8', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>2</button>
+                      {/* Taxonomy */}
+                      <td className="px-5 py-4 max-md:hidden">
+                        <div>
+                          <div className="text-xs font-black uppercase tracking-wide text-slate-800">{product.mainCategory || 'General'}</div>
+                          <div className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wide">
+                            {product.categories?.join(', ') || 'Unassigned'}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Price */}
+                      <td className="px-5 py-4 text-center max-xs:hidden">
+                        <div className="flex flex-col items-center">
+                          {product.discountPrice && product.discountPrice > 0 ? (
+                            <>
+                              <span className="text-lg font-black text-slate-900 tracking-tight">{formatINR(product.discountPrice)}</span>
+                              <span className="text-xs font-medium text-slate-400 line-through">{formatINR(product.price)}</span>
+                            </>
+                          ) : (
+                            <span className="text-lg font-black text-slate-900 tracking-tight">{formatINR(product.price)}</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-5 py-4 text-center">
+                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          product.isActive !== false
+                            ? 'bg-green-50 text-green-600 border border-green-100'
+                            : 'bg-red-50 text-red-600 border border-red-100'
+                        }`}>
+                          {product.isActive !== false ? 'Active' : 'Disabled'}
+                        </span>
+                      </td>
+
+                      {/* Availability */}
+                      <td className="px-5 py-4 text-center">
+                        <span className={`inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide ${
+                          product.stock > 10
+                            ? 'bg-amber-50 text-[#938359]'
+                            : product.stock > 0
+                            ? 'bg-yellow-50 text-yellow-600'
+                            : 'bg-red-50 text-rose-600'
+                        }`}>
+                          {product.stock > 0 ? 'Available' : 'Depleted'}
+                        </span>
+                        <div className="text-xs font-extrabold text-slate-400 mt-1 uppercase">{product.stock} units</div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2 items-center">
+                          <button
+                            onClick={() => handleToggle(product._id)}
+                            title={product.isActive !== false ? "Disable" : "Enable"}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer hover:bg-slate-50 transition-all text-[11px] font-bold bg-white ${product.isActive !== false ? 'border-amber-200 text-amber-500' : 'border-slate-200 text-[#938359]'}`}
+                          >
+                            {product.isActive !== false ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                            {product.isActive !== false ? 'Disable' : 'Enable'}
+                          </button>
+                          <button
+                            onClick={() => navigate(`/edit-product/${product._id}`)}
+                            className="p-1.5 bg-white border border-slate-100 rounded-lg text-slate-400 cursor-pointer flex transition-all hover:bg-amber-50 hover:text-heritage hover:border-amber-200"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(product._id)}
+                            className="p-1.5 bg-white border border-slate-100 rounded-lg text-slate-400 cursor-pointer flex transition-all hover:bg-red-50 hover:text-rose-500 hover:border-red-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-50 flex justify-between items-center flex-wrap gap-3 max-sm:flex-col max-sm:items-start max-sm:px-4">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-400 m-0">
+              Records <span className="text-slate-900">1 - {filtered.length}</span> of {(products || []).length} entries
+            </p>
+            <div className="flex items-center gap-2">
+              <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-400 cursor-not-allowed opacity-50">Previous</button>
+              <div className="flex gap-1.5">
+                <button className="w-9 h-9 rounded-xl bg-[#938359] text-white border-0 text-sm font-extrabold cursor-pointer">1</button>
+                <button className="w-9 h-9 rounded-xl bg-white border border-slate-100 text-slate-400 text-sm font-bold cursor-pointer hover:bg-slate-50">2</button>
+              </div>
+              <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors">Next</button>
             </div>
-            <button style={{ padding: '8px 18px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#475569', cursor: 'pointer' }}>Next</button>
           </div>
         </div>
+
+        {/* Delete Confirm Modal */}
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-lg">
+            <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+              <div className="w-18 h-18 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-5" style={{ width: 72, height: 72 }}>
+                <AlertCircle size={36} className="text-rose-600" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight m-0">Purge Product?</h3>
+              <p className="text-sm text-slate-500 mt-3 leading-relaxed">This record will be permanently deleted from the primary database cluster.</p>
+              <div className="flex gap-3 mt-7">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-500 border-0 rounded-2xl text-xs font-extrabold uppercase tracking-wide cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirm)}
+                  className="flex-1 py-3.5 bg-rose-600 text-white border-0 rounded-2xl text-xs font-extrabold uppercase tracking-wide cursor-pointer hover:bg-rose-700 transition-colors"
+                >
+                  Confirm Purge
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Toast */}
+        {successMessage && (
+          <div className="fixed bottom-8 right-8 z-[1000] bg-[#938359] text-white px-6 py-4 rounded-2xl shadow-lg shadow-amber-400/30 flex items-center gap-3">
+            <CheckCircle2 size={22} />
+            <span className="text-xs font-extrabold uppercase tracking-wide">{successMessage}</span>
+          </div>
+        )}
       </div>
-
-      {/* Delete Confirm Modal */}
-      {deleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(8px)' }}>
-          <div style={{ background: 'white', padding: '40px', borderRadius: '28px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
-            <div style={{ width: '72px', height: '72px', background: '#fff1f2', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <AlertCircle size={36} color="#e11d48" />
-            </div>
-            <h3 style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: 0 }}>Purge Product?</h3>
-            <p style={{ fontSize: '14px', color: '#64748b', marginTop: '12px', lineHeight: 1.5 }}>This record will be permanently deleted from the primary database cluster.</p>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '28px' }}>
-              <button onClick={() => setDeleteConfirm(null)}
-                style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '16px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer' }}>
-                Cancel
-              </button>
-              <button onClick={() => handleDelete(deleteConfirm)}
-                style={{ flex: 1, padding: '14px', background: '#e11d48', color: 'white', border: 'none', borderRadius: '16px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer' }}>
-                Confirm Purge
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Toast */}
-      {successMessage && (
-        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 1000, background: '#10b981', color: 'white', padding: '16px 24px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <CheckCircle2 size={22} />
-          <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{successMessage}</span>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

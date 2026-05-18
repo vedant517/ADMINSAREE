@@ -139,11 +139,13 @@ export const verifyOTP = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
+      token,  // ✅ Return token in body for cross-origin (Render) environments
       user: {
         id: user._id,
         name: user.name,
         phonenum: user.phonenum,
-        role: user.role
+        role: user.role,
+        token,  // ✅ Also embed in user object so frontend can read it easily
       }
     });
   } catch (err) {

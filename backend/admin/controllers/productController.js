@@ -92,8 +92,20 @@ export const createProduct = async (req, res) => {
           const idx = parseInt(file.fieldname.split('_')[1]);
           if (productData.variants && productData.variants[idx]) {
             productData.variants[idx].image = file.path;
+            // Also add to images array
+            if (!productData.variants[idx].images) productData.variants[idx].images = [];
+            productData.variants[idx].images.push(file.path);
+          }
+        } else if (file.fieldname.startsWith('variantImages_')) {
+          const idx = parseInt(file.fieldname.split('_')[1]);
+          if (productData.variants && productData.variants[idx]) {
+            if (!productData.variants[idx].images) productData.variants[idx].images = [];
+            productData.variants[idx].images.push(file.path);
+            // Use first one as main if not set
+            if (!productData.variants[idx].image) productData.variants[idx].image = file.path;
           }
         }
+
       });
 
       // Ensure primary image is set
@@ -167,8 +179,18 @@ export const updateProduct = async (req, res) => {
           const idx = parseInt(file.fieldname.split('_')[1]);
           if (updateData.variants && updateData.variants[idx]) {
             updateData.variants[idx].image = file.path;
+            if (!updateData.variants[idx].images) updateData.variants[idx].images = [];
+            updateData.variants[idx].images.push(file.path);
+          }
+        } else if (file.fieldname.startsWith('variantImages_')) {
+          const idx = parseInt(file.fieldname.split('_')[1]);
+          if (updateData.variants && updateData.variants[idx]) {
+            if (!updateData.variants[idx].images) updateData.variants[idx].images = [];
+            updateData.variants[idx].images.push(file.path);
+            if (!updateData.variants[idx].image) updateData.variants[idx].image = file.path;
           }
         }
+
       });
 
       // Update primary image if new one uploaded
@@ -280,5 +302,25 @@ export const getProductMetadata = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const toggleProductStatus = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    product.isActive = !product.isActive;
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Product ${product.isActive ? 'enabled' : 'disabled'} successfully`,
+      data: product
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };

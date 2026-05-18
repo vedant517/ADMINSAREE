@@ -4,8 +4,13 @@ export const protect = (req, res, next) => {
   let token = null;
   
   try {
-    // ── Strictly read from httpOnly cookie ──
+    // ── 1. Try httpOnly cookie first (local dev) ──
     token = req.cookies?.token;
+
+    // ── 2. Fallback to Authorization Bearer header (Render / cross-origin) ──
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -29,3 +34,15 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
+
+
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: `User role ${req.user?.role || 'unknown'} is not authorized to access this route`,
+      });
+    }
+    next();
+  };
+};

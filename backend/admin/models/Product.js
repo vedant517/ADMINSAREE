@@ -54,8 +54,10 @@ const productSchema = new mongoose.Schema({
       fabric: { type: String, required: true },
       stock: { type: Number, default: 0 },
       sku: { type: String },
-      image: { type: String }
+      image: { type: String },
+      images: [String], // Support multiple images per variant
     }
+
   ],
   stock: {
     type: Number,
@@ -103,6 +105,10 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: false,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   createdAt: {
     type: Date,

@@ -9,55 +9,38 @@ import {
 import api from '../../services/api';
 
 const API_BASE = '/coupons';
+const G = '#938359';
+const LG = '#f9f5e8';
 
-/* ── colour tokens ── */
-const G  = '#1a6b3c';
-const LG = '#e8f5ee';
-
-/* ── shared input style ── */
-const inp = {
-  width: '100%', padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: '10px',
-  fontSize: '13px', color: '#0f172a', outline: 'none', background: '#f8fafc', boxSizing: 'border-box',
-};
-
-/* ── helpers ── */
 const formatINR = (v) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v || 0);
 
 const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-const isExpired  = (d) => d && new Date(d) < new Date();
+const isExpired = (d) => d && new Date(d) < new Date();
 const isExpiring = (d) => {
   if (!d) return false;
   const diff = new Date(d) - new Date();
   return diff > 0 && diff < 3 * 24 * 60 * 60 * 1000;
 };
 
-/* ── API calls ── */
-// apiFetch now uses the centralized api (axios) instance
-async function apiFetch(path, options = {}) {
-  const method = (options.method || 'GET').toLowerCase();
+// ── Fixed apiFetch: cleanly separates method, data, and avoids spreading raw options ──
+async function apiFetch(path, { method = 'GET', body } = {}) {
   const res = await api({
     url: `${API_BASE}${path}`,
-    method,
-    data: options.body ? JSON.parse(options.body) : undefined,
-    ...options
+    method: method.toLowerCase(),
+    ...(body !== undefined ? { data: body } : {}),
   });
   return res.data;
 }
 
-
-/* ── Field label wrapper — defined OUTSIDE any component so it never remounts ── */
+/* ── Field label wrapper ── */
 function Field({ label, children, required }) {
   return (
     <div>
-      <label style={{
-        fontSize: '10px', fontWeight: '800', color: '#64748b',
-        textTransform: 'uppercase', letterSpacing: '0.08em',
-        display: 'block', marginBottom: '5px',
-      }}>
-        {label}{required && <span style={{ color: '#f43f5e' }}> *</span>}
+      <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-1">
+        {label}{required && <span className="text-rose-500"> *</span>}
       </label>
       {children}
     </div>
@@ -65,19 +48,12 @@ function Field({ label, children, required }) {
 }
 
 /* ── Status Badge ── */
-const badgeBase = {
-  fontSize: '10px', fontWeight: '700', padding: '3px 10px',
-  borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.04em',
-};
-
 function StatusBadge({ coupon }) {
-  if (!coupon.isActive)
-    return <span style={{ ...badgeBase, background: '#f1f5f9', color: '#94a3b8' }}>Inactive</span>;
-  if (isExpired(coupon.validUntil))
-    return <span style={{ ...badgeBase, background: '#fce8e8', color: '#c0392b' }}>Expired</span>;
-  if (isExpiring(coupon.validUntil))
-    return <span style={{ ...badgeBase, background: '#fef3c7', color: '#d97706' }}>Expiring Soon</span>;
-  return <span style={{ ...badgeBase, background: LG, color: G }}>Active</span>;
+  const base = "text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide";
+  if (!coupon.isActive) return <span className={`${base} bg-slate-100 text-slate-400`}>Inactive</span>;
+  if (isExpired(coupon.validUntil)) return <span className={`${base} bg-red-100 text-red-600`}>Expired</span>;
+  if (isExpiring(coupon.validUntil)) return <span className={`${base} bg-amber-100 text-amber-600`}>Expiring Soon</span>;
+  return <span className={`${base} bg-amber-50 text-[#938359]`}>Active</span>;
 }
 
 /* ── Coupon Card ── */
@@ -87,34 +63,28 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
     : null;
 
   return (
-    <div
-      style={{
-        background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0',
-        overflow: 'hidden', transition: 'box-shadow 0.2s, transform 0.2s', position: 'relative',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-    >
-      <div style={{ height: '4px', background: coupon.isActive && !isExpired(coupon.validUntil) ? `linear-gradient(90deg,${G},#2ecc71)` : '#e2e8f0' }} />
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 relative">
+      <div className={`h-1 ${coupon.isActive && !isExpired(coupon.validUntil) ? 'bg-gradient-to-r from-[#b09e6d] to-[#938359]' : 'bg-slate-200'}`} />
 
-      <div style={{ padding: '16px' }}>
-        {/* Header row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: LG, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {coupon.discountType === 'percentage' ? <Percent size={18} color={G} /> : <DollarSign size={18} color={G} />}
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+              {coupon.discountType === 'percentage'
+                ? <Percent size={18} color={G} />
+                : <DollarSign size={18} color={G} />
+              }
             </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '15px', fontWeight: '900', color: '#0f172a', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
-                  {coupon.code}
-                </span>
-                <button onClick={() => onCopy(coupon.code)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px', lineHeight: 0 }} title="Copy code">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[15px] font-black text-slate-900 tracking-widest font-mono">{coupon.code}</span>
+                <button onClick={() => onCopy(coupon.code)} className="bg-transparent border-0 cursor-pointer text-slate-400 p-0.5 leading-none hover:text-slate-600">
                   <Copy size={12} />
                 </button>
               </div>
               {coupon.description && (
-                <p style={{ fontSize: '10px', color: '#64748b', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
+                <p className="text-[10px] text-slate-500 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px]">
                   {coupon.description}
                 </p>
               )}
@@ -124,64 +94,69 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
         </div>
 
         {/* Discount value */}
-        <div style={{ background: LG, borderRadius: '12px', padding: '12px', marginBottom: '12px', textAlign: 'center' }}>
-          <span style={{ fontSize: '28px', fontWeight: '900', color: G, lineHeight: 1 }}>
+        <div className="bg-amber-50 rounded-xl p-3 mb-3 text-center">
+          <span className="text-[28px] font-black text-[#938359] leading-none">
             {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : formatINR(coupon.discountValue)}
           </span>
-          <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: '2px' }}>
+          <span className="text-[11px] text-slate-500 block mt-0.5">
             {coupon.discountType === 'percentage' ? 'OFF' : 'Flat discount'}
             {coupon.maxDiscount ? ` · max ${formatINR(coupon.maxDiscount)}` : ''}
           </span>
         </div>
 
         {/* Meta grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+        <div className="grid grid-cols-2 gap-2 mb-3">
           {[
             { icon: <ShoppingCart size={11} />, label: 'Min. Order', val: formatINR(coupon.minOrderValue) },
-            { icon: <Users size={11} />,        label: 'Usage',      val: coupon.usageLimit ? `${coupon.usedCount}/${coupon.usageLimit}` : `${coupon.usedCount} used` },
-            { icon: <Calendar size={11} />,     label: 'Valid From', val: formatDate(coupon.validFrom) },
-            { icon: <Clock size={11} />,        label: 'Expires',    val: formatDate(coupon.validUntil) },
+            { icon: <Users size={11} />, label: 'Usage', val: coupon.usageLimit ? `${coupon.usedCount}/${coupon.usageLimit}` : `${coupon.usedCount} used` },
+            { icon: <Calendar size={11} />, label: 'Valid From', val: formatDate(coupon.validFrom) },
+            { icon: <Clock size={11} />, label: 'Expires', val: formatDate(coupon.validUntil) },
           ].map(({ icon, label, val }) => (
-            <div key={label} style={{ background: '#f8fafc', borderRadius: '8px', padding: '7px 10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#94a3b8', marginBottom: '2px' }}>
+            <div key={label} className="bg-slate-50 rounded-lg p-1.5 px-2.5">
+              <div className="flex items-center gap-1 text-slate-400 mb-0.5">
                 {icon}
-                <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: '700' }}>{label}</span>
+                <span className="text-[9px] uppercase tracking-widest font-bold">{label}</span>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#0f172a' }}>{val}</span>
+              <span className="text-[11px] font-bold text-slate-900">{val}</span>
             </div>
           ))}
         </div>
 
-        {/* Usage progress bar */}
+        {/* Usage progress */}
         {usagePct !== null && (
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', marginBottom: '4px' }}>
+          <div className="mb-3">
+            <div className="flex justify-between text-[9px] text-slate-400 mb-1">
               <span>Usage</span><span>{usagePct.toFixed(0)}%</span>
             </div>
-            <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: '999px', background: usagePct > 80 ? '#f43f5e' : G, width: `${usagePct}%`, transition: 'width 0.4s' }} />
+            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${usagePct}%`, background: usagePct > 80 ? '#f43f5e' : G }}
+              />
             </div>
           </div>
         )}
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div className="flex gap-1.5">
           <button
             onClick={() => onToggle(coupon._id)}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '7px', border: '1px solid #e2e8f0', borderRadius: '10px', background: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', color: coupon.isActive ? '#f59e0b' : G }}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-slate-200 rounded-xl bg-transparent text-[11px] font-bold cursor-pointer hover:bg-slate-50 transition-colors"
+            style={{ color: coupon.isActive ? '#f59e0b' : G }}
           >
             {coupon.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
             {coupon.isActive ? 'Disable' : 'Enable'}
           </button>
           <button
             onClick={() => onEdit(coupon)}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '7px', border: `1px solid ${G}`, borderRadius: '10px', background: 'none', fontSize: '11px', fontWeight: '700', cursor: 'pointer', color: G }}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-transparent text-[11px] font-bold cursor-pointer hover:bg-amber-50 transition-colors"
+            style={{ border: `1px solid ${G}`, color: G }}
           >
             <Edit3 size={13} /> Edit
           </button>
           <button
             onClick={() => onDelete(coupon._id)}
-            style={{ width: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '7px', border: '1px solid #fecaca', borderRadius: '10px', background: 'none', cursor: 'pointer', color: '#f43f5e' }}
+            className="w-[34px] flex items-center justify-center py-1.5 border border-red-200 rounded-xl bg-transparent cursor-pointer text-rose-500 hover:bg-red-50 transition-colors"
           >
             <Trash2 size={13} />
           </button>
@@ -191,17 +166,15 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   CREATE / EDIT MODAL
-   Field is defined OUTSIDE this component — that
-   is what prevents inputs from losing focus on
-   every keystroke.
-══════════════════════════════════════════════ */
+/* ── Modal ── */
+const inpCls = "w-full px-3 py-2 border border-slate-200 rounded-xl text-[13px] text-slate-900 outline-none bg-slate-50 box-border focus:border-[#938359] focus:bg-white transition-colors";
+
 const INIT = {
   code: '', description: '', discountType: 'percentage', discountValue: '',
   minOrderValue: '', maxDiscount: '', usageLimit: '', usagePerUser: '1',
   validFrom: new Date().toISOString().split('T')[0],
   validUntil: '', isActive: true,
+  applicableCategories: [], applicableProducts: []
 };
 
 function CouponModal({ coupon, onClose, onSave }) {
@@ -210,44 +183,53 @@ function CouponModal({ coupon, onClose, onSave }) {
   const [form, setForm] = useState(() => {
     if (!coupon) return { ...INIT };
     return {
-      code:          coupon.code          ?? '',
-      description:   coupon.description   ?? '',
-      discountType:  coupon.discountType  ?? 'percentage',
+      code: coupon.code ?? '',
+      description: coupon.description ?? '',
+      discountType: coupon.discountType ?? 'percentage',
       discountValue: coupon.discountValue != null ? String(coupon.discountValue) : '',
       minOrderValue: coupon.minOrderValue != null ? String(coupon.minOrderValue) : '',
-      maxDiscount:   coupon.maxDiscount   != null ? String(coupon.maxDiscount)   : '',
-      usageLimit:    coupon.usageLimit    != null ? String(coupon.usageLimit)    : '',
-      usagePerUser:  coupon.usagePerUser  != null ? String(coupon.usagePerUser)  : '1',
-      validFrom:     coupon.validFrom  ? new Date(coupon.validFrom).toISOString().split('T')[0]  : INIT.validFrom,
-      validUntil:    coupon.validUntil ? new Date(coupon.validUntil).toISOString().split('T')[0] : '',
-      isActive:      coupon.isActive !== undefined ? coupon.isActive : true,
+      maxDiscount: coupon.maxDiscount != null ? String(coupon.maxDiscount) : '',
+      usageLimit: coupon.usageLimit != null ? String(coupon.usageLimit) : '',
+      usagePerUser: coupon.usagePerUser != null ? String(coupon.usagePerUser) : '1',
+      validFrom: coupon.validFrom ? new Date(coupon.validFrom).toISOString().split('T')[0] : INIT.validFrom,
+      validUntil: coupon.validUntil ? new Date(coupon.validUntil).toISOString().split('T')[0] : '',
+      isActive: coupon.isActive !== undefined ? coupon.isActive : true,
+      applicableCategories: coupon.applicableCategories ?? [],
+      applicableProducts: coupon.applicableProducts ?? [],
     };
   });
 
-  const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
 
-  // Generic setter — keeps all values as strings so inputs stay controlled
+  useEffect(() => {
+    api.get('/categories').then(res => setCategories(res.data?.data || res.data || [])).catch(console.error);
+    api.get('/products').then(res => setProducts(res.data?.data || res.data || [])).catch(console.error);
+  }, []);
+
+  const [saving, setSaving] = useState(false);
   const set = useCallback((k, v) => setForm(f => ({ ...f, [k]: v })), []);
 
   const handleSubmit = async () => {
-    if (!form.code.trim())   return toast.error('Coupon code is required');
+    if (!form.code.trim()) return toast.error('Coupon code is required');
     if (!form.discountValue) return toast.error('Discount value is required');
-    if (!form.validUntil)    return toast.error('Expiry date is required');
-
+    if (!form.validUntil) return toast.error('Expiry date is required');
     setSaving(true);
     try {
       await onSave({
-        code:          form.code.trim().toUpperCase(),
-        description:   form.description,
-        discountType:  form.discountType,
+        code: form.code.trim().toUpperCase(),
+        description: form.description,
+        discountType: form.discountType,
         discountValue: Number(form.discountValue),
         minOrderValue: form.minOrderValue !== '' ? Number(form.minOrderValue) : 0,
-        maxDiscount:   form.maxDiscount   !== '' ? Number(form.maxDiscount)   : null,
-        usageLimit:    form.usageLimit    !== '' ? Number(form.usageLimit)    : null,
-        usagePerUser:  form.usagePerUser  !== '' ? Number(form.usagePerUser)  : 1,
-        validFrom:     form.validFrom,
-        validUntil:    form.validUntil,
-        isActive:      form.isActive,
+        maxDiscount: form.maxDiscount !== '' ? Number(form.maxDiscount) : null,
+        usageLimit: form.usageLimit !== '' ? Number(form.usageLimit) : null,
+        usagePerUser: form.usagePerUser !== '' ? Number(form.usagePerUser) : 1,
+        validFrom: form.validFrom,
+        validUntil: form.validUntil,
+        isActive: form.isActive,
+        applicableCategories: form.applicableCategories,
+        applicableProducts: form.applicableProducts,
       });
     } finally {
       setSaving(false);
@@ -255,58 +237,44 @@ function CouponModal({ coupon, onClose, onSave }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-      <div style={{ background: '#fff', borderRadius: '20px', width: '100%', maxWidth: '540px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.18)' }}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-[540px] max-h-[92vh] overflow-y-auto shadow-2xl">
 
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#fff', zIndex: 2, borderRadius: '20px 20px 0 0' }}>
+        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-2xl">
           <div>
-            <h2 style={{ fontSize: '15px', fontWeight: '900', color: '#0f172a', margin: 0 }}>
-              {isEdit ? 'Edit Coupon' : 'Create New Coupon'}
-            </h2>
-            <p style={{ fontSize: '11px', color: '#94a3b8', margin: '3px 0 0' }}>
-              {isEdit ? `Editing ${coupon.code}` : 'Fill in the details below'}
-            </p>
+            <h2 className="text-[15px] font-black text-slate-900 m-0">{isEdit ? 'Edit Coupon' : 'Create New Coupon'}</h2>
+            <p className="text-[11px] text-slate-400 mt-0.5 mb-0">{isEdit ? `Editing ${coupon.code}` : 'Fill in the details below'}</p>
           </div>
-          <button onClick={onClose} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '7px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <X size={16} color="#64748b" />
+          <button onClick={onClose} className="bg-slate-50 border border-slate-200 rounded-xl p-1.5 cursor-pointer flex items-center hover:bg-slate-100">
+            <X size={16} className="text-slate-500" />
           </button>
         </div>
 
-        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
+        <div className="px-6 py-5 flex flex-col gap-4">
           {/* Code + Description */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Coupon Code" required>
-              <input
-                value={form.code}
-                onChange={e => set('code', e.target.value.toUpperCase())}
-                placeholder="SAVE20"
-                style={inp}
-                maxLength={20}
-              />
+              <input value={form.code} onChange={e => set('code', e.target.value.toUpperCase())}
+                placeholder="SAVE20" className={inpCls} maxLength={20} />
             </Field>
             <Field label="Description">
-              <input
-                value={form.description}
-                onChange={e => set('description', e.target.value)}
-                placeholder="Summer sale…"
-                style={inp}
-              />
+              <input value={form.description} onChange={e => set('description', e.target.value)}
+                placeholder="Summer sale…" className={inpCls} />
             </Field>
           </div>
 
           {/* Discount Type */}
           <Field label="Discount Type" required>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               {[
                 { val: 'percentage', icon: <Percent size={14} />, label: 'Percentage (%)' },
-                { val: 'flat',       icon: <DollarSign size={14} />, label: 'Flat Amount (₹)' },
+                { val: 'flat', icon: <DollarSign size={14} />, label: 'Flat Amount (₹)' },
               ].map(opt => (
                 <button
                   key={opt.val}
                   onClick={() => set('discountType', opt.val)}
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '10px', borderRadius: '10px', border: `2px solid ${form.discountType === opt.val ? G : '#e2e8f0'}`, background: form.discountType === opt.val ? LG : 'white', color: form.discountType === opt.val ? G : '#64748b', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.15s' }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border-2 ${form.discountType === opt.val ? 'border-[#938359] bg-amber-50 text-[#938359]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                 >
                   {opt.icon}{opt.label}
                 </button>
@@ -314,155 +282,136 @@ function CouponModal({ coupon, onClose, onSave }) {
             </div>
           </Field>
 
-          {/* Discount value + conditional second field */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {/* Discount value */}
+          <div className="grid grid-cols-2 gap-3">
             <Field label={form.discountType === 'percentage' ? 'Discount %' : 'Discount Amount ₹'} required>
-              <input
-                type="number"
-                value={form.discountValue}
-                onChange={e => set('discountValue', e.target.value)}
+              <input type="number" value={form.discountValue} onChange={e => set('discountValue', e.target.value)}
                 placeholder={form.discountType === 'percentage' ? '20' : '200'}
-                min="0"
-                max={form.discountType === 'percentage' ? 100 : undefined}
-                style={inp}
-              />
+                min="0" max={form.discountType === 'percentage' ? 100 : undefined} className={inpCls} />
             </Field>
             {form.discountType === 'percentage' ? (
               <Field label="Max Discount ₹">
-                <input
-                  type="number"
-                  value={form.maxDiscount}
-                  onChange={e => set('maxDiscount', e.target.value)}
-                  placeholder="500 (optional)"
-                  min="0"
-                  style={inp}
-                />
+                <input type="number" value={form.maxDiscount} onChange={e => set('maxDiscount', e.target.value)}
+                  placeholder="500 (optional)" min="0" className={inpCls} />
               </Field>
             ) : (
               <Field label="Min Order Value ₹">
-                <input
-                  type="number"
-                  value={form.minOrderValue}
-                  onChange={e => set('minOrderValue', e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  style={inp}
-                />
+                <input type="number" value={form.minOrderValue} onChange={e => set('minOrderValue', e.target.value)}
+                  placeholder="0" min="0" className={inpCls} />
               </Field>
             )}
           </div>
 
-          {/* Min order for percentage (extra row) */}
+          {/* Min order for percentage */}
           {form.discountType === 'percentage' && (
             <Field label="Min Order Value ₹">
-              <input
-                type="number"
-                value={form.minOrderValue}
-                onChange={e => set('minOrderValue', e.target.value)}
-                placeholder="0"
-                min="0"
-                style={inp}
-              />
+              <input type="number" value={form.minOrderValue} onChange={e => set('minOrderValue', e.target.value)}
+                placeholder="0" min="0" className={inpCls} />
             </Field>
           )}
 
           {/* Usage limits */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Total Usage Limit">
-              <input
-                type="number"
-                value={form.usageLimit}
-                onChange={e => set('usageLimit', e.target.value)}
-                placeholder="Unlimited"
-                min="1"
-                style={inp}
-              />
+              <input type="number" value={form.usageLimit} onChange={e => set('usageLimit', e.target.value)}
+                placeholder="Unlimited" min="1" className={inpCls} />
             </Field>
             <Field label="Per User Limit">
-              <input
-                type="number"
-                value={form.usagePerUser}
-                onChange={e => set('usagePerUser', e.target.value)}
-                placeholder="1"
-                min="1"
-                style={inp}
-              />
+              <input type="number" value={form.usagePerUser} onChange={e => set('usagePerUser', e.target.value)}
+                placeholder="1" min="1" className={inpCls} />
             </Field>
           </div>
 
           {/* Dates */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Valid From" required>
-              <input
-                type="date"
-                value={form.validFrom}
-                onChange={e => set('validFrom', e.target.value)}
-                style={inp}
-              />
+              <input type="date" value={form.validFrom} onChange={e => set('validFrom', e.target.value)} className={inpCls} />
             </Field>
             <Field label="Valid Until" required>
-              <input
-                type="date"
-                value={form.validUntil}
-                onChange={e => set('validUntil', e.target.value)}
-                min={form.validFrom}
-                style={inp}
-              />
+              <input type="date" value={form.validUntil} onChange={e => set('validUntil', e.target.value)}
+                min={form.validFrom} className={inpCls} />
+            </Field>
+          </div>
+
+          {/* Applicable Categories & Products */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Applicable Categories">
+              <select 
+                multiple 
+                value={form.applicableCategories} 
+                onChange={e => set('applicableCategories', Array.from(e.target.selectedOptions, option => option.value))}
+                className={`${inpCls} h-24`}
+              >
+                {categories.map(c => <option key={c._id} value={c._id}>{c.name || c.title || c._id}</option>)}
+              </select>
+              <p className="text-[10px] text-slate-400 mt-1">Hold Ctrl/Cmd to select multiple. Leave empty for all.</p>
+            </Field>
+            <Field label="Applicable Products">
+              <select 
+                multiple 
+                value={form.applicableProducts} 
+                onChange={e => set('applicableProducts', Array.from(e.target.selectedOptions, option => option.value))}
+                className={`${inpCls} h-24`}
+              >
+                {products.map(p => <option key={p._id} value={p._id}>{p.name || p.title || p._id}</option>)}
+              </select>
+              <p className="text-[10px] text-slate-400 mt-1">Hold Ctrl/Cmd to select multiple. Leave empty for all.</p>
             </Field>
           </div>
 
           {/* Active toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: '#f8fafc', borderRadius: '12px' }}>
+          <div className="flex items-center justify-between px-3.5 py-3 bg-slate-50 rounded-xl">
             <div>
-              <p style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Active</p>
-              <p style={{ fontSize: '10px', color: '#94a3b8', margin: '2px 0 0' }}>Coupon can be used immediately when active</p>
+              <p className="text-xs font-bold text-slate-900 m-0">Active</p>
+              <p className="text-[10px] text-slate-400 mt-0.5 m-0">Coupon can be used immediately when active</p>
             </div>
             <button
               onClick={() => set('isActive', !form.isActive)}
-              style={{ width: '44px', height: '24px', borderRadius: '12px', background: form.isActive ? G : '#e2e8f0', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}
+              className="w-11 h-6 rounded-full border-0 cursor-pointer relative transition-colors flex-shrink-0"
+              style={{ background: form.isActive ? G : '#e2e8f0', width: '44px', height: '24px' }}
             >
-              <span style={{ position: 'absolute', top: '3px', left: form.isActive ? '23px' : '3px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+              <span
+                className="absolute top-0.5 w-[18px] h-[18px] rounded-full bg-white transition-all shadow-sm"
+                style={{ left: form.isActive ? '23px' : '3px' }}
+              />
             </button>
           </div>
 
           {/* Live preview */}
           {form.code && form.discountValue && (
-            <div style={{ background: LG, borderRadius: '12px', padding: '12px 14px', border: `1px dashed ${G}` }}>
-              <p style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Preview</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: '900', color: G }}>{form.code}</span>
-                <span style={{ fontSize: '12px', color: '#475569' }}>—</span>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                  {form.discountType === 'percentage'
-                    ? `${form.discountValue}% off`
-                    : `₹${form.discountValue} off`}
+            <div className="bg-amber-50 rounded-xl px-3.5 py-3 border border-dashed border-[#938359]">
+              <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Preview</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-sm font-black text-[#938359]">{form.code}</span>
+                <span className="text-xs text-slate-400">—</span>
+                <span className="text-[13px] font-bold text-slate-900">
+                  {form.discountType === 'percentage' ? `${form.discountValue}% off` : `₹${form.discountValue} off`}
                   {form.maxDiscount && form.discountType === 'percentage' ? ` (max ₹${form.maxDiscount})` : ''}
                   {form.minOrderValue && Number(form.minOrderValue) > 0 ? ` on orders above ₹${form.minOrderValue}` : ''}
                 </span>
               </div>
               {form.validUntil && (
-                <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>
-                  Valid until {formatDate(form.validUntil)}
-                </p>
+                <p className="text-[10px] text-slate-500 mt-1 mb-0">Valid until {formatDate(form.validUntil)}</p>
               )}
             </div>
           )}
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: '8px', paddingTop: '4px' }}>
+          <div className="flex gap-2 pt-1">
             <button
               onClick={onClose}
-              style={{ flex: 1, padding: '11px', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'none', fontSize: '12px', cursor: 'pointer', color: '#475569', fontWeight: '700' }}
+              className="flex-1 py-3 border border-slate-200 rounded-xl bg-transparent text-xs cursor-pointer text-slate-500 font-bold hover:bg-slate-50"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={saving}
-              style={{ flex: 2, padding: '11px', border: 'none', borderRadius: '12px', background: G, color: '#fff', fontSize: '12px', fontWeight: '800', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              className="flex-[2] py-3 border-0 rounded-xl text-white text-xs font-extrabold cursor-pointer flex items-center justify-center gap-1.5 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
+              style={{ background: G }}
             >
               {saving
-                ? <><RefreshCw size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…</>
+                ? <><RefreshCw size={14} className="animate-spin" /> Saving…</>
                 : <><CheckCircle size={14} /> {isEdit ? 'Save Changes' : 'Create Coupon'}</>
               }
             </button>
@@ -473,29 +422,26 @@ function CouponModal({ coupon, onClose, onSave }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════════════ */
+/* ── Main Page ── */
 export default function CouponManagement() {
-  const [coupons, setCoupons]         = useState([]);
-  const [pagination, setPagination]   = useState({});
-  const [isLoading, setIsLoading]     = useState(true);
-  const [isFetching, setIsFetching]   = useState(false);
-  const [page, setPage]               = useState(1);
-  const [search, setSearch]           = useState('');
-  const [filterType, setFilterType]   = useState('');
+  const [coupons, setCoupons] = useState([]);
+  const [pagination, setPagination] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('');
   const [filterActive, setFilterActive] = useState('');
-  const [modalOpen, setModalOpen]     = useState(false);
-  const [editCoupon, setEditCoupon]   = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editCoupon, setEditCoupon] = useState(null);
 
-  /* ── Fetch coupons ── */
   const fetchCoupons = useCallback(async (showSpinner = false) => {
     if (showSpinner) setIsLoading(true);
     else setIsFetching(true);
     try {
       const params = new URLSearchParams({ page, limit: 9 });
-      if (search)       params.append('search', search);
-      if (filterType)   params.append('discountType', filterType);
+      if (search) params.append('search', search);
+      if (filterType) params.append('discountType', filterType);
       if (filterActive) params.append('isActive', filterActive);
       const data = await apiFetch(`?${params.toString()}`);
       setCoupons(data.data || []);
@@ -510,21 +456,23 @@ export default function CouponManagement() {
 
   useEffect(() => { fetchCoupons(true); }, [fetchCoupons]);
 
-  /* ── Save ── */
   const handleSave = async (form) => {
-    if (editCoupon) {
-      await apiFetch(`/${editCoupon._id}`, { method: 'PUT', body: JSON.stringify(form) });
-      toast.success('Coupon updated!');
-    } else {
-      await apiFetch('', { method: 'POST', body: JSON.stringify(form) });
-      toast.success('Coupon created!');
+    try {
+      if (editCoupon) {
+        await apiFetch(`/${editCoupon._id}`, { method: 'PUT', body: form });
+        toast.success('Coupon updated!');
+      } else {
+        await apiFetch('/', { method: 'POST', body: form });
+        toast.success('Coupon created!');
+      }
+      setModalOpen(false);
+      setEditCoupon(null);
+      fetchCoupons();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || 'Failed to save coupon');
     }
-    setModalOpen(false);
-    setEditCoupon(null);
-    fetchCoupons();
   };
 
-  /* ── Delete ── */
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this coupon?')) return;
     try {
@@ -534,7 +482,6 @@ export default function CouponManagement() {
     } catch (err) { toast.error(err.message || 'Delete failed'); }
   };
 
-  /* ── Toggle ── */
   const handleToggle = async (id) => {
     try {
       const res = await apiFetch(`/${id}/toggle`, { method: 'PATCH' });
@@ -543,83 +490,99 @@ export default function CouponManagement() {
     } catch (err) { toast.error(err.message || 'Toggle failed'); }
   };
 
-  /* ── Copy ── */
   const handleCopy = (code) => {
     navigator.clipboard?.writeText(code);
     toast.success(`Copied: ${code}`);
   };
 
-  const openEdit   = (coupon) => { setEditCoupon(coupon); setModalOpen(true); };
-  const openCreate = ()       => { setEditCoupon(null);   setModalOpen(true); };
+  const openEdit = (coupon) => { setEditCoupon(coupon); setModalOpen(true); };
+  const openCreate = () => { setEditCoupon(null); setModalOpen(true); };
 
-  const activeCoupons  = coupons.filter(c => c.isActive && !isExpired(c.validUntil)).length;
+  const activeCoupons = coupons.filter(c => c.isActive && !isExpired(c.validUntil)).length;
   const expiredCoupons = coupons.filter(c => isExpired(c.validUntil)).length;
-  const totalUsed      = coupons.reduce((a, c) => a + (c.usedCount || 0), 0);
+  const totalUsed = coupons.reduce((a, c) => a + (c.usedCount || 0), 0);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
+    <div className="min-h-screen bg-slate-50 p-5 font-sans text-slate-800">
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', margin: 0 }}>Coupon Management</h1>
-          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', marginBottom: 0 }}>Create and manage discount coupons for your store</p>
+          <h1 className="text-xl font-black text-slate-900 m-0">Coupon Management</h1>
+          <p className="text-xs text-slate-400 mt-1 mb-0">Create and manage discount coupons for your store</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => fetchCoupons()}
-            style={{ padding: '9px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', cursor: 'pointer', lineHeight: 0, color: '#64748b' }}
+            className="p-2 bg-white border border-slate-200 rounded-xl cursor-pointer text-slate-500 leading-none hover:bg-slate-50 transition-colors"
           >
             <RefreshCw size={16} style={isFetching ? { animation: 'spin 0.8s linear infinite' } : {}} />
           </button>
           <button
             onClick={openCreate}
-            style={{ display: 'flex', alignItems: 'center', gap: '7px', background: G, color: 'white', border: 'none', borderRadius: '12px', padding: '10px 18px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+            className="flex items-center gap-1.5 text-white border-0 rounded-xl px-4 py-2.5 text-xs font-bold cursor-pointer hover:opacity-90 transition-opacity"
+            style={{ background: G }}
           >
             <Plus size={15} strokeWidth={3} /> Create Coupon
           </button>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Coupons', val: pagination.total ?? coupons.length, icon: <Tag size={16} color={G} />,               bg: LG        },
-          { label: 'Active',        val: activeCoupons,                       icon: <CheckCircle size={16} color="#059669" />, bg: '#f0fdf4' },
-          { label: 'Expired',       val: expiredCoupons,                      icon: <AlertCircle size={16} color="#f43f5e" />, bg: '#fef2f2' },
-          { label: 'Total Used',    val: totalUsed,                           icon: <Zap size={16} color="#f59e0b" />,         bg: '#fffbeb' },
-        ].map(s => (
-          <div key={s.label} style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>{s.label}</span>
-              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{s.icon}</div>
+          { label: 'Total Coupons', val: pagination.total ?? coupons.length, icon: Tag, color: '#938359', sub: 'Catalog size', isFirst: true },
+          { label: 'Active', val: activeCoupons, icon: CheckCircle, color: '#938359', sub: 'Live now' },
+          { label: 'Expired', val: expiredCoupons, icon: AlertCircle, color: '#f43f5e', sub: 'Past validity' },
+          { label: 'Total Used', val: totalUsed, icon: Zap, color: '#f59e0b', sub: 'Redemption count' },
+        ].map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className={`rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${s.isFirst ? 'border-[#938359] bg-heritage' : 'border-slate-100 bg-white'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.isFirst ? 'bg-white/20' : 'bg-slate-50 border border-slate-100'}`}
+                >
+                  <Icon size={20} style={{ color: s.isFirst ? '#ffffff' : '#938359' }} />
+                </div>
+              </div>
+              <div>
+                <div className={`text-3xl font-black tracking-tight leading-none mb-1 ${s.isFirst ? 'text-white' : 'text-[#938359]'}`}>
+                  {isLoading ? '...' : s.val}
+                </div>
+                <div className={`text-[13px] font-black uppercase tracking-widest ${s.isFirst ? 'text-white/70' : 'text-[#938359]/60'}`}>{s.label}</div>
+                <div className={`text-[11px] font-bold mt-1 uppercase tracking-tight ${s.isFirst ? 'text-white/50' : 'text-[#938359]/40'}`}>{s.sub}</div>
+              </div>
             </div>
-            <span style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a' }}>{isLoading ? '…' : s.val}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px 12px', flex: '1', minWidth: '200px' }}>
-          <Search size={14} color="#94a3b8" />
+      <div className="flex items-center gap-2.5 mb-5 flex-wrap">
+        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+          <Search size={14} className="text-slate-400" />
           <input
-            type="text"
-            value={search}
+            type="text" value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search coupon codes…"
-            style={{ border: 'none', outline: 'none', fontSize: '12px', width: '100%', background: 'transparent', color: '#0f172a' }}
+            className="border-0 outline-none text-xs w-full bg-transparent text-slate-900"
           />
         </div>
-        <select value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1); }}
-          style={{ padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', background: '#fff', color: '#475569', outline: 'none', cursor: 'pointer' }}>
+        <select
+          value={filterType}
+          onChange={e => { setFilterType(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white text-slate-500 outline-none cursor-pointer"
+        >
           <option value="">All Types</option>
           <option value="percentage">Percentage</option>
           <option value="flat">Flat Amount</option>
         </select>
-        <select value={filterActive} onChange={e => { setFilterActive(e.target.value); setPage(1); }}
-          style={{ padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', background: '#fff', color: '#475569', outline: 'none', cursor: 'pointer' }}>
+        <select
+          value={filterActive}
+          onChange={e => { setFilterActive(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white text-slate-500 outline-none cursor-pointer"
+        >
           <option value="">All Status</option>
           <option value="true">Active Only</option>
           <option value="false">Inactive Only</option>
@@ -627,30 +590,30 @@ export default function CouponManagement() {
         {(search || filterType || filterActive) && (
           <button
             onClick={() => { setSearch(''); setFilterType(''); setFilterActive(''); setPage(1); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '9px 12px', border: '1px solid #fecaca', borderRadius: '10px', background: 'none', fontSize: '11px', color: '#f43f5e', cursor: 'pointer', fontWeight: '600' }}
+            className="flex items-center gap-1 px-3 py-2 border border-red-200 rounded-xl bg-transparent text-[11px] text-rose-500 cursor-pointer font-semibold hover:bg-red-50"
           >
             <X size={12} /> Clear
           </button>
         )}
       </div>
 
-      {/* Coupon Grid */}
+      {/* Grid */}
       {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '16px' }}>
-          <div style={{ width: '44px', height: '44px', border: '4px solid #d1fae5', borderTopColor: G, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading coupons…</span>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-11 h-11 border-4 border-amber-50 border-t-[#938359] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+          <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Loading coupons…</span>
         </div>
       ) : coupons.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Tag size={48} color="#e2e8f0" style={{ display: 'block', margin: '0 auto 16px' }} />
-          <p style={{ fontSize: '14px', fontWeight: '700', color: '#94a3b8' }}>No coupons found</p>
-          <p style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '20px' }}>Create your first coupon to get started</p>
-          <button onClick={openCreate} style={{ padding: '10px 24px', background: G, color: '#fff', border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+        <div className="text-center py-20">
+          <Tag size={48} className="text-slate-200 block mx-auto mb-4" />
+          <p className="text-sm font-bold text-slate-400">No coupons found</p>
+          <p className="text-xs text-slate-300 mb-5">Create your first coupon to get started</p>
+          <button onClick={openCreate} className="px-6 py-2.5 text-white border-0 rounded-xl text-xs font-bold cursor-pointer hover:opacity-90" style={{ background: G }}>
             Create Coupon
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
           {coupons.map(coupon => (
             <CouponCard key={coupon._id} coupon={coupon} onEdit={openEdit} onDelete={handleDelete} onToggle={handleToggle} onCopy={handleCopy} />
           ))}
@@ -659,20 +622,27 @@ export default function CouponManagement() {
 
       {/* Pagination */}
       {pagination.pages > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-          <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', fontWeight: '700', color: G, cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>
+        <div className="flex items-center justify-between mt-6 pt-5 border-t border-slate-200">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+            className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+            style={{ color: G }}
+          >
             <ChevronLeft size={14} /> Prev
           </button>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Page {page} of {pagination.pages}</span>
-          <button disabled={page === pagination.pages} onClick={() => setPage(p => p + 1)}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', fontWeight: '700', color: G, cursor: page === pagination.pages ? 'not-allowed' : 'pointer', opacity: page === pagination.pages ? 0.4 : 1 }}>
+          <span className="text-xs text-slate-500">Page {page} of {pagination.pages}</span>
+          <button
+            disabled={page === pagination.pages}
+            onClick={() => setPage(p => p + 1)}
+            className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+            style={{ color: G }}
+          >
             Next <ChevronRight size={14} />
           </button>
         </div>
       )}
 
-      {/* Modal */}
       {modalOpen && (
         <CouponModal
           coupon={editCoupon}
