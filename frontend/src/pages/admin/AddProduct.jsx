@@ -12,9 +12,9 @@ import { fetchMetadata } from '../../features/products/categorySlice';
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
 const AddProduct = () => {
-  const dispatch   = useDispatch();
-  const navigate   = useNavigate();
-  const { id }     = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id } = useParams();
   const isEditMode = !!id;
 
   const { loading, error } = useSelector((state) => state.products);
@@ -30,19 +30,18 @@ const AddProduct = () => {
     stockQuantity: '', stockStatus: 'In Stock',
   });
 
-  const [variants, setVariants]               = useState([]);
-  const [variantImages, setVariantImages]     = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [variantImages, setVariantImages] = useState([]);
   const [variantPreviews, setVariantPreviews] = useState([]);
-  const [taxIncluded, setTaxIncluded]         = useState(true);
-  const [isUnlimited, setIsUnlimited]         = useState(false);
-  const [isFeatured, setIsFeatured]           = useState(true);
-  const [isActive, setIsActive]               = useState(true);
-  const [images, setImages]                   = useState([]);
-  const [previews, setPreviews]               = useState([]);
-  const [saleResult, setSaleResult]           = useState(0);
-  const [imageError, setImageError]           = useState('');
 
-  const fileInputRef     = useRef(null);
+  const [taxIncluded, setTaxIncluded] = useState(true);
+  const [isUnlimited, setIsUnlimited] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(true);
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [saleResult, setSaleResult] = useState(0);
+
+  const fileInputRef = useRef(null);
   const variantImageRefs = useRef([]);
 
   useEffect(() => {
@@ -130,9 +129,9 @@ const AddProduct = () => {
       return;
     }
     setImageError('');
-    const newImages   = [...variantImages];
+    const newImages = [...variantImages];
     const newPreviews = [...variantPreviews];
-    newImages[index]   = file;
+    newImages[index] = file;
     newPreviews[index] = URL.createObjectURL(file);
     setVariantImages(newImages);
     setVariantPreviews(newPreviews);
@@ -140,9 +139,9 @@ const AddProduct = () => {
   };
 
   const removeVariantImage = (index) => {
-    const newImages   = [...variantImages];
+    const newImages = [...variantImages];
     const newPreviews = [...variantPreviews];
-    newImages[index]   = null;
+    newImages[index] = null;
     newPreviews[index] = null;
     setVariantImages(newImages);
     setVariantPreviews(newPreviews);
@@ -190,9 +189,22 @@ const AddProduct = () => {
     }
   };
 
-  const inputCls = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all box-border text-slate-800 focus:border-[#938359] focus:bg-white";
-  const labelCls = "text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block";
-  const sectionCls = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm";
+  /* ── shared input style ── */
+  const inputStyle = {
+    width: '100%', padding: '12px 16px', background: '#f8fafc',
+    border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '14px',
+    outline: 'none', transition: 'all 0.15s', boxSizing: 'border-box', color: '#1e293b',
+  };
+
+  const labelStyle = {
+    fontSize: '11px', fontWeight: 700, color: '#64748b',
+    textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', display: 'block',
+  };
+
+  const sectionStyle = {
+    background: 'white', padding: '24px', borderRadius: '16px',
+    border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+  };
 
   return (
     <div className="flex flex-col gap-0 bg-slate-50 flex-1 min-w-0">
@@ -216,11 +228,8 @@ const AddProduct = () => {
             />
             <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
-          <button
-            type="submit"
-            form="main-form"
-            className="px-5 py-2.5 bg-[#938359] text-white border-0 rounded-xl text-[13px] font-bold cursor-pointer whitespace-nowrap hover:bg-[#7a6d4a] transition-colors"
-          >
+          <button type="submit" form="main-form"
+            style={{ padding: '10px 20px', background: '#4c9f70', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {loading ? 'Processing...' : (isEditMode ? 'Update Product' : 'Publish Product')}
           </button>
         </div>
@@ -259,9 +268,9 @@ const AddProduct = () => {
         <div className="flex flex-col gap-5">
 
           {/* Basic Details */}
-          <div className={sectionCls}>
-            <h2 className="text-sm font-extrabold text-slate-800 mb-5 flex items-center gap-2 mt-0">
-              <Type size={16} className="text-[#938359]" /> Basic Details
+          <div style={sectionStyle}>
+            <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Type size={16} color="#4c9f70" /> Basic Details
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -281,16 +290,12 @@ const AddProduct = () => {
           </div>
 
           {/* Variants */}
-          <div className={sectionCls}>
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-sm font-extrabold text-slate-800 flex items-center gap-2 m-0">
-                <Layers size={16} className="text-[#938359]" /> Product Variants
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <Layers size={16} color="#4c9f70" /> Product Variants
               </h2>
-              <button
-                type="button"
-                onClick={addVariant}
-                className="text-xs font-bold text-[#938359] bg-transparent border-0 cursor-pointer flex items-center gap-1 hover:text-[#7a6d4a]"
-              >
+              <button type="button" onClick={addVariant} style={{ fontSize: '12px', fontWeight: 700, color: '#4c9f70', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Plus size={14} /> Add Variant
               </button>
             </div>
@@ -336,49 +341,22 @@ const AddProduct = () => {
                         placeholder="e.g. Royal Blue, Golden, etc."
                         value={variant.color || ''}
                         onChange={(e) => handleVariantChange(idx, 'color', e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] outline-none box-border mb-3"
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          background: 'white',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
                       />
                     </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Variant Image</label>
-                      <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                        {variantPreviews[idx] ? (
-                          <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
-                            <img src={variantPreviews[idx]} className="w-full h-full object-cover" alt="Variant preview" />
-                            <button
-                              type="button"
-                              onClick={() => removeVariantImage(idx)}
-                              className="absolute inset-0 bg-red-500/75 flex items-center justify-center border-0 cursor-pointer text-white hover:bg-red-600/90 transition-colors"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => variantImageRefs.current[idx]?.click()}
-                            className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer bg-slate-50 text-slate-400 hover:border-[#938359] hover:text-[#938359] transition-all flex-shrink-0"
-                          >
-                            <Plus size={16} />
-                          </button>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[11px] font-bold text-slate-700 truncate m-0">
-                            {variantImages[idx] ? variantImages[idx].name : (variant.image ? "Saved Image" : "No image selected")}
-                          </p>
-                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 mb-0">
-                            JPG, PNG, WEBP (Max 5MB)
-                          </p>
-                        </div>
-                        <input
-                          ref={(el) => (variantImageRefs.current[idx] = el)}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleVariantImageChange(idx, e)}
-                        />
-                      </div>
-                    </div>
+
+                    <button type="button" onClick={() => removeVariant(idx)} style={{ padding: '8px', color: '#fca5a5', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1px' }}>
+                      <X size={16} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -401,17 +379,14 @@ const AddProduct = () => {
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Discount Price (INR)</label>
-                <div className="rounded-xl border border-amber-200 overflow-hidden">
-                  <div className="grid grid-cols-[auto_1fr]">
-                    <span className="px-3.5 py-3 bg-amber-50 text-[#938359] font-bold">₹</span>
-                    <input
-                      type="number" name="discountPrice" value={formData.discountPrice}
-                      onChange={handleInputChange} placeholder="0.00"
-                      className="bg-amber-50 px-3 py-3 text-sm font-bold text-[#938359] border-0 outline-none"
-                    />
+                <label style={labelStyle}>Discount Price (INR)</label>
+                <div style={{ borderRadius: '12px', border: '1px solid #dcfce7', overflow: 'hidden' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}>
+                    <span style={{ padding: '12px 14px', background: '#f0fdf4', color: '#4c9f70', fontWeight: 700 }}>₹</span>
+                    <input type="number" name="discountPrice" value={formData.discountPrice} onChange={handleInputChange} placeholder="0.00"
+                      style={{ background: '#f0fdf4', padding: '12px', fontSize: '14px', fontWeight: 700, color: '#4c9f70', border: 'none', outline: 'none' }} />
                   </div>
-                  <div className="bg-amber-50 border-t border-amber-200 py-2 px-3.5 text-xs font-bold text-[#938359] text-center uppercase tracking-widest">
+                  <div style={{ background: '#f0fdf4', borderTop: '1px solid #dcfce7', padding: '8px 14px', fontSize: '11px', fontWeight: 700, color: '#4c9f70', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     Sale: {formatINR(saleResult)}
                   </div>
                 </div>
@@ -435,24 +410,14 @@ const AddProduct = () => {
           </div>
 
           {/* Inventory */}
-          <div className={sectionCls}>
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-sm font-extrabold text-slate-800 m-0">Inventory & Stock</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] font-bold text-gray-700">Unlimited</span>
-                <button
-                  type="button"
-                  onClick={() => setIsUnlimited(!isUnlimited)}
-                  className="w-11 h-5.5 rounded-full relative border-0 cursor-pointer transition-colors"
-                  style={{
-                    background: isUnlimited ? '#938359' : '#e2e8f0',
-                    width: '44px', height: '22px'
-                  }}
-                >
-                  <div
-                    className="absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full transition-all shadow"
-                    style={{ left: isUnlimited ? '24px' : '2px' }}
-                  />
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', margin: 0 }}>Inventory & Stock</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#374151' }}>Unlimited</span>
+                <button type="button" onClick={() => setIsUnlimited(!isUnlimited)}
+                  style={{ width: '44px', height: '22px', borderRadius: '999px', position: 'relative', border: 'none', cursor: 'pointer', background: isUnlimited ? '#4c9f70' : '#e2e8f0', transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: '2px', width: '18px', height: '18px', background: 'white', borderRadius: '50%', transition: 'left 0.2s', left: isUnlimited ? '24px' : '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </button>
               </div>
             </div>
@@ -481,24 +446,12 @@ const AddProduct = () => {
                 </div>
               </div>
             </div>
-            <label className="flex items-center gap-3 mt-4 cursor-pointer px-3.5 py-3.5 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-              <div
-                className={`w-5 h-5 rounded-[5px] flex-shrink-0 flex items-center justify-center transition-all ${isFeatured ? 'bg-[#938359] border-0' : 'bg-white border-2 border-slate-300'}`}
-              >
-                {isFeatured && <Check size={13} className="text-white" strokeWidth={3} />}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', cursor: 'pointer', padding: '14px', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: isFeatured ? 'none' : '2px solid #cbd5e1', background: isFeatured ? '#4c9f70' : 'white', transition: 'all 0.15s' }}>
+                {isFeatured && <Check size={13} color="white" strokeWidth={3} />}
               </div>
-              <input type="checkbox" className="hidden" checked={isFeatured} onChange={() => setIsFeatured(!isFeatured)} />
-              <span className="text-[13px] text-slate-500 leading-relaxed">Highlight this product in a featured top section on your storefront.</span>
-            </label>
-
-            <label className="flex items-center gap-3 mt-3 cursor-pointer px-3.5 py-3.5 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-              <div
-                className={`w-5 h-5 rounded-[5px] flex-shrink-0 flex items-center justify-center transition-all ${isActive ? 'bg-[#938359] border-0' : 'bg-white border-2 border-slate-300'}`}
-              >
-                {isActive && <Check size={13} className="text-white" strokeWidth={3} />}
-              </div>
-              <input type="checkbox" className="hidden" checked={isActive} onChange={() => setIsActive(!isActive)} />
-              <span className="text-[13px] text-slate-500 leading-relaxed">Enable or disable this product. Disabled products won't show up on the storefront.</span>
+              <input type="checkbox" style={{ display: 'none' }} checked={isFeatured} onChange={() => setIsFeatured(!isFeatured)} />
+              <span style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>Highlight this product in a featured top section on your storefront.</span>
             </label>
           </div>
         </div>
@@ -507,19 +460,20 @@ const AddProduct = () => {
         <div className="flex flex-col gap-5 lg:sticky lg:top-6">
 
           {/* Media */}
-          <div className={sectionCls}>
-            <h2 className="text-sm font-extrabold text-slate-800 mb-5 mt-0">Product Media</h2>
-            <div className="flex flex-col gap-3">
-              <div
-                onClick={() => fileInputRef.current.click()}
-                className="border-2 border-dashed border-amber-200 rounded-2xl bg-amber-50 p-5 flex flex-col items-center justify-center min-h-[180px] cursor-pointer transition-all hover:border-[#938359]"
+          <div style={sectionStyle}>
+            <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px' }}>Product Media</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div onClick={() => fileInputRef.current.click()}
+                style={{ border: '2px dashed #dcfce7', borderRadius: '16px', background: '#f0fdf4', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#4c9f70'}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#dcfce7'}
               >
                 {previews.length > 0 ? (
                   <img src={previews[0]} className="max-h-[140px] w-full object-contain rounded-xl" alt="main" />
                 ) : (
-                  <div className="text-center">
-                    <div className="w-[52px] h-[52px] bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                      <ImageIcon size={22} className="text-[#938359]" />
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '52px', height: '52px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                      <ImageIcon size={22} color="#4c9f70" />
                     </div>
                     <p className="text-[13px] font-bold text-gray-700 m-0">Drop your image here</p>
                     <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">Supports JPG, PNG, WEBP</p>
@@ -540,11 +494,10 @@ const AddProduct = () => {
                     </button>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current.click()}
-                  className="aspect-square border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center cursor-pointer bg-white text-slate-400 transition-all hover:border-[#938359] hover:text-[#938359]"
-                >
+                <button type="button" onClick={() => fileInputRef.current.click()}
+                  style={{ aspectRatio: '1', border: '2px dashed #e2e8f0', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'white', color: '#94a3b8', transition: 'all 0.15s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#4c9f70'; e.currentTarget.style.color = '#4c9f70'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#94a3b8'; }}>
                   <Plus size={16} />
                 </button>
               </div>
@@ -579,9 +532,12 @@ const AddProduct = () => {
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Tags / Categories</label>
-                <div className="flex flex-wrap gap-2">
-                  {SUB_CATEGORIES.filter(cat => cat !== formData.mainCategory).map((cat) => (
+                <label style={labelStyle}>Tags / Categories</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {(formData.mainCategory
+                    ? MAIN_CATEGORIES.find(c => c.name === formData.mainCategory)?.categories || SUB_CATEGORIES
+                    : SUB_CATEGORIES
+                  ).map((cat) => (
                     <button
                       key={cat}
                       type="button"
@@ -603,11 +559,8 @@ const AddProduct = () => {
               >
                 Dismiss
               </button>
-              <button
-                type="submit"
-                form="main-form"
-                className="py-3 bg-[#938359] text-white border-0 rounded-xl text-[13px] font-bold cursor-pointer hover:bg-[#7a6d4a] transition-colors"
-              >
+              <button type="submit" form="main-form"
+                style={{ padding: '12px', background: '#4c9f70', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
                 {isEditMode ? 'Update' : 'Publish'}
               </button>
             </div>
