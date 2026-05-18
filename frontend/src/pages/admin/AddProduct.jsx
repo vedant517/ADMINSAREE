@@ -34,6 +34,8 @@ const AddProduct = () => {
   const [variantImages, setVariantImages] = useState([]);
   const [variantPreviews, setVariantPreviews] = useState([]);
 
+  const [isActive, setIsActive] = useState(true);
+  const [imageError, setImageError] = useState('');
   const [taxIncluded, setTaxIncluded] = useState(true);
   const [isUnlimited, setIsUnlimited] = useState(false);
   const [isFeatured, setIsFeatured] = useState(true);
@@ -206,6 +208,10 @@ const AddProduct = () => {
     border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
   };
 
+  const inputCls = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all box-border text-slate-800 focus:border-[#4c9f70] focus:bg-white";
+  const labelCls = "text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block";
+  const sectionCls = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm";
+
   return (
     <div className="flex flex-col gap-0 bg-slate-50 flex-1 min-w-0">
 
@@ -352,6 +358,46 @@ const AddProduct = () => {
                           boxSizing: 'border-box'
                         }}
                       />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Variant Image</label>
+                      <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                        {variantPreviews[idx] ? (
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
+                            <img src={variantPreviews[idx]} className="w-full h-full object-cover" alt="Variant preview" />
+                            <button
+                              type="button"
+                              onClick={() => removeVariantImage(idx)}
+                              className="absolute inset-0 bg-red-500/75 flex items-center justify-center border-0 cursor-pointer text-white hover:bg-red-600/90 transition-colors"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => variantImageRefs.current[idx]?.click()}
+                            className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer bg-slate-50 text-slate-400 hover:border-[#4c9f70] hover:text-[#4c9f70] transition-all flex-shrink-0"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-bold text-slate-700 truncate m-0">
+                            {variantImages[idx] ? variantImages[idx].name : (variant.image ? "Saved Image" : "No image selected")}
+                          </p>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 mb-0">
+                            JPG, PNG, WEBP (Max 5MB)
+                          </p>
+                        </div>
+                        <input
+                          ref={(el) => (variantImageRefs.current[idx] = el)}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleVariantImageChange(idx, e)}
+                        />
+                      </div>
                     </div>
 
                     <button type="button" onClick={() => removeVariant(idx)} style={{ padding: '8px', color: '#fca5a5', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1px' }}>
@@ -534,10 +580,7 @@ const AddProduct = () => {
               <div>
                 <label style={labelStyle}>Tags / Categories</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {(formData.mainCategory
-                    ? MAIN_CATEGORIES.find(c => c.name === formData.mainCategory)?.categories || SUB_CATEGORIES
-                    : SUB_CATEGORIES
-                  ).map((cat) => (
+                  {SUB_CATEGORIES.filter(cat => cat !== formData.mainCategory).map((cat) => (
                     <button
                       key={cat}
                       type="button"
