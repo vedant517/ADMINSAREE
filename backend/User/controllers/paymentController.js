@@ -13,7 +13,13 @@ const razorpay = new Razorpay({
 export const createRazorpayOrder = async (req, res) => {
   console.log("--- RECV: User createRazorpayOrder ---");
   console.log("Body:", JSON.stringify(req.body, null, 2));
+  console.log("User:", req.user);
   try {
+    // Validate user authentication
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: "User not authenticated" });
+    }
+
     const { amount, totalPrice, grandTotal, orderTotal, currency = "INR", orderId, notes = {} } = req.body;
     
     let paymentAmount = amount || totalPrice || grandTotal || orderTotal;
@@ -42,19 +48,39 @@ export const createRazorpayOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Amount is required" });
     }
 
+    // Validate Razorpay credentials
+    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === "rzp_test_placeholder") {
+      console.error("Razorpay credentials not configured");
+      return res.status(500).json({ success: false, message: "Payment gateway not configured. Please check server environment variables." });
+    }
+
     const options = {
       amount: Math.round(paymentAmount * 100),
       currency,
       receipt: orderId || `receipt_${Date.now()}`,
       notes: {
         orderId: orderId || "",
-        userId: req.user?.id || "",
+        userId: req.user.id || "",
         ...notes,
       },
     };
 
-    const order = await razorpay.orders.create(options);
-    if (!order) return res.status(500).json({ success: false, message: "Failed to create Razorpay order" });
+    console.log("Creating Razorpay order with options:", JSON.stringify(options, null, 2));
+    
+    let order;
+    try {
+      order = await razorpay.orders.create(options);
+    } catch (razorpayError) {
+      console.error("Razorpay API Error:", razorpayError.message);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to create payment order: " + razorpayError.message 
+      });
+    }
+
+    if (!order) {
+      return res.status(500).json({ success: false, message: "Failed to create Razorpay order" });
+    }
 
     // Create transaction record
     try {
@@ -70,12 +96,13 @@ export const createRazorpayOrder = async (req, res) => {
       });
     } catch (txnError) {
       console.error("Transaction Record Error:", txnError);
+      // Don't fail the whole request if transaction record creation fails
     }
 
     res.json(order);
   } catch (error) {
     console.error("Razorpay order creation error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Internal server error: " + error.message });
   }
 };
 
