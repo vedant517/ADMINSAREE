@@ -71,10 +71,11 @@ export const createRazorpayOrder = async (req, res) => {
     try {
       order = await razorpay.orders.create(options);
     } catch (razorpayError) {
-      console.error("Razorpay API Error:", razorpayError.message);
+      console.error("Razorpay API Error:", razorpayError);
+      const errMsg = razorpayError.error?.description || razorpayError.description || razorpayError.message || (typeof razorpayError === 'object' ? JSON.stringify(razorpayError) : String(razorpayError));
       return res.status(500).json({ 
         success: false, 
-        message: "Failed to create payment order: " + razorpayError.message 
+        message: "Failed to create payment order: " + errMsg 
       });
     }
 
