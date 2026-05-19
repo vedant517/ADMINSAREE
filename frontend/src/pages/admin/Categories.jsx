@@ -141,13 +141,18 @@ const Categories = () => {
   );
 
   return (
-    <div className="px-4 py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div className="flex-1 min-w-0 flex flex-col gap-6 p-6 max-sm:p-4 max-sm:gap-4">
 
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight m-0">Category Management</h1>
-          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1.5 mb-0">Add, edit and manage your product categories.</p>
+      <div className="flex justify-between items-center flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-[#938359] rounded-2xl flex items-center justify-center shrink-0">
+            <ToggleLeft size={24} color="white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight m-0">Category Management</h1>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 mb-0">Add, edit and manage your product categories.</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <button
