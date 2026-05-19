@@ -13,6 +13,8 @@ import metadataRoutes from "./metadataRoutes.js";
 import offerRoutes from "./offerRoutes.js";
 import userRoutes from "./userRoutes.js";
 import categoryRoutes from "./categoryRoutes.js";
+import transactionRoutes from "./transactionRoutes.js";
+import shippingRoutes from "./shippingRoutes.js";
 
 const router = express.Router();
 
@@ -30,5 +32,7 @@ router.use("/metadata", metadataRoutes);
 router.use("/offers", offerRoutes);
 router.use("/user", userRoutes);
 router.use("/categories", categoryRoutes);
+router.use("/transactions", transactionRoutes);
+router.use("/shipping", shippingRoutes);
 
 export default router;

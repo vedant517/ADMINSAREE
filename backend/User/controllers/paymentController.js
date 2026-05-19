@@ -11,14 +11,46 @@ const razorpay = new Razorpay({
 
 // CREATE RAZORPAY ORDER
 export const createRazorpayOrder = async (req, res) => {
+  console.log("--- RECV: User createRazorpayOrder ---");
+  console.log("Body:", JSON.stringify(req.body, null, 2));
   try {
-    const { amount, currency = "INR", orderId } = req.body;
-    if (!amount) return res.status(400).json({ success: false, message: "Amount is required" });
+    const { amount, totalPrice, grandTotal, orderTotal, currency = "INR", orderId, notes = {} } = req.body;
+    
+    let paymentAmount = amount || totalPrice || grandTotal || orderTotal;
+
+    // 1. Try to fetch amount from DB if orderId is provided
+    let dbOrderId = undefined;
+    let dbOrder = null;
+    if (orderId) {
+      if (mongoose.Types.ObjectId.isValid(orderId)) {
+        dbOrder = await Order.findById(orderId);
+      }
+      if (!dbOrder) {
+        dbOrder = await Order.findOne({ orderId: orderId });
+      }
+      
+      if (dbOrder) {
+        dbOrderId = dbOrder._id;
+        if (!paymentAmount) {
+          paymentAmount = Number(dbOrder.totalPrice);
+          console.log(`Found order ${orderId}, using total price from DB: ${paymentAmount}`);
+        }
+      }
+    }
+
+    if (!paymentAmount) {
+      return res.status(400).json({ success: false, message: "Amount is required" });
+    }
 
     const options = {
-      amount: Math.round(amount * 100),
+      amount: Math.round(paymentAmount * 100),
       currency,
       receipt: orderId || `receipt_${Date.now()}`,
+      notes: {
+        orderId: orderId || "",
+        userId: req.user?.id || "",
+        ...notes,
+      },
     };
 
     const order = await razorpay.orders.create(options);
@@ -26,23 +58,15 @@ export const createRazorpayOrder = async (req, res) => {
 
     // Create transaction record
     try {
-      let dbOrderId = undefined;
-      if (orderId) {
-        if (mongoose.Types.ObjectId.isValid(orderId)) {
-          dbOrderId = orderId;
-        } else {
-          const dbOrder = await Order.findOne({ orderId: orderId });
-          if (dbOrder) dbOrderId = dbOrder._id;
-        }
-      }
       await Transaction.create({
         user: req.user.id,
         order: dbOrderId,
         razorpayOrderId: order.id,
-        amount,
+        amount: paymentAmount,
         currency,
         status: "created",
         receipt: options.receipt,
+        notes: options.notes,
       });
     } catch (txnError) {
       console.error("Transaction Record Error:", txnError);
@@ -50,6 +74,7 @@ export const createRazorpayOrder = async (req, res) => {
 
     res.json(order);
   } catch (error) {
+    console.error("Razorpay order creation error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
