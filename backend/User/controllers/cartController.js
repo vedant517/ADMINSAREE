@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
+import Product from "../models/Product.js";
 import { calculateDiscount } from "./couponController.js";
 import { calculateShippingCharges } from "../../services/shiprocketService.js";
 
@@ -19,11 +20,52 @@ const getUserId = (req) => {
   }
 };
 
+const getProductImage = (product, fallback) => {
+  const first = Array.isArray(product?.images) ? product.images[0] : null;
+  if (typeof first === "string") return first;
+  return first?.secure_url || first?.url || first?.path || product?.image || fallback;
+};
+
+const getCurrentProductPrice = (product, selectedVariant) => {
+  const variantKey = selectedVariant?._id || selectedVariant?.id || selectedVariant?.value || selectedVariant?.name;
+  const variant = variantKey
+    ? (product?.variants || []).find((v) =>
+        String(v._id || v.id || v.color || v.fabric || v.name) === String(variantKey) ||
+        String(v.color || "").toLowerCase() === String(variantKey).toLowerCase() ||
+        String(v.fabric || "").toLowerCase() === String(variantKey).toLowerCase()
+      )
+    : (product?.variants || []).find((v) =>
+        (selectedVariant?.color && String(v.color || "").toLowerCase() === String(selectedVariant.color).toLowerCase()) ||
+        (selectedVariant?.fabric && String(v.fabric || "").toLowerCase() === String(selectedVariant.fabric).toLowerCase())
+      );
+
+  return Number(variant?.price || product?.discountPrice || product?.discounted_price || product?.price || 0);
+};
+
+const refreshCartItemPricing = async (item) => {
+  const product = await Product.findById(item.productId).lean().catch(() => null);
+  if (!product) return item;
+
+  const current = {
+    name: product.name,
+    price: getCurrentProductPrice(product, item.selectedVariant),
+    image: getProductImage(product, item.image),
+  };
+
+  if (item.name !== current.name || item.price !== current.price || item.image !== current.image) {
+    await Cart.updateOne({ _id: item._id }, { $set: current });
+  }
+
+  const plainItem = typeof item.toObject === "function" ? item.toObject() : item;
+  return { ...plainItem, ...current };
+};
+
 // =======================
 // 🔹 HELPER: GET FULL CART
 // =======================
 const getFullCart = async (userId) => {
-  const cart = await Cart.find({ userId }).sort({ addedAt: -1 });
+  const cartItems = await Cart.find({ userId }).sort({ addedAt: -1 });
+  const cart = await Promise.all(cartItems.map(refreshCartItemPricing));
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return { cart, totalItems };
 };
@@ -138,14 +180,21 @@ export const addToCart = async (req, res) => {
       });
     }
 
-    const { productId, name, price, image, quantity = 1, selectedVariant } = req.body;
+    const { productId, quantity = 1, selectedVariant } = req.body;
 
-    if (!productId || !name || price === undefined) {
+    if (!productId) {
       return res.status(400).json({
         success: false,
-        message: "productId, name, and price are required",
+        message: "productId is required",
       });
     }
+
+    const product = await Product.findById(productId).lean();
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const currentPrice = getCurrentProductPrice(product, selectedVariant);
 
     const existingItem = await Cart.findOne({
       userId,
@@ -157,14 +206,17 @@ export const addToCart = async (req, res) => {
 
     if (existingItem) {
       existingItem.quantity += quantity;
+      existingItem.name = product.name;
+      existingItem.price = currentPrice;
+      existingItem.image = getProductImage(product, existingItem.image);
       await existingItem.save();
     } else {
       await Cart.create({
         userId,
         productId,
-        name,
-        price,
-        image,
+        name: product.name,
+        price: currentPrice,
+        image: getProductImage(product, req.body.image),
         quantity,
         selectedVariant,
         addedAt: new Date(),

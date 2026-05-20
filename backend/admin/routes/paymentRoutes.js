@@ -3,6 +3,7 @@ import {
   createRazorpayOrder,
   verifyPayment,
   getRazorpayKey,
+  createPaymentQr,
 } from '../controllers/paymentController.js';
 import { protect } from "../../User/middleware/authMiddleware.js";
 
@@ -13,6 +14,7 @@ router.get('/key', getRazorpayKey);
 
 // Protected - create order & verify payment
 router.post('/create-order', protect, createRazorpayOrder);
+router.post('/qr', protect, createPaymentQr);
 router.post('/verify', protect, verifyPayment);
 
 export default router;

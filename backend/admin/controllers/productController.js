@@ -1,5 +1,25 @@
 import Product from '../models/Product.js';
 import { PRODUCT_MAIN_CATEGORIES, PRODUCT_SUB_CATEGORIES, PRODUCT_COLORS } from '../config/constants.js';
+import { createCode128Svg } from '../../utils/barcode.js';
+
+const parseVariants = (variants) => {
+  if (!variants) return [];
+  const parsed = typeof variants === 'string' ? JSON.parse(variants) : variants;
+  return Array.isArray(parsed)
+    ? parsed.map((variant) => ({
+        ...variant,
+        price: Number(variant.price) || 0,
+        stock: Number(variant.stock) || 0,
+      }))
+    : [];
+};
+
+const getLowestVariantPrice = (variants = []) => {
+  const prices = variants
+    .map((variant) => Number(variant.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+  return prices.length > 0 ? Math.min(...prices) : 0;
+};
 
 export const getProducts = async (req, res) => {
   try {
@@ -16,7 +36,16 @@ export const getProducts = async (req, res) => {
       query.categories = { $in: [req.query.categories] };
     }
 
-    if (search) query.name = { $regex: search, $options: 'i' };
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { mainCategory: { $regex: search, $options: 'i' } },
+        { categories: { $in: [new RegExp(search, 'i')] } },
+        { tags: { $in: [new RegExp(search, 'i')] } },
+        { sku: { $regex: search, $options: 'i' } },
+      ];
+    }
 
     const skip = (Number(page) - 1) * Number(limit);
     let sortOpt = { createdAt: -1 };
@@ -50,23 +79,26 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     const { name, description, price, discountPrice, mainCategory, categories, stock, variants } = req.body;
+    const parsedVariants = parseVariants(variants);
+    const variantBasePrice = getLowestVariantPrice(parsedVariants);
+    const finalPrice = Number(price) > 0 ? Number(price) : variantBasePrice;
 
-    if (!name || !description || price === undefined || !mainCategory || stock === undefined) {
+    if (!name || !description || !finalPrice || !mainCategory || stock === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, description, price, mainCategory and stock',
+        message: 'Please provide name, description, base price or variant price, mainCategory and stock',
       });
     }
 
     const productData = {
       name,
       description,
-      price: Number(price),
+      price: finalPrice,
       discountPrice: discountPrice ? Number(discountPrice) : 0,
       mainCategory,
       categories: categories ? (Array.isArray(categories) ? categories : [categories]) : [],
       stock: Number(stock),
-      variants: variants ? (typeof variants === 'string' ? JSON.parse(variants) : variants) : [],
+      variants: parsedVariants,
       isFeatured: req.body.isFeatured === 'true',
       taxIncluded: req.body.taxIncluded === 'true',
       user: req.user ? req.user.id : undefined,
@@ -146,15 +178,22 @@ export const updateProduct = async (req, res) => {
     const updateData = { ...req.body };
     
     // Convert types
-    if (updateData.price) updateData.price = Number(updateData.price);
     if (updateData.discountPrice) updateData.discountPrice = Number(updateData.discountPrice);
     if (updateData.stock) updateData.stock = Number(updateData.stock);
     if (updateData.isFeatured) updateData.isFeatured = updateData.isFeatured === 'true';
     if (updateData.taxIncluded) updateData.taxIncluded = updateData.taxIncluded === 'true';
     
     // Parse variants
-    if (updateData.variants && typeof updateData.variants === 'string') {
-      updateData.variants = JSON.parse(updateData.variants);
+    if (updateData.variants) {
+      updateData.variants = parseVariants(updateData.variants);
+    }
+
+    const variantBasePrice = getLowestVariantPrice(updateData.variants || product.variants || []);
+    if (updateData.price !== undefined) {
+      const requestedPrice = Number(updateData.price);
+      updateData.price = requestedPrice > 0 ? requestedPrice : variantBasePrice;
+    } else if (variantBasePrice > 0) {
+      updateData.price = variantBasePrice;
     }
 
 
@@ -322,5 +361,35 @@ export const toggleProductStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getProductBarcode = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).lean();
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const value = product.sku || product._id.toString();
+    const svg = createCode128Svg(value);
+
+    if (req.query.format === 'svg') {
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.send(svg);
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        productId: product._id,
+        name: product.name,
+        value,
+        svg,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

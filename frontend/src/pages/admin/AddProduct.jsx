@@ -76,10 +76,21 @@ const AddProduct = () => {
   }, [dispatch, id, isEditMode]);
 
   useEffect(() => {
-    const p = parseFloat(formData.price) || 0;
+    const p = getEffectiveBasePrice();
     const d = parseFloat(formData.discountPrice) || 0;
     setSaleResult(p - d);
-  }, [formData.price, formData.discountPrice]);
+  }, [formData.price, formData.discountPrice, variants]);
+
+  const getVariantPrices = () =>
+    variants
+      .map((variant) => Number(variant.price))
+      .filter((price) => Number.isFinite(price) && price > 0);
+
+  const getEffectiveBasePrice = () => {
+    const variantPrices = getVariantPrices();
+    if (variantPrices.length > 0) return Math.min(...variantPrices);
+    return Number(formData.price) || 0;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -164,10 +175,18 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const variantPrices = getVariantPrices();
+    const effectiveBasePrice = getEffectiveBasePrice();
+
+    if (effectiveBasePrice <= 0) {
+      setImageError('Please enter a base price or at least one valid variant price.');
+      return;
+    }
+
     const submissionData = new FormData();
     submissionData.append('name', formData.name);
     submissionData.append('description', formData.description);
-    submissionData.append('price', formData.price);
+    submissionData.append('price', String(effectiveBasePrice));
     submissionData.append('discountPrice', formData.discountPrice);
     submissionData.append('mainCategory', formData.mainCategory);
     formData.categories.forEach(cat => submissionData.append('categories', cat));
@@ -175,7 +194,11 @@ const AddProduct = () => {
     submissionData.append('isFeatured', isFeatured);
     submissionData.append('isActive', isActive);
     submissionData.append('stock', isUnlimited ? 999999 : formData.stockQuantity);
-    submissionData.append('variants', JSON.stringify(variants));
+    submissionData.append('variants', JSON.stringify(variants.map((variant) => ({
+      ...variant,
+      price: Number(variant.price) || effectiveBasePrice,
+      stock: Number(variant.stock) || 0,
+    }))));
     if (images.length > 0) submissionData.append('image', images[0]);
     variantImages.forEach((file, idx) => {
       if (file) submissionData.append(`variantImage_${idx}`, file);
@@ -419,11 +442,16 @@ const AddProduct = () => {
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                   <input
-                    required type="number" name="price" value={formData.price}
+                    required={variants.length === 0} type="number" name="price" value={formData.price}
                     onChange={handleInputChange} placeholder="0.00"
                     className={`${inputCls} pl-7`}
                   />
                 </div>
+                {variants.length > 0 && (
+                  <p className="text-[11px] text-[#85754E] font-bold mt-2 mb-0">
+                    Variant pricing active: product base will save as lowest variant price ({formatINR(getEffectiveBasePrice())}).
+                  </p>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>Discount Price (INR)</label>

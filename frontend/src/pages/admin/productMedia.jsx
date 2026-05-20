@@ -15,6 +15,16 @@ const OfferPage = () => {
   const [selectedTag, setSelectedTag] = useState("All");
 
   const [showForm, setShowForm] = useState(false);
+  const [editingOfferId, setEditingOfferId] = useState(null);
+  const emptyForm = {
+    name: "",
+    discountPercent: "",
+    productId: "",
+    variantId: "",
+    mainCategory: "",
+    tag: "HOT",
+    endDate: "",
+  };
   const [formData, setFormData] = useState({
     name: "",
     discountPercent: "",
@@ -58,7 +68,33 @@ const OfferPage = () => {
     }
   };
 
-  const handleCreateOffer = async () => {
+  const resetForm = () => {
+    setEditingOfferId(null);
+    setFormData(emptyForm);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const openEditForm = (offer) => {
+    const productId = typeof offer.productId === "object" ? offer.productId?._id : offer.productId;
+    const variantId = typeof offer.variantId === "object" ? offer.variantId?._id : offer.variantId;
+    setEditingOfferId(offer._id);
+    setFormData({
+      name: offer.name || "",
+      discountPercent: offer.discountPercent != null ? String(offer.discountPercent) : "",
+      productId: productId || "",
+      variantId: variantId || "",
+      mainCategory: offer.mainCategory || "",
+      tag: offer.tag || "HOT",
+      endDate: offer.endDate ? new Date(offer.endDate).toISOString().slice(0, 10) : "",
+    });
+    setShowForm(true);
+  };
+
+  const handleSaveOffer = async () => {
     if (!formData.name || !formData.discountPercent || !formData.productId || !formData.endDate) {
       toast.error("Please fill all required fields");
       return;
@@ -66,18 +102,33 @@ const OfferPage = () => {
     try {
       const payload = { ...formData };
       if (!payload.variantId) delete payload.variantId;
-      const res = await api.post('/offers', payload);
+      const res = editingOfferId
+        ? await api.put(`/offers/${editingOfferId}`, payload)
+        : await api.post('/offers', payload);
       const data = res.data;
       if (data.success) {
-        setOffers((prev) => [...prev, data.data]);
+        setOffers((prev) => editingOfferId
+          ? prev.map((offer) => offer._id === editingOfferId ? data.data : offer)
+          : [...prev, data.data]);
         setShowForm(false);
-        toast.success("Offer created!");
-        setFormData({ name: "", discountPercent: "", productId: "", variantId: "", mainCategory: "", tag: "HOT", endDate: "" });
+        toast.success(editingOfferId ? "Offer updated!" : "Offer created!");
+        resetForm();
       } else {
-        toast.error(data.message || "Failed to create offer");
+        toast.error(data.message || "Failed to save offer");
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      toast.error(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  const handleDeleteOffer = async (offerId) => {
+    if (!window.confirm("Delete this offer?")) return;
+    try {
+      await api.delete(`/offers/${offerId}`);
+      setOffers((prev) => prev.filter((offer) => offer._id !== offerId));
+      toast.success("Offer deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete offer");
     }
   };
 
@@ -175,7 +226,7 @@ const OfferPage = () => {
           <p className="text-sm text-slate-400 mt-1 font-medium">Manage and create product offers</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openCreateForm}
           className="flex items-center gap-1.5 bg-gradient-to-br from-[#b09e6d] to-[#85754E] text-white border-0 px-5 py-2.5 rounded-xl font-bold text-sm cursor-pointer shadow-lg shadow-amber-400/30 hover:opacity-90 transition-opacity"
         >
           <span className="text-lg leading-none">+</span> Create Offer
@@ -202,6 +253,21 @@ const OfferPage = () => {
                 {/* Discount badge */}
                 <div className="absolute top-3 left-3 z-10 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-full shadow-md shadow-red-400/40">
                   -{offer.discountPercent}% OFF
+                </div>
+
+                <div className="absolute bottom-[176px] right-3 z-20 flex gap-1.5">
+                  <button
+                    onClick={() => openEditForm(offer)}
+                    className="bg-white/95 text-slate-700 border border-white px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-md cursor-pointer hover:bg-amber-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteOffer(offer._id)}
+                    className="bg-white/95 text-rose-600 border border-white px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-md cursor-pointer hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
                 </div>
 
                 {/* Tag badge */}
@@ -268,16 +334,16 @@ const OfferPage = () => {
       {showForm && (
         <div
           className="fixed inset-0 bg-slate-900/65 flex justify-center items-center z-[1000] backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowForm(false); resetForm(); } }}
         >
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" style={{ animation: "slideUp 0.25s ease" }}>
             {/* Modal Header */}
             <div className="bg-gradient-to-br from-[#b09e6d] to-[#85754E] px-6 py-5 flex justify-between items-center sticky top-0 z-10">
               <div>
-                <h2 className="text-white text-lg font-extrabold m-0">Create New Offer</h2>
+                <h2 className="text-white text-lg font-extrabold m-0">{editingOfferId ? "Edit Offer" : "Create New Offer"}</h2>
               </div>
               <button
-                onClick={() => setShowForm(false)}
+                onClick={() => { setShowForm(false); resetForm(); }}
                 className="bg-white/20 border-0 text-white w-8 h-8 rounded-full text-lg cursor-pointer flex items-center justify-center hover:bg-white/30 transition-colors"
               >
                 ×
@@ -388,16 +454,16 @@ const OfferPage = () => {
               {/* Actions */}
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowForm(false)}
+                  onClick={() => { setShowForm(false); resetForm(); }}
                   className="flex-1 py-3 bg-[#85754E] text-white border-0 rounded-xl text-[13px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleCreateOffer}
+                  onClick={handleSaveOffer}
                   className="flex-[2] py-2.5 border-0 rounded-xl bg-gradient-to-br from-[#b09e6d] to-[#85754E] text-white font-bold cursor-pointer hover:opacity-90 transition-opacity"
                 >
-                  ✓ Create Offer
+                  {editingOfferId ? "Update Offer" : "Create Offer"}
                 </button>
               </div>
             </div>

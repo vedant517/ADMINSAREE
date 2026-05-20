@@ -7,7 +7,8 @@ import {
   deleteProduct,
   createProductReview,
   getProductMetadata,
-  toggleProductStatus
+  toggleProductStatus,
+  getProductBarcode
 } from '../controllers/productController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -33,5 +34,6 @@ router
 router.route('/:id/reviews').post(protect, createProductReview);
 
 router.patch('/:id/toggle-status', protect, authorize('admin'), toggleProductStatus);
+router.get('/:id/barcode', protect, authorize('admin'), getProductBarcode);
 
 export default router;

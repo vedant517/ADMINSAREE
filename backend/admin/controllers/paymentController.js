@@ -16,6 +16,29 @@ const getRazorpayInstance = () => {
   });
 };
 
+const createUpiPaymentPayload = ({ amount, orderId, note }) => {
+  const payeeAddress = process.env.UPI_ID || process.env.RAZORPAY_UPI_ID;
+  const payeeName = process.env.UPI_PAYEE_NAME || 'Sheetalya';
+
+  if (!payeeAddress) return null;
+
+  const params = new URLSearchParams({
+    pa: payeeAddress,
+    pn: payeeName,
+    cu: 'INR',
+  });
+
+  if (amount) params.set('am', String(Number(amount).toFixed(2)));
+  if (orderId) params.set('tr', String(orderId));
+  if (note || orderId) params.set('tn', note || `Order ${orderId}`);
+
+  const upiLink = `upi://pay?${params.toString()}`;
+  return {
+    upiLink,
+    qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(upiLink)}`,
+  };
+};
+
 // Create a Razorpay order
 export const createRazorpayOrder = async (req, res) => {
   console.log('--- RECV: createRazorpayOrder ---');
@@ -96,6 +119,45 @@ export const createRazorpayOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Razorpay order creation error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createPaymentQr = async (req, res) => {
+  try {
+    const { amount, orderId, note } = req.body;
+    let paymentAmount = Number(amount);
+
+    if (orderId && (!Number.isFinite(paymentAmount) || paymentAmount <= 0)) {
+      let dbOrder = null;
+      if (mongoose.Types.ObjectId.isValid(orderId)) {
+        dbOrder = await Order.findById(orderId);
+      }
+      if (!dbOrder) {
+        dbOrder = await Order.findOne({ orderId });
+      }
+      paymentAmount = Number(dbOrder?.totalPrice);
+    }
+
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid amount is required for QR payment' });
+    }
+
+    const qr = createUpiPaymentPayload({ amount: paymentAmount, orderId, note });
+    if (!qr) {
+      return res.status(400).json({ success: false, message: 'UPI_ID is not configured on the backend' });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        amount: paymentAmount,
+        currency: 'INR',
+        orderId: orderId || null,
+        ...qr,
+      },
+    });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };

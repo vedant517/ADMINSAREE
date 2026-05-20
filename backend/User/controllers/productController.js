@@ -35,7 +35,7 @@ export const getProducts = async (req, res) => {
     }
 
     if (category) {
-      query.categories = category;
+      query.categories = { $in: [category] };
     }
 
     if (search) {
@@ -154,7 +154,7 @@ export const getProductById = async (req, res) => {
 // ✅ SEARCH PRODUCTS
 export const searchProducts = async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q, limit = 20 } = req.query;
 
     if (!q) {
       return res.json({
@@ -166,14 +166,16 @@ export const searchProducts = async (req, res) => {
     const products = await Product.find(
       {
         $or: [
-          { name: { $regex: q, $options: "i" } },
-          { description: { $regex: q, $options: "i" } },
-          { tags: { $in: [new RegExp(q, "i")] } },
-        ],
-        isActive: true,
-      }
-    )
-      .limit(20)
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+        { mainCategory: { $regex: q, $options: "i" } },
+        { categories: { $in: [new RegExp(q, "i")] } },
+        { tags: { $in: [new RegExp(q, "i")] } },
+      ],
+      isActive: true,
+    }
+  )
+      .limit(Math.min(Number(limit) || 20, 50))
       .lean();
 
     res.json({

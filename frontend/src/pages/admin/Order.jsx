@@ -22,7 +22,9 @@ import {
   Receipt,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Printer,
+  Barcode
 } from 'lucide-react';
 import {
   useGetOrdersQuery,
@@ -32,6 +34,7 @@ import {
 } from '../../features/orders/orderApi';
 import { formatINR } from '../../utils/currency';
 import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
+import { printOrderAddressReceipt, printOrderBarcode } from '../../utils/printDocuments';
 
 
 const statusStyle = {
@@ -265,7 +268,22 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 shrink-0">
+        <div className="px-6 py-4 border-t border-slate-100 flex flex-col gap-3 shrink-0">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => printOrderAddressReceipt(order)}
+              className="py-2.5 bg-white border border-amber-200 rounded-xl text-[11px] font-extrabold text-[#85754E] cursor-pointer hover:bg-amber-50 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Printer size={13} /> Address Receipt
+            </button>
+            <button
+              onClick={() => printOrderBarcode(order)}
+              className="py-2.5 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-slate-600 cursor-pointer hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Barcode size={14} /> Order Barcode
+            </button>
+          </div>
+          <div className="flex gap-3">
           <button
             onClick={onClose}
             disabled={isUpdating}
@@ -286,6 +304,7 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
               </>
             ) : 'Update Status'}
           </button>
+          </div>
         </div>
       </div>
     </div>

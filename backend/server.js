@@ -38,6 +38,7 @@ app.use(cookieParser());
 const normalizeOrigin = (value) => (value || "").trim().replace(/\/$/, "");
 const configuredOrigins = [
   process.env.FRONTEND_URL,
+  process.env.CORS_ORIGINS,
   process.env.RENDER_EXTERNAL_URL,
   "https://adminsaree-8.onrender.com",
   "http://localhost:5173",
@@ -52,7 +53,7 @@ const isAllowedOrigin = (origin) => {
   const normalizedOrigin = normalizeOrigin(origin);
   return (
     configuredOrigins.includes(normalizedOrigin) ||
-    /^https:\/\/adminsaree-\d+\.onrender\.com$/.test(normalizedOrigin)
+    /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(normalizedOrigin)
   );
 };
 
@@ -67,7 +68,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
   })
 );
 

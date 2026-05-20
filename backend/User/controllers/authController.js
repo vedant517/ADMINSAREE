@@ -1,8 +1,49 @@
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
+import nodemailer from "nodemailer";
 
 // Simple In-Memory Store for OTPs
 const otpStore = {};
+
+const normalizeIdentifier = ({ phonenum, email, identifier }) => {
+  const raw = String(identifier || email || phonenum || "").trim();
+  if (!raw) return null;
+  const isEmail = raw.includes("@");
+  return {
+    key: isEmail ? raw.toLowerCase() : raw.replace(/\D/g, ""),
+    type: isEmail ? "email" : "mobile",
+  };
+};
+
+const findUserByIdentifier = ({ key, type }) => {
+  return type === "email"
+    ? User.findOne({ email: key })
+    : User.findOne({ phonenum: key });
+};
+
+const sendEmailOtp = async (email, otp) => {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    return false;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: email,
+    subject: "Your Sheetalya login OTP",
+    text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+  });
+  return true;
+};
 
 // REGISTER USER
 export const registerUser = async (req, res) => {
@@ -55,13 +96,13 @@ export const registerUser = async (req, res) => {
 // SEND OTP
 export const sendOTP = async (req, res) => {
   try {
-    const { phonenum } = req.body;
+    const identifier = normalizeIdentifier(req.body || {});
 
-    if (!phonenum) {
-      return res.status(400).json({ message: "Mobile number is required." });
+    if (!identifier?.key) {
+      return res.status(400).json({ message: "Mobile number or email is required." });
     }
 
-    const user = await User.findOne({ phonenum });
+    const user = await findUserByIdentifier(identifier);
     if (!user) {
       return res.status(404).json({ message: "User not found. Please create an account first." });
     }
@@ -70,13 +111,24 @@ export const sendOTP = async (req, res) => {
     const otp = "123456"; // FOR DEMO: Always use 123456
     const expiry = Date.now() + 10 * 60 * 1000; // 10 mins
 
-    otpStore[phonenum] = { otp, expiry };
+    otpStore[identifier.key] = { otp, expiry, type: identifier.type };
 
-    console.log(`[AUTH] OTP for ${phonenum}: ${otp}`);
+    let delivered = false;
+    if (identifier.type === "email") {
+      try {
+        delivered = await sendEmailOtp(identifier.key, otp);
+      } catch (mailError) {
+        console.warn(`[AUTH] Email OTP delivery failed for ${identifier.key}:`, mailError.message);
+      }
+    }
+
+    console.log(`[AUTH] OTP for ${identifier.type} ${identifier.key}: ${otp}`);
 
     res.status(200).json({ 
       success: true,
-      message: "OTP sent successfully (Demo Mode: 123456)" 
+      channel: identifier.type,
+      delivered,
+      message: `OTP sent successfully to ${identifier.type} (Demo Mode: 123456)` 
     });
   } catch (err) {
     console.error("Send OTP Error:", err);
@@ -87,14 +139,15 @@ export const sendOTP = async (req, res) => {
 // VERIFY OTP (LOGIN)
 export const verifyOTP = async (req, res) => {
   try {
-    const { phonenum, otp } = req.body;
+    const { otp } = req.body;
+    const identifier = normalizeIdentifier(req.body || {});
     const sanitizedOtp = String(otp || "").trim().replace(/\s/g, "");
 
-    if (!phonenum || !otp) {
-      return res.status(400).json({ message: "Mobile number and OTP are required" });
+    if (!identifier?.key || !otp) {
+      return res.status(400).json({ message: "Mobile number/email and OTP are required" });
     }
 
-    const stored = otpStore[phonenum];
+    const stored = otpStore[identifier.key];
     const isMaster = sanitizedOtp === "123456";
 
     if (!isMaster) {
@@ -105,19 +158,19 @@ export const verifyOTP = async (req, res) => {
         return res.status(400).json({ message: "Invalid OTP code. Please try again." });
       }
       if (Date.now() > stored.expiry) {
-        delete otpStore[phonenum];
+        delete otpStore[identifier.key];
         return res.status(400).json({ message: "OTP has expired. Please resend code." });
       }
     }
 
     // OTP Verified -> Get User
-    const user = await User.findOne({ phonenum });
+    const user = await findUserByIdentifier(identifier);
     if (!user) {
       return res.status(404).json({ message: "User record lost. Please register again." });
     }
 
     // Clean up store
-    delete otpStore[phonenum];
+    delete otpStore[identifier.key];
 
     // Create JWT
     const token = jwt.sign(
@@ -144,6 +197,7 @@ export const verifyOTP = async (req, res) => {
         id: user._id,
         name: user.name,
         phonenum: user.phonenum,
+        email: user.email,
         role: user.role,
         token,  // ✅ Also embed in user object so frontend can read it easily
       }

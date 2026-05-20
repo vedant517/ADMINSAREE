@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Plus, Search, Filter, Edit, Trash2,
   AlertCircle, CheckCircle2, ChevronDown, MoreHorizontal, Package,
-  ToggleLeft, ToggleRight
+  ToggleLeft, ToggleRight, Barcode
 } from 'lucide-react';
 import {
   fetchProducts, deleteProduct,
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
 import api from '../../services/api';
 import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
+import { printProductBarcode } from '../../utils/printDocuments';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -26,9 +27,15 @@ const Products = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchProducts({ isAdmin: true }));
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(fetchProducts({ isAdmin: true, search: search.trim() }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [dispatch, search]);
 
   useEffect(() => {
     if (successMessage) {
@@ -52,8 +59,6 @@ const Products = () => {
   };
 
   const filtered = (products || []).filter((p) => {
-    const matchesSearch = (p?.name || '').toLowerCase().includes((search || '').toLowerCase());
-    if (!matchesSearch) return false;
     if (filterType === 'Low Inventory') return (p.stock || 0) > 0 && (p.stock || 0) <= 10;
     if (filterType === 'Out of Stock') return (p.stock || 0) === 0;
     return true;
@@ -260,6 +265,13 @@ const Products = () => {
                           >
                             {product.isActive !== false ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                             {product.isActive !== false ? 'Disable' : 'Enable'}
+                          </button>
+                          <button
+                            onClick={() => printProductBarcode(product)}
+                            title="Print barcode"
+                            className="p-1.5 bg-white border border-slate-100 rounded-lg text-slate-400 cursor-pointer flex transition-all hover:bg-amber-50 hover:text-heritage hover:border-amber-200"
+                          >
+                            <Barcode size={16} />
                           </button>
                           <button
                             onClick={() => navigate(`/edit-product/${product._id}`)}

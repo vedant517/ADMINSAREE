@@ -11,6 +11,30 @@ const getProductImage = (product, fallback = "") => {
   return firstImage?.secure_url || firstImage?.url || firstImage?.path || product?.image || fallback;
 };
 
+const getSelectedVariant = (product, item = {}) => {
+  const selected = item.selectedVariant || item.variant || {};
+  const variantKey =
+    selected._id ||
+    selected.id ||
+    selected.value ||
+    selected.name ||
+    item.variantId ||
+    item.variant;
+
+  if (!variantKey) return null;
+
+  return (product?.variants || []).find((variant) =>
+    String(variant._id || variant.id || variant.color || variant.fabric || variant.name) === String(variantKey) ||
+    String(variant.color || "").toLowerCase() === String(variantKey).toLowerCase() ||
+    String(variant.fabric || "").toLowerCase() === String(variantKey).toLowerCase()
+  );
+};
+
+const getProductPrice = (product, item = {}) => {
+  const variant = getSelectedVariant(product, item);
+  return Number(variant?.price || product?.discountPrice || product?.discounted_price || product?.price || item.price || 0);
+};
+
 // CREATE ORDER
 export const createOrder = async (req, res) => {
   try {
@@ -64,7 +88,7 @@ export const createOrder = async (req, res) => {
       }
 
       const product = await Product.findById(productId);
-      const priceToUse = product ? (product.discountPrice > 0 ? product.discountPrice : product.price) : (item.price || 0);
+      const priceToUse = product ? getProductPrice(product, item) : (item.price || 0);
       
       secureOrderItems.push({
         ...item,
@@ -258,7 +282,7 @@ export const calculateOrder = async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) continue;
       
-      const price = product.discountPrice > 0 ? product.discountPrice : product.price;
+      const price = getProductPrice(product, item);
       const qty = parseInt(item.qty || item.quantity || 1);
       
       itemsPrice += price * qty;

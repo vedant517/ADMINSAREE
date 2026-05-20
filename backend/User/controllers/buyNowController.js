@@ -1,5 +1,22 @@
 import BuyNow from "../models/BuyNow.js";
 import jwt from "jsonwebtoken";
+import Product from "../models/Product.js";
+
+const getProductImage = (product, fallback = "") => {
+  const firstImage = Array.isArray(product?.images) ? product.images[0] : null;
+  if (typeof firstImage === "string") return firstImage;
+  return firstImage?.secure_url || firstImage?.url || firstImage?.path || product?.image || fallback;
+};
+
+const getSelectedVariant = (product, selectedVariant = {}) => {
+  const variantKey = selectedVariant._id || selectedVariant.id || selectedVariant.value || selectedVariant.name;
+  if (!variantKey) return null;
+  return (product?.variants || []).find((variant) =>
+    String(variant._id || variant.id || variant.color || variant.fabric || variant.name) === String(variantKey) ||
+    String(variant.color || "").toLowerCase() === String(variantKey).toLowerCase() ||
+    String(variant.fabric || "").toLowerCase() === String(variantKey).toLowerCase()
+  );
+};
 
 export const createBuyNow = async (req, res) => {
   try {
@@ -21,28 +38,32 @@ export const createBuyNow = async (req, res) => {
 
     const {
       productId,
-      name,
-      image,
-      price,
       quantity,
       selectedVariant,
       addressId,
     } = req.body;
 
-    if (!productId || !name || !price) {
+    if (!productId) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields (productId, name, price)",
+        message: "Missing required field productId",
       });
     }
 
+    const product = await Product.findById(productId).lean();
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const variant = getSelectedVariant(product, selectedVariant);
+    const price = Number(variant?.price || product.discountPrice || product.discounted_price || product.price || 0);
     const totalAmount = price * (quantity || 1);
 
     const order = await BuyNow.create({
       user: userId,
       productId,
-      name,
-      image,
+      name: product.name,
+      image: getProductImage(product, req.body.image),
       price,
       quantity: quantity || 1,
       selectedVariant,
