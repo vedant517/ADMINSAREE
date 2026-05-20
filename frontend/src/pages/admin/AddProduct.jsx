@@ -208,7 +208,7 @@ const AddProduct = () => {
     border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
   };
 
-  const inputCls = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all box-border text-slate-800 focus:border-[#4c9f70] focus:bg-white";
+  const inputCls = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all box-border text-slate-800 focus:border-[#85754E] focus:bg-white";
   const labelCls = "text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block";
   const sectionCls = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm";
 
@@ -235,7 +235,7 @@ const AddProduct = () => {
             <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
           <button type="submit" form="main-form"
-            style={{ padding: '10px 20px', background: '#4c9f70', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            style={{ padding: '10px 20px', background: '#85754E', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {loading ? 'Processing...' : (isEditMode ? 'Update Product' : 'Publish Product')}
           </button>
         </div>
@@ -276,7 +276,7 @@ const AddProduct = () => {
           {/* Basic Details */}
           <div style={sectionStyle}>
             <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Type size={16} color="#4c9f70" /> Basic Details
+              <Type size={16} color="#85754E" /> Basic Details
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -299,9 +299,9 @@ const AddProduct = () => {
           <div style={sectionStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                <Layers size={16} color="#4c9f70" /> Product Variants
+                <Layers size={16} color="#85754E" /> Product Variants
               </h2>
-              <button type="button" onClick={addVariant} style={{ fontSize: '12px', fontWeight: 700, color: '#4c9f70', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button type="button" onClick={addVariant} style={{ fontSize: '12px', fontWeight: 700, color: '#85754E', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Plus size={14} /> Add Variant
               </button>
             </div>
@@ -377,7 +377,7 @@ const AddProduct = () => {
                           <button
                             type="button"
                             onClick={() => variantImageRefs.current[idx]?.click()}
-                            className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer bg-slate-50 text-slate-400 hover:border-[#4c9f70] hover:text-[#4c9f70] transition-all flex-shrink-0"
+                            className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer bg-slate-50 text-slate-400 hover:border-[#85754E] hover:text-[#85754E] transition-all flex-shrink-0"
                           >
                             <Plus size={16} />
                           </button>
@@ -426,13 +426,13 @@ const AddProduct = () => {
               </div>
               <div>
                 <label style={labelStyle}>Discount Price (INR)</label>
-                <div style={{ borderRadius: '12px', border: '1px solid #dcfce7', overflow: 'hidden' }}>
+                <div style={{ borderRadius: '12px', border: '1px solid #F0E5CF', overflow: 'hidden' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}>
-                    <span style={{ padding: '12px 14px', background: '#f0fdf4', color: '#4c9f70', fontWeight: 700 }}>₹</span>
+                    <span style={{ padding: '12px 14px', background: '#FFF5E2', color: '#85754E', fontWeight: 700 }}>₹</span>
                     <input type="number" name="discountPrice" value={formData.discountPrice} onChange={handleInputChange} placeholder="0.00"
-                      style={{ background: '#f0fdf4', padding: '12px', fontSize: '14px', fontWeight: 700, color: '#4c9f70', border: 'none', outline: 'none' }} />
+                      style={{ background: '#FFF5E2', padding: '12px', fontSize: '14px', fontWeight: 700, color: '#85754E', border: 'none', outline: 'none' }} />
                   </div>
-                  <div style={{ background: '#f0fdf4', borderTop: '1px solid #dcfce7', padding: '8px 14px', fontSize: '11px', fontWeight: 700, color: '#4c9f70', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  <div style={{ background: '#FFF5E2', borderTop: '1px solid #F0E5CF', padding: '8px 14px', fontSize: '11px', fontWeight: 700, color: '#85754E', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     Sale: {formatINR(saleResult)}
                   </div>
                 </div>
@@ -462,7 +462,7 @@ const AddProduct = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#374151' }}>Unlimited</span>
                 <button type="button" onClick={() => setIsUnlimited(!isUnlimited)}
-                  style={{ width: '44px', height: '22px', borderRadius: '999px', position: 'relative', border: 'none', cursor: 'pointer', background: isUnlimited ? '#4c9f70' : '#e2e8f0', transition: 'background 0.2s' }}>
+                  style={{ width: '44px', height: '22px', borderRadius: '999px', position: 'relative', border: 'none', cursor: 'pointer', background: isUnlimited ? '#85754E' : '#e2e8f0', transition: 'background 0.2s' }}>
                   <div style={{ position: 'absolute', top: '2px', width: '18px', height: '18px', background: 'white', borderRadius: '50%', transition: 'left 0.2s', left: isUnlimited ? '24px' : '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </button>
               </div>
@@ -493,7 +493,7 @@ const AddProduct = () => {
               </div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', cursor: 'pointer', padding: '14px', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0' }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: isFeatured ? 'none' : '2px solid #cbd5e1', background: isFeatured ? '#4c9f70' : 'white', transition: 'all 0.15s' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: isFeatured ? 'none' : '2px solid #cbd5e1', background: isFeatured ? '#85754E' : 'white', transition: 'all 0.15s' }}>
                 {isFeatured && <Check size={13} color="white" strokeWidth={3} />}
               </div>
               <input type="checkbox" style={{ display: 'none' }} checked={isFeatured} onChange={() => setIsFeatured(!isFeatured)} />
@@ -510,16 +510,16 @@ const AddProduct = () => {
             <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b', marginBottom: '20px' }}>Product Media</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div onClick={() => fileInputRef.current.click()}
-                style={{ border: '2px dashed #dcfce7', borderRadius: '16px', background: '#f0fdf4', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#4c9f70'}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#dcfce7'}
+                style={{ border: '2px dashed #F0E5CF', borderRadius: '16px', background: '#FFF5E2', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#85754E'}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#F0E5CF'}
               >
                 {previews.length > 0 ? (
                   <img src={previews[0]} className="max-h-[140px] w-full object-contain rounded-xl" alt="main" />
                 ) : (
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ width: '52px', height: '52px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                      <ImageIcon size={22} color="#4c9f70" />
+                      <ImageIcon size={22} color="#85754E" />
                     </div>
                     <p className="text-[13px] font-bold text-gray-700 m-0">Drop your image here</p>
                     <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">Supports JPG, PNG, WEBP</p>
@@ -542,7 +542,7 @@ const AddProduct = () => {
                 ))}
                 <button type="button" onClick={() => fileInputRef.current.click()}
                   style={{ aspectRatio: '1', border: '2px dashed #e2e8f0', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'white', color: '#94a3b8', transition: 'all 0.15s' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#4c9f70'; e.currentTarget.style.color = '#4c9f70'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#85754E'; e.currentTarget.style.color = '#85754E'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#94a3b8'; }}>
                   <Plus size={16} />
                 </button>
@@ -603,7 +603,7 @@ const AddProduct = () => {
                 Dismiss
               </button>
               <button type="submit" form="main-form"
-                style={{ padding: '12px', background: '#4c9f70', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+                style={{ padding: '12px', background: '#85754E', color: 'white', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
                 {isEditMode ? 'Update' : 'Publish'}
               </button>
             </div>

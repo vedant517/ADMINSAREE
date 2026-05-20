@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 function StatCard({ title, value, icon: Icon, color, trend, isFirst }) {
-  const accent = isFirst ? '#ffffff' : '#938359';
+  const accent = isFirst ? '#ffffff' : '#85754E';
   return (
     <div
       className={`rounded-2xl border border-slate-100 p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${isFirst ? 'bg-heritage' : 'bg-white'}`}
@@ -89,8 +89,8 @@ const Enquiries = () => {
   const getStatusSelectStyle = (status) => {
     const map = {
       New: 'bg-rose-50 text-rose-600',
-      'In Progress': 'bg-amber-50 text-[#938359]',
-      Resolved: 'bg-amber-50 text-[#938359]',
+      'In Progress': 'bg-amber-50 text-[#85754E]',
+      Resolved: 'bg-amber-50 text-[#85754E]',
     };
     return map[status] || 'bg-gray-50 text-gray-700';
   };
@@ -98,7 +98,7 @@ const Enquiries = () => {
   if (loading) return (
     <div className="flex items-center justify-center h-[80vh]">
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <Loader2 style={{ animation: 'spin 1s linear infinite' }} size={40} color="#938359" />
+      <Loader2 style={{ animation: 'spin 1s linear infinite' }} size={40} color="#85754E" />
     </div>
   );
 
@@ -111,8 +111,8 @@ const Enquiries = () => {
           <p className="text-gray-500 text-sm m-0">Manage user messages and styling inquiries.</p>
         </div>
         <div className="px-4 py-2 bg-amber-50 border border-amber-100 rounded-2xl">
-          <span className="text-[11px] font-black text-[#938359] uppercase tracking-widest flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#938359] animate-pulse" />
+          <span className="text-[11px] font-black text-[#85754E] uppercase tracking-widest flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#85754E] animate-pulse" />
             Live Response System
           </span>
         </div>
@@ -163,8 +163,8 @@ const Enquiries = () => {
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all whitespace-nowrap
                 ${filter === f
-                  ? 'bg-white text-[#938359] shadow-sm'
-                  : 'bg-transparent text-slate-500 hover:text-[#938359]'}`}
+                  ? 'bg-white text-[#85754E] shadow-sm'
+                  : 'bg-transparent text-slate-500 hover:text-[#85754E]'}`}
             >
               {f}
             </button>

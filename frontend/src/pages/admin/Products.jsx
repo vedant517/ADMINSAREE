@@ -67,7 +67,7 @@ const Products = () => {
         {/* Header */}
         <div className="flex justify-between items-center flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#938359] rounded-2xl flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 bg-[#85754E] rounded-2xl flex items-center justify-center shrink-0">
               <Package size={24} color="white" />
             </div>
             <div>
@@ -91,7 +91,7 @@ const Products = () => {
             </div>
             <button
               onClick={() => navigate('/add-product')}
-              className="flex items-center justify-center gap-2 bg-[#938359] text-white px-5 py-3 rounded-2xl border-0 text-xs font-extrabold uppercase tracking-wide cursor-pointer whitespace-nowrap hover:bg-[#7a6d4a] transition-colors max-sm:w-full"
+              className="flex items-center justify-center gap-2 bg-[#85754E] text-white px-5 py-3 rounded-2xl border-0 text-xs font-extrabold uppercase tracking-wide cursor-pointer whitespace-nowrap hover:bg-[#7a6d4a] transition-colors max-sm:w-full"
             >
               <Plus size={18} strokeWidth={3} /> Add Product
             </button>
@@ -110,8 +110,8 @@ const Products = () => {
                   onClick={() => setFilterType(tab)}
                   className={`px-4 py-2 rounded-xl text-sm border-0 cursor-pointer transition-all whitespace-nowrap ${
                     filterType === tab
-                      ? 'bg-white font-black text-[#938359] shadow-sm'
-                      : 'bg-transparent font-extrabold text-slate-500 hover:text-[#938359]'
+                      ? 'bg-white font-black text-[#85754E] shadow-sm'
+                      : 'bg-transparent font-extrabold text-slate-500 hover:text-[#85754E]'
                   }`}
                 >
                   {tab}
@@ -159,7 +159,7 @@ const Products = () => {
                 {loading && filtered.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-16 text-center">
-                      <div className="w-11 h-11 border-4 border-amber-100 border-t-[#938359] rounded-full mx-auto mb-3" style={{ animation: 'spin 0.8s linear infinite' }} />
+                      <div className="w-11 h-11 border-4 border-amber-100 border-t-[#85754E] rounded-full mx-auto mb-3" style={{ animation: 'spin 0.8s linear infinite' }} />
                       <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Syncing Catalog...</span>
                     </td>
                   </tr>
@@ -183,8 +183,8 @@ const Products = () => {
                         <div className="flex items-center gap-3.5">
                           <div className="w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shrink-0">
                             <img
-                              src={product?.image && product.image.startsWith('http') ? product.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`}
-                              onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.name || 'Item')}&background=10b981&color=fff&bold=true`; }}
+                              src={product?.image && product.image.startsWith('http') ? product.image : product?.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((product?.name || 'Item').substring(0, 2))}&background=10b981&color=fff&bold=true`}
+                              onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((product?.name || 'Item').substring(0, 2))}&background=10b981&color=fff&bold=true`; }}
                               className="w-full h-full object-cover"
                               alt={product?.name}
                             />
@@ -239,7 +239,7 @@ const Products = () => {
                       <td className="px-5 py-4 text-center">
                         <span className={`inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide ${
                           product.stock > 10
-                            ? 'bg-amber-50 text-[#938359]'
+                            ? 'bg-amber-50 text-[#85754E]'
                             : product.stock > 0
                             ? 'bg-yellow-50 text-yellow-600'
                             : 'bg-red-50 text-rose-600'
@@ -255,7 +255,7 @@ const Products = () => {
                           <button
                             onClick={() => handleToggle(product._id)}
                             title={product.isActive !== false ? "Disable" : "Enable"}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer hover:bg-slate-50 transition-all text-[11px] font-bold bg-white ${product.isActive !== false ? 'border-amber-200 text-amber-500' : 'border-slate-200 text-[#938359]'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer hover:bg-slate-50 transition-all text-[11px] font-bold bg-white ${product.isActive !== false ? 'border-amber-200 text-amber-500' : 'border-slate-200 text-[#85754E]'}`}
                           >
                             {product.isActive !== false ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                             {product.isActive !== false ? 'Disable' : 'Enable'}
@@ -289,7 +289,7 @@ const Products = () => {
             <div className="flex items-center gap-2">
               <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-400 cursor-not-allowed opacity-50">Previous</button>
               <div className="flex gap-1.5">
-                <button className="w-9 h-9 rounded-xl bg-[#938359] text-white border-0 text-sm font-extrabold cursor-pointer">1</button>
+                <button className="w-9 h-9 rounded-xl bg-[#85754E] text-white border-0 text-sm font-extrabold cursor-pointer">1</button>
                 <button className="w-9 h-9 rounded-xl bg-white border border-slate-100 text-slate-400 text-sm font-bold cursor-pointer hover:bg-slate-50">2</button>
               </div>
               <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wide text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors">Next</button>
@@ -326,7 +326,7 @@ const Products = () => {
 
         {/* Success Toast */}
         {successMessage && (
-          <div className="fixed bottom-8 right-8 z-[1000] bg-[#938359] text-white px-6 py-4 rounded-2xl shadow-lg shadow-amber-400/30 flex items-center gap-3">
+          <div className="fixed bottom-8 right-8 z-[1000] bg-[#85754E] text-white px-6 py-4 rounded-2xl shadow-lg shadow-amber-400/30 flex items-center gap-3">
             <CheckCircle2 size={22} />
             <span className="text-xs font-extrabold uppercase tracking-wide">{successMessage}</span>
           </div>

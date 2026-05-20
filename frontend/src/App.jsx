@@ -21,7 +21,7 @@ const ProductReviewPage = lazy(() => import('./pages/user/ProductReviewPage'));
 
 const LoadingSpinner = () => (
   <div className="flex-1 flex items-center justify-center min-h-[400px]">
-    <div className="w-10 h-10 border-4 border-slate-200 border-t-[#938359] rounded-full animate-spin"></div>
+    <div className="w-10 h-10 border-4 border-slate-200 border-t-[#85754E] rounded-full animate-spin"></div>
   </div>
 );
 

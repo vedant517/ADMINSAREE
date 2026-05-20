@@ -15,7 +15,7 @@ import { formatCompactINR, formatINR } from '../../utils/currency';
 
 /* ── Stat Card ── */
 function StatCard({ title, value, badge, badgeUp, sub, onClick, loading, isFirst, icon: Icon, color }) {
-  const accent = isFirst ? '#ffffff' : '#938359';
+  const accent = isFirst ? '#ffffff' : '#85754E';
   return (
     <div
       onClick={onClick}
@@ -30,7 +30,7 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading, isFirst
         {badge && (
           <span
             className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wide ${
-              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#938359]' : 'bg-red-50 text-rose-600')
+              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#85754E]' : 'bg-red-50 text-rose-600')
             }`}
           >
             {badgeUp ? '↑' : '↓'} {badge}
@@ -96,15 +96,15 @@ const Dashboard = () => {
           </button>
           <div className="w-11 h-6 bg-amber-100 rounded-xl flex items-center p-0.5 cursor-pointer">
             <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
-              <Sun size={11} color="#938359" strokeWidth={3} />
+              <Sun size={11} color="#85754E" strokeWidth={3} />
             </div>
           </div>
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
             <div className="hidden sm:flex flex-col text-right">
               <p className="text-xs font-bold text-slate-800 m-0 leading-none">Admin</p>
-              <p className="text-[10px] text-[#938359] font-semibold mt-0.5 mb-0">Verified</p>
+              <p className="text-[10px] text-[#85754E] font-semibold mt-0.5 mb-0">Verified</p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#b09e6d] to-[#938359] flex items-center justify-center text-white font-bold text-base shrink-0 cursor-pointer border-2 border-white">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#b09e6d] to-[#85754E] flex items-center justify-center text-white font-bold text-base shrink-0 cursor-pointer border-2 border-white">
               A
             </div>
           </div>
@@ -151,7 +151,7 @@ const Dashboard = () => {
             <p className="text-[13px] font-extrabold text-heritage m-0">Report for this week</p>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="flex border border-amber-100 rounded-2xl p-0.5 bg-[#FFF5E2]">
-                <button className="px-2.5 py-0.5 text-[11px] font-bold text-[#938359] bg-white rounded-2xl border-none cursor-pointer shadow-sm">This week</button>
+                <button className="px-2.5 py-0.5 text-[11px] font-bold text-[#85754E] bg-white rounded-2xl border-none cursor-pointer shadow-sm">This week</button>
                 <button className="px-2.5 py-0.5 text-[11px] font-bold text-slate-400 bg-transparent border-none cursor-pointer">Last week</button>
               </div>
               <button className="bg-transparent border-none cursor-pointer text-slate-400"><MoreVertical size={15} /></button>
@@ -167,7 +167,7 @@ const Dashboard = () => {
               { val: String(outOfStockProducts), name: 'Out of Stock' },
               { val: statsLoading ? '...' : formatCompactINR(statsData?.totalRevenue || 0), name: 'Revenue' },
             ].map((stat, i) => (
-              <div key={i} className={`pb-2 min-w-0 ${stat.active ? 'border-b-2 border-[#938359] bg-amber-50/50' : 'border-b-2 border-slate-100'}`}>
+              <div key={i} className={`pb-2 min-w-0 ${stat.active ? 'border-b-2 border-[#85754E] bg-amber-50/50' : 'border-b-2 border-slate-100'}`}>
                 <div className="px-1">
                   <div className="text-[13px] font-bold text-slate-800 truncate">{stat.val}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 font-bold uppercase tracking-[0.04em] truncate">{stat.name}</div>
@@ -181,19 +181,19 @@ const Dashboard = () => {
               <AreaChart data={dynamicAreaData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#938359" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#938359" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#85754E" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#85754E" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={8} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={(v) => formatCompactINR(v, { maximumFractionDigits: 0 })} />
                 <Tooltip
-                  cursor={{ stroke: '#938359', strokeWidth: 1, strokeDasharray: '3 3' }}
+                  cursor={{ stroke: '#85754E', strokeWidth: 1, strokeDasharray: '3 3' }}
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-[#FFF5E2] border border-amber-100 text-[#938359] text-[11px] font-bold px-2.5 py-1.5 rounded-lg text-center shadow-sm">
+                        <div className="bg-[#FFF5E2] border border-amber-100 text-[#85754E] text-[11px] font-bold px-2.5 py-1.5 rounded-lg text-center shadow-sm">
                           {label}<br />{formatINR(payload[0].value)}
                         </div>
                       );
@@ -201,7 +201,7 @@ const Dashboard = () => {
                     return null;
                   }}
                 />
-                <Area type="monotone" dataKey="value" stroke="#938359" strokeWidth={2.5} fillOpacity={1} fill="url(#colorValue)" />
+                <Area type="monotone" dataKey="value" stroke="#85754E" strokeWidth={2.5} fillOpacity={1} fill="url(#colorValue)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -221,7 +221,7 @@ const Dashboard = () => {
             <div className="h-12 w-full mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dynamicBarData}>
-                  <Bar dataKey="value" fill="#938359" radius={[2, 2, 0, 0]} barSize={5} />
+                  <Bar dataKey="value" fill="#85754E" radius={[2, 2, 0, 0]} barSize={5} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -229,8 +229,8 @@ const Dashboard = () => {
 
           <div className="bg-white rounded-2xl p-4 border border-slate-200 flex-1 flex flex-col min-w-0">
             <div className="flex justify-between items-center mb-3">
-              <p className="text-xs font-bold text-slate-800 m-0">Sales by Country</p>
-              <span className="text-[11px] font-bold text-slate-800 shrink-0">Revenue</span>
+              <p className="text-xs font-bold text-heritage m-0">Sales by Country</p>
+              <span className="text-[11px] font-bold text-heritage shrink-0">Revenue</span>
             </div>
             <div className="flex-1 flex flex-col gap-2 min-h-0">
               {statsLoading ? (
@@ -260,7 +260,7 @@ const Dashboard = () => {
         <div className="lg:col-span-2 bg-white rounded-2xl p-4 border border-slate-200 flex flex-col min-w-0 overflow-hidden">
           <div className="flex justify-between items-center mb-3.5 gap-2 flex-wrap">
             <p className="text-[13px] font-bold text-heritage m-0">Transaction</p>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#938359] text-white text-[11px] font-medium rounded-lg border-none cursor-pointer shrink-0">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#85754E] text-white text-[11px] font-medium rounded-lg border-none cursor-pointer shrink-0">
               Filter <Filter size={11} />
             </button>
           </div>
@@ -284,10 +284,15 @@ const Dashboard = () => {
                     <td className="py-2.5 pr-2 font-semibold max-w-[120px] truncate">{row.orderId}</td>
                     <td className="py-2.5 pr-2 text-slate-500 font-normal whitespace-nowrap">{new Date(row.createdAt).toLocaleDateString('en-GB')}</td>
                     <td className="py-2.5 pr-2">
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${row.status === 'Delivered' ? 'bg-[#938359]' : row.status === 'Cancelled' ? 'bg-rose-500' : 'bg-amber-400'}`}></span>
-                        {row.status}
-                      </div>
+                      {row.paymentStatus === 'completed' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                          ✓ Success
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap" style={{ background: '#fefce8', color: '#a16207' }}>
+                          ⏱ Pending
+                        </span>
+                      )}
                     </td>
                     <td className="py-2.5 text-right font-semibold whitespace-nowrap">{formatINR(row.totalPrice ?? row.price ?? 0)}</td>
                   </tr>
@@ -320,9 +325,9 @@ const Dashboard = () => {
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                     <img
-                      src={p.image && p.image.startsWith('http') ? p.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`}
+                      src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
                       alt={p.name}
-                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`; }}
+                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -345,14 +350,14 @@ const Dashboard = () => {
         <div className="lg:col-span-2 bg-white rounded-2xl p-4 border border-slate-200 flex flex-col min-w-0 overflow-hidden">
           <div className="flex justify-between items-center mb-3.5 gap-2 flex-wrap">
             <p className="text-[13px] font-bold text-heritage m-0">Best selling product</p>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#938359] text-white text-[11px] font-medium rounded-lg border-none cursor-pointer shrink-0">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#85754E] text-white text-[11px] font-medium rounded-lg border-none cursor-pointer shrink-0">
               Filter <Filter size={11} />
             </button>
           </div>
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse" style={{ minWidth: '380px' }}>
               <thead>
-                <tr className="text-[10px] text-[#938359] bg-[#f9f5e8]">
+                <tr className="text-[10px] text-[#85754E] bg-[#FFF5E2]">
                   <th className="py-2.5 px-3 font-bold tracking-[0.07em] rounded-l-lg">PRODUCT</th>
                   <th className="py-2.5 px-3 font-bold tracking-[0.07em]">TOTAL ORDER</th>
                   <th className="py-2.5 px-3 font-bold tracking-[0.07em]">STATUS</th>
@@ -368,9 +373,9 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-7 h-7 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                           <img
-                            src={p.image && p.image.startsWith('http') ? p.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`}
+                            src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
                             alt={p.name}
-                            onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`; }}
+                            onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
                             className="w-full h-full object-contain"
                           />
                         </div>
@@ -379,8 +384,8 @@ const Dashboard = () => {
                     </td>
                     <td className="py-2.5 px-3 text-slate-500 font-extrabold">{p.totalQty}</td>
                     <td className="py-2.5 px-3">
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#938359]">
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-[#938359]"></span>
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#85754E]">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-[#85754E]"></span>
                         ACTIVE
                       </div>
                     </td>
@@ -400,7 +405,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs font-bold text-heritage m-0">Add New Product</p>
             <button className="text-[11px] text-heritage flex items-center gap-1 font-semibold bg-transparent border-none cursor-pointer shrink-0">
-              <div className="w-3.5 h-3.5 rounded border border-[#938359] flex items-center justify-center">
+              <div className="w-3.5 h-3.5 rounded border border-[#85754E] flex items-center justify-center">
                 <Plus size={9} strokeWidth={3} />
               </div>
               Add New
@@ -413,18 +418,18 @@ const Dashboard = () => {
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-7 h-7 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                     <img
-                      src={p.image && p.image.startsWith('http') ? p.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`}
+                      src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
                       alt=""
-                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=938359&color=fff&bold=true`; }}
+                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
                       className="w-full h-full object-contain"
                     />
                   </div>
                   <div className="min-w-0">
                     <div className="text-[11px] font-bold text-slate-800 truncate">{p.name}</div>
-                    <div className="text-[10px] font-bold text-[#938359]">{formatINR(p.price)}</div>
+                    <div className="text-[10px] font-bold text-[#85754E]">{formatINR(p.price)}</div>
                   </div>
                 </div>
-                <button className="flex items-center gap-0.5 px-2.5 py-1 rounded-md bg-[#938359] text-white border-none cursor-pointer text-[10px] font-semibold shrink-0">
+                <button className="flex items-center gap-0.5 px-2.5 py-1 rounded-md bg-[#85754E] text-white border-none cursor-pointer text-[10px] font-semibold shrink-0">
                   <Plus size={8} strokeWidth={3} /> Add
                 </button>
               </div>

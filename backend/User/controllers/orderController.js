@@ -66,7 +66,7 @@ export const createOrder = async (req, res) => {
         qty: quantity,
         price: priceToUse,
         name: product ? product.name : (item.name || "Unknown Product"),
-        image: product ? (product.images?.[0] || product.image) : (item.image || "")
+        image: product ? (product.images?.[0]?.url || product.image) : (item.image || "")
       });
       
       calculatedItemsPrice += (priceToUse * quantity);

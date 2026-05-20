@@ -210,7 +210,7 @@ export const getTransactions = async (req, res) => {
     const total = await Transaction.countDocuments(query);
     const transactions = await Transaction.find(query)
       .populate('user', 'name email')
-      .populate('order', 'orderId totalPrice status')
+      .populate('order', 'orderId totalPrice status paymentStatus paymentMethod')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -232,7 +232,7 @@ export const getTransactionById = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id)
       .populate('user', 'name email')
-      .populate('order', 'orderId totalPrice status orderItems');
+      .populate('order', 'orderId totalPrice status paymentStatus paymentMethod orderItems');
 
     if (!transaction) {
       return res.status(404).json({ success: false, message: 'Transaction not found' });

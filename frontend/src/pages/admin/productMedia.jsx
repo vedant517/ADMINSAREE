@@ -154,7 +154,7 @@ const OfferPage = () => {
     return (
       <div className="flex justify-center items-center min-h-screen bg-slate-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-[#938359] rounded-full mx-auto mb-4 animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-slate-200 border-t-[#85754E] rounded-full mx-auto mb-4 animate-spin"></div>
           <p className="text-slate-500 font-semibold">Loading offers...</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ const OfferPage = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-1.5 bg-gradient-to-br from-[#b09e6d] to-[#938359] text-white border-0 px-5 py-2.5 rounded-xl font-bold text-sm cursor-pointer shadow-lg shadow-amber-400/30 hover:opacity-90 transition-opacity"
+          className="flex items-center gap-1.5 bg-gradient-to-br from-[#b09e6d] to-[#85754E] text-white border-0 px-5 py-2.5 rounded-xl font-bold text-sm cursor-pointer shadow-lg shadow-amber-400/30 hover:opacity-90 transition-opacity"
         >
           <span className="text-lg leading-none">+</span> Create Offer
         </button>
@@ -205,7 +205,7 @@ const OfferPage = () => {
                   <div className={`absolute top-3 right-3 z-10 text-white text-xs font-extrabold px-2.5 py-1 rounded-full ${
                     offer.tag === "HOT" ? "bg-gradient-to-br from-orange-400 to-orange-600" :
                     offer.tag === "NEW" ? "bg-gradient-to-br from-blue-400 to-blue-600" :
-                    offer.tag === "SALE" ? "bg-gradient-to-br from-[#b09e6d] to-[#938359]" :
+                    offer.tag === "SALE" ? "bg-gradient-to-br from-[#b09e6d] to-[#85754E]" :
                     "bg-gradient-to-br from-violet-600 to-violet-700"
                   }`}>
                     {offer.tag === "HOT" ? "🔥" : offer.tag === "NEW" ? "✨" : offer.tag === "SALE" ? "🏷️" : "⚡"} {offer.tag}
@@ -226,7 +226,7 @@ const OfferPage = () => {
                 {/* Content */}
                 <div className="p-4 pb-5">
                   <div className="flex items-center gap-1 mb-2 flex-wrap">
-                    <span className="text-xs font-bold text-[#938359] bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 uppercase tracking-widest flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-[#85754E] bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 uppercase tracking-widest flex items-center gap-1.5">
                       {offer.mainCategory}
                     </span>
                     {offer.tags.map(tag => (
@@ -247,7 +247,7 @@ const OfferPage = () => {
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-extrabold text-[#938359]">₹{finalPrice.toLocaleString()}</span>
+                        <span className="text-xl font-extrabold text-[#85754E]">₹{finalPrice.toLocaleString()}</span>
                         <span className="text-sm text-slate-300 line-through font-medium">₹{offer.price.toLocaleString()}</span>
                       </div>
                       <p className="text-xs text-orange-400 font-bold mt-0.5">Save ₹{savings.toLocaleString()}</p>
@@ -268,7 +268,7 @@ const OfferPage = () => {
         >
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" style={{ animation: "slideUp 0.25s ease" }}>
             {/* Modal Header */}
-            <div className="bg-gradient-to-br from-[#b09e6d] to-[#938359] px-6 py-5 flex justify-between items-center sticky top-0 z-10">
+            <div className="bg-gradient-to-br from-[#b09e6d] to-[#85754E] px-6 py-5 flex justify-between items-center sticky top-0 z-10">
               <div>
                 <h2 className="text-white text-lg font-extrabold m-0">Create New Offer</h2>
               </div>
@@ -291,7 +291,7 @@ const OfferPage = () => {
                   name="mainCategory"
                   value={formData.mainCategory}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#938359] transition-colors"
+                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#85754E] transition-colors"
                 >
                   <option value="">All Categories</option>
                   {MAIN_CATEGORIES.map((cat) => (
@@ -309,7 +309,7 @@ const OfferPage = () => {
                   name="productId"
                   value={formData.productId}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#938359] transition-colors"
+                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#85754E] transition-colors"
                 >
                   <option value="">Select Product</option>
                   {filteredProducts.map((p) => (
@@ -328,7 +328,7 @@ const OfferPage = () => {
                     name="variantId"
                     value={formData.variantId}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#938359] transition-colors"
+                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#85754E] transition-colors"
                   >
                     <option value="">All Variants</option>
                     {productVariants.map((v) => (
@@ -349,7 +349,7 @@ const OfferPage = () => {
                   placeholder="Summer Sale"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 focus:border-[#938359] transition-colors"
+                  className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 focus:border-[#85754E] transition-colors"
                 />
               </div>
 
@@ -364,7 +364,7 @@ const OfferPage = () => {
                     name="discountPercent"
                     value={formData.discountPercent}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 focus:border-[#938359] transition-colors"
+                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 focus:border-[#85754E] transition-colors"
                   />
                 </div>
                 <div>
@@ -376,7 +376,7 @@ const OfferPage = () => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#938359] transition-colors"
+                    className="w-full px-3.5 py-2.5 border-[1.5px] border-slate-200 rounded-xl text-sm text-slate-800 outline-none bg-slate-50 cursor-pointer focus:border-[#85754E] transition-colors"
                   />
                 </div>
               </div>
@@ -385,13 +385,13 @@ const OfferPage = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="flex-1 py-3 bg-[#938359] text-white border-0 rounded-xl text-[13px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-[#85754E] text-white border-0 rounded-xl text-[13px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreateOffer}
-                  className="flex-[2] py-2.5 border-0 rounded-xl bg-gradient-to-br from-[#b09e6d] to-[#938359] text-white font-bold cursor-pointer hover:opacity-90 transition-opacity"
+                  className="flex-[2] py-2.5 border-0 rounded-xl bg-gradient-to-br from-[#b09e6d] to-[#85754E] text-white font-bold cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   ✓ Create Offer
                 </button>

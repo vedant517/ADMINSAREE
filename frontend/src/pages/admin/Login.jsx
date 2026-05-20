@@ -68,7 +68,7 @@ export default function Login({ setIsAuthenticated }) {
       {/* Back Button */}
       <button 
         onClick={() => navigate('/')}
-        className="absolute top-6 left-6 md:top-8 md:left-8 w-10 h-10 rounded-full bg-[#938359]/10 flex items-center justify-center text-[#938359] border border-[#938359]/20 cursor-pointer hover:bg-[#938359]/20 transition-all z-50 shadow-sm"
+        className="absolute top-6 left-6 md:top-8 md:left-8 w-10 h-10 rounded-full bg-[#85754E]/10 flex items-center justify-center text-[#85754E] border border-[#85754E]/20 cursor-pointer hover:bg-[#85754E]/20 transition-all z-50 shadow-sm"
       >
         <span className="text-xl">‹</span>
       </button>
@@ -94,7 +94,7 @@ export default function Login({ setIsAuthenticated }) {
           <div className="space-y-2">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 select-none">Email Address</label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#938359]">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#85754E]">
                 <Mail size={18} />
               </div>
               <input
@@ -103,7 +103,7 @@ export default function Login({ setIsAuthenticated }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@gmail.com"
-                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 outline-none transition-all box-border focus:border-[#938359] focus:ring-4 focus:ring-[#938359]/5 placeholder:text-slate-300"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 outline-none transition-all box-border focus:border-[#85754E] focus:ring-4 focus:ring-[#85754E]/5 placeholder:text-slate-300"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function Login({ setIsAuthenticated }) {
           <div className="space-y-2">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 select-none">Password</label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#938359]">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#85754E]">
                 <Lock size={18} />
               </div>
               <input
@@ -120,12 +120,12 @@ export default function Login({ setIsAuthenticated }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-12 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 outline-none transition-all box-border focus:border-[#938359] focus:ring-4 focus:ring-[#938359]/5 placeholder:text-slate-300"
+                className="w-full pl-12 pr-12 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 outline-none transition-all box-border focus:border-[#85754E] focus:ring-4 focus:ring-[#85754E]/5 placeholder:text-slate-300"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate-300 hover:text-[#938359] transition-colors p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate-300 hover:text-[#85754E] transition-colors p-1"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -135,7 +135,7 @@ export default function Login({ setIsAuthenticated }) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-4 py-4 bg-[#938359] text-white border-none rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] cursor-pointer transition-all flex items-center justify-center gap-2 shadow-2xl shadow-amber-900/30 hover:bg-[#837349] hover:translate-y-[-2px] active:translate-y-[0px] disabled:opacity-70 disabled:cursor-not-allowed group"
+            className="w-full mt-4 py-4 bg-[#85754E] text-white border-none rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] cursor-pointer transition-all flex items-center justify-center gap-2 shadow-2xl shadow-amber-900/30 hover:bg-[#837349] hover:translate-y-[-2px] active:translate-y-[0px] disabled:opacity-70 disabled:cursor-not-allowed group"
           >
             {isLoading ? <Loader2 className="animate-spin" size={18} /> : (
               <>LOGIN TO PROCEED <span className="text-lg transition-transform group-hover:translate-x-1">→</span></>

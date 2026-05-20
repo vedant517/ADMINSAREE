@@ -32,6 +32,69 @@ import {
 } from '../../features/orders/orderApi';
 import { formatINR } from '../../utils/currency';
 
+// Helper to format product image URLs from the backend securely
+const formatImageUrl = (imagePath, name = 'Item') => {
+  if (!imagePath) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
+  }
+
+  // Handle case where imagePath is an actual object
+  if (typeof imagePath === 'object' && imagePath !== null) {
+    if (imagePath.url) {
+      imagePath = imagePath.url;
+    } else {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
+    }
+  }
+
+  // Handle case where imagePath is a stringified object (e.g. from mongoose coercion/database dumps)
+  if (typeof imagePath === 'string' && imagePath.trim().startsWith('{')) {
+    try {
+      const match = imagePath.match(/url:\s*['"]([^'"]+)['"]/i) || imagePath.match(/"url":\s*['"]([^'"]+)['"]/i);
+      if (match && match[1]) {
+        imagePath = match[1];
+      } else {
+        const parsed = JSON.parse(imagePath.replace(/'/g, '"'));
+        if (parsed && parsed.url) {
+          imagePath = parsed.url;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse stringified image object:", e);
+    }
+  }
+
+  if (typeof imagePath !== 'string') {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
+  }
+  
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // Normalize Windows backslashes
+  let cleanPath = imagePath.replace(/\\/g, '/');
+  
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = '/' + cleanPath;
+  }
+  
+  // Extract base URL from environment variable VITE_API_URL or VITE_API_BASE_URL
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  let baseUrl = 'http://localhost:5001';
+  if (envUrl) {
+    let base = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+    if (base.endsWith('/api')) {
+      base = base.slice(0, -4);
+    }
+    baseUrl = base;
+  }
+  
+  const sanitizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  return `${sanitizedBaseUrl}${cleanPath}`;
+};
+
+
 const statusStyle = {
   Delivered: { bg: 'bg-slate-50 text-slate-600 border border-slate-200' },
   Pending:   { bg: 'bg-slate-50 text-slate-600 border border-slate-200' },
@@ -40,13 +103,13 @@ const statusStyle = {
 };
 
 const paymentDotColor = {
-  Paid:   'bg-[#938359]',
+  Paid:   'bg-[#85754E]',
   Unpaid: 'bg-orange-500',
 };
 
 /* ── Stat Card ── */
 function StatCard({ title, value, badge, badgeUp, sub, onClick, loading, isFirst, icon: Icon }) {
-  const color = isFirst ? '#ffffff' : '#938359';
+  const color = isFirst ? '#ffffff' : '#85754E';
   return (
     <div
       onClick={onClick}
@@ -61,7 +124,7 @@ function StatCard({ title, value, badge, badgeUp, sub, onClick, loading, isFirst
         {badge && (
           <span
             className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wide ${
-              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#938359]' : 'bg-red-50 text-rose-600')
+              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#85754E]' : 'bg-red-50 text-rose-600')
             }`}
           >
             {badgeUp ? '↑' : '↓'} {badge}
@@ -105,9 +168,9 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
     : (order.orderItems || []).reduce((sum, item) => sum + (Number(item.price) * Number(item.qty || item.quantity || 1)), 0);
 
   const statusColors = {
-    Delivered: 'bg-amber-100 text-[#938359]',
-    Pending:   'bg-amber-50 text-[#938359]',
-    Shipped:   'bg-amber-50 text-[#938359]',
+    Delivered: 'bg-amber-100 text-[#85754E]',
+    Pending:   'bg-amber-50 text-[#85754E]',
+    Shipped:   'bg-amber-50 text-[#85754E]',
     Cancelled: 'bg-rose-50 text-rose-600',
   };
   const sc = statusColors[order.status] || 'bg-slate-100 text-slate-600';
@@ -124,13 +187,13 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center">
-                <Package size={16} className="text-[#938359]" />
+                <Package size={16} className="text-[#85754E]" />
               </div>
               <h3 className="text-base font-black text-slate-900 m-0">Order Details</h3>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-slate-500 font-medium">Order ID:</span>
-              <span className="text-xs font-extrabold text-[#938359] bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+              <span className="text-xs font-extrabold text-[#85754E] bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                 #{order.orderId || order.id}
               </span>
               <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-[0.06em] ${sc}`}>
@@ -153,15 +216,15 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
           <div className="grid grid-cols-2 gap-4 mb-4">
             <InfoRow label="User ID" value={order.userId || order.user} />
             <InfoRow label="Order Date" value={order.date || (order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : 'N/A')} />
-            <InfoRow label="Payment Status" value={order.payment || 'Unpaid'} valueColor={order.payment === 'Paid' ? 'text-[#938359]' : 'text-orange-500'} />
+            <InfoRow label="Payment Status" value={order.payment || 'Unpaid'} valueColor={order.payment === 'Paid' ? 'text-[#85754E]' : 'text-orange-500'} />
             <InfoRow label="Payment Method" value={order.paymentMethod || 'COD'} />
           </div>
 
           {/* Shipping Address */}
           <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
             <div className="flex items-center gap-1.5 mb-2.5">
-              <MapPin size={13} className="text-[#938359]" />
-              <span className="text-[10px] font-extrabold text-[#938359] uppercase tracking-[0.1em]">Shipping Address</span>
+              <MapPin size={13} className="text-[#85754E]" />
+              <span className="text-[10px] font-extrabold text-[#85754E] uppercase tracking-[0.1em]">Shipping Address</span>
             </div>
             <div className="flex flex-col gap-1">
               {[
@@ -182,8 +245,8 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
           {/* Purchased Items */}
           <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
             <div className="flex items-center gap-1.5 mb-3">
-              <ShoppingCart size={13} className="text-[#938359]" />
-              <span className="text-[10px] font-extrabold text-[#938359] uppercase tracking-[0.1em]">
+              <ShoppingCart size={13} className="text-[#85754E]" />
+              <span className="text-[10px] font-extrabold text-[#85754E] uppercase tracking-[0.1em]">
                 Purchased Items ({order.orderItems?.length || 0})
               </span>
             </div>
@@ -194,10 +257,18 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
                 return (
                   <div key={idx} className={`flex items-center gap-3 ${idx < order.orderItems.length - 1 ? 'pb-2.5 border-b border-slate-200' : ''}`}>
                     <div className="w-11 h-11 shrink-0 rounded-xl overflow-hidden bg-slate-200 border border-slate-200">
-                      {item.image
-                        ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
-                      }
+                      {item.image ? (
+                        <img 
+                          src={formatImageUrl(item.image, item.name)} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name.substring(0, 2))}&background=938359&color=fff&bold=true`;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-bold text-slate-800 m-0 mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</p>
@@ -267,7 +338,7 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
             onClick={() => onUpdate(order, selectedStatus)}
             disabled={isUpdating || selectedStatus === order.status}
             className={`flex-[2] py-2.5 rounded-xl text-xs font-extrabold text-white border-none flex items-center justify-center gap-2 transition-all
-              ${isUpdating ? 'bg-amber-400 cursor-not-allowed' : selectedStatus === order.status ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#938359] cursor-pointer hover:bg-[#7a6d4a] shadow-lg shadow-amber-900/30'}`}
+              ${isUpdating ? 'bg-amber-400 cursor-not-allowed' : selectedStatus === order.status ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#85754E] cursor-pointer hover:bg-[#7a6d4a] shadow-lg shadow-amber-900/30'}`}
           >
             {isUpdating ? (
               <>
@@ -411,7 +482,7 @@ export default function OrderManagement() {
         <p className="text-rose-600 font-bold mb-4">Failed to load orders</p>
         <p className="text-xs text-slate-500 mb-6">{ordersError.message || 'Connecting to server failed.'}</p>
         <button onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-[#938359] text-white text-xs font-bold rounded-lg hover:bg-[#7a6d4a] transition-colors">
+          className="px-6 py-2 bg-[#85754E] text-white text-xs font-bold rounded-lg hover:bg-[#7a6d4a] transition-colors">
           Try Again
         </button>
       </div>
@@ -469,7 +540,7 @@ export default function OrderManagement() {
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={handleManualOrder}
-                className="flex items-center gap-1.5 bg-[#938359] text-white border-none rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-1.5 bg-[#85754E] text-white border-none rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer whitespace-nowrap"
               >
                 <Plus size={13} strokeWidth={3} /> Add Order
               </button>
@@ -487,7 +558,7 @@ export default function OrderManagement() {
                       <div
                         key={action}
                         onClick={() => { if (action.includes('Export')) handleExport(); setShowMoreActions(false); }}
-                        className="px-3.5 py-2 text-[11px] font-bold text-slate-500 cursor-pointer rounded-xl hover:bg-amber-50 hover:text-[#938359] transition-all"
+                        className="px-3.5 py-2 text-[11px] font-bold text-slate-500 cursor-pointer rounded-xl hover:bg-amber-50 hover:text-[#85754E] transition-all"
                       >
                         {action}
                       </div>
@@ -508,7 +579,7 @@ export default function OrderManagement() {
                     key={tab}
                     onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
                     className={`px-3 py-1.5 text-[11px] font-extrabold rounded-xl border-none cursor-pointer whitespace-nowrap transition-all
-                      ${active ? 'bg-white text-[#938359] shadow-sm' : 'bg-transparent text-slate-400'}`}
+                      ${active ? 'bg-white text-[#85754E] shadow-sm' : 'bg-transparent text-slate-400'}`}
                   >
                     {tab}
                   </button>
@@ -529,7 +600,7 @@ export default function OrderManagement() {
           <div className="overflow-x-auto min-h-[300px] px-4 md:px-6 pb-6">
             {ordersLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-11 h-11 border-4 border-amber-100 border-t-[#938359] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+                <div className="w-11 h-11 border-4 border-amber-100 border-t-[#85754E] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
                 <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">
                   Synchronizing Local Cluster...
                 </span>
@@ -579,7 +650,14 @@ export default function OrderManagement() {
                             <div className="flex items-center gap-2">
                               <div className="w-9 h-9 shrink-0 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200">
                                 {o.image ? (
-                                  <img src={o.image} alt={o.product} className="w-full h-full object-cover" />
+                                  <img 
+                                    src={formatImageUrl(o.image, o.product)} 
+                                    alt={o.product} 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => {
+                                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(o.product.substring(0, 2))}&background=938359&color=fff&bold=true`;
+                                    }}
+                                  />
                                 ) : (
                                   <span className="text-base">{o.emoji}</span>
                                 )}
@@ -623,7 +701,7 @@ export default function OrderManagement() {
                     <button
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#938359] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#85754E] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <ChevronLeft size={14} /> Prev
                     </button>
@@ -634,7 +712,7 @@ export default function OrderManagement() {
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
                           className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-extrabold cursor-pointer
-                            ${currentPage === i + 1 ? 'bg-[#938359] text-white border-none' : 'bg-white border border-slate-200 text-slate-500'}`}
+                            ${currentPage === i + 1 ? 'bg-[#85754E] text-white border-none' : 'bg-white border border-slate-200 text-slate-500'}`}
                         >
                           {i + 1}
                         </button>
@@ -644,7 +722,7 @@ export default function OrderManagement() {
                     <button
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#938359] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-extrabold text-[#85754E] uppercase tracking-[0.05em] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
                     >
                       Next <ChevronRight size={14} />
                     </button>

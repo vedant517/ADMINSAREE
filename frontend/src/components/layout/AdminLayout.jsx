@@ -84,12 +84,12 @@ export default function AdminLayout({ setIsAuthenticated }) {
                 onClick={() => toggleGroup(group.title)}
                 className="flex items-center justify-between px-2 mb-1.5 cursor-pointer hover:bg-black/5 rounded-md py-1 transition-colors group"
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#938359]/70 m-0 select-none">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#85754E]/70 m-0 select-none">
                   {group.title}
                 </p>
                 <ChevronRight 
                   size={12} 
-                  className={`text-[#938359]/50 transition-transform duration-200 ${isCollapsed ? 'rotate-0' : 'rotate-90'}`} 
+                  className={`text-[#85754E]/50 transition-transform duration-200 ${isCollapsed ? 'rotate-0' : 'rotate-90'}`} 
                 />
               </div>
             )}
@@ -106,7 +106,7 @@ export default function AdminLayout({ setIsAuthenticated }) {
                     className={[
                       'flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-[13px] font-semibold no-underline transition-all duration-150 select-none relative group/item',
                       isActive
-                        ? 'bg-[#938359] text-white shadow-md'
+                        ? 'bg-[#85754E] text-white shadow-md'
                         : 'text-slate-500 hover:bg-white/60 hover:text-slate-800',
                       isSidebarCollapsed ? 'justify-center' : '',
                     ].join(' ')}
@@ -149,7 +149,7 @@ export default function AdminLayout({ setIsAuthenticated }) {
           {/* Collapse Toggle */}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-amber-100 rounded-full flex items-center justify-center text-[#938359] shadow-sm hover:shadow-md cursor-pointer transition-transform hover:scale-110 z-10"
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-amber-100 rounded-full flex items-center justify-center text-[#85754E] shadow-sm hover:shadow-md cursor-pointer transition-transform hover:scale-110 z-10"
           >
             <ChevronRight size={14} className={`transition-transform duration-300 ${isSidebarCollapsed ? '' : 'rotate-180'}`} />
           </button>

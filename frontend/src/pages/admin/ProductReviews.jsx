@@ -31,7 +31,7 @@ const scoreTone = (rating) => {
 
 /* ── Stat Card ── */
 function StatCard({ title, value, sub, isFirst, icon: Icon, color }) {
-  const accent = isFirst ? '#ffffff' : '#938359';
+  const accent = isFirst ? '#ffffff' : '#85754E';
   return (
     <div className={`rounded-2xl border border-slate-100 p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${isFirst ? 'bg-heritage' : 'bg-white'}`}>
       <div className="flex justify-between items-start mb-4">
@@ -118,7 +118,7 @@ function MobileReviewCard({ review, navigate }) {
       <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-50">
         <div>
           <div className="text-xs font-bold text-slate-900 flex items-center gap-1">
-            <Package size={12} className="text-[#938359]" /> {formatINR(review.productPrice)}
+            <Package size={12} className="text-[#85754E]" /> {formatINR(review.productPrice)}
           </div>
           <div className="text-[10px] text-slate-400 mt-0.5">
             Avg: {review.averageRating ? review.averageRating.toFixed(1) : '0.0'} / 5 · {review.productReviewCount} reviews
@@ -174,7 +174,7 @@ export default function ProductReviews() {
       productName: review.product?.name || 'Untitled Product',
       productImage: review.product?.image && review.product.image.startsWith('http')
         ? review.product.image
-        : review.product?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.product?.name || 'Item')}&background=938359&color=fff&bold=true`,
+        : review.product?.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${review.product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((review.product?.name || 'Item').substring(0, 2))}&background=938359&color=fff&bold=true`,
       productPrice: review.product?.price || 0,
       mainCategory: review.product?.mainCategory || 'Uncategorized',
       categories: review.product?.categories || [],
@@ -199,7 +199,7 @@ export default function ProductReviews() {
           productName: product.name || 'Untitled Product',
           productImage: product.image && product.image.startsWith('http')
             ? product.image
-            : product.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name || 'Item')}&background=938359&color=fff&bold=true`,
+            : product.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((product.name || 'Item').substring(0, 2))}&background=938359&color=fff&bold=true`,
           productPrice: product.price || 0,
           mainCategory: product.mainCategory || 'Uncategorized',
           categories: product.categories || [],
@@ -271,7 +271,7 @@ export default function ProductReviews() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products, buyers, feedback..."
-              className="w-full sm:w-[300px] pl-10 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 outline-none transition-all focus:border-[#938359] focus:ring-4 focus:ring-[#938359]/8 box-border"
+              className="w-full sm:w-[300px] pl-10 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 outline-none transition-all focus:border-[#85754E] focus:ring-4 focus:ring-[#85754E]/8 box-border"
             />
           </div>
 
@@ -281,7 +281,7 @@ export default function ProductReviews() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full sm:w-48 appearance-none pl-10 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 outline-none cursor-pointer transition-all focus:border-[#938359] box-border"
+              className="w-full sm:w-48 appearance-none pl-10 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 outline-none cursor-pointer transition-all focus:border-[#85754E] box-border"
             >
               <option value="rating_desc">Top Rated First</option>
               <option value="rating_asc">Lowest Rated First</option>
@@ -313,7 +313,7 @@ export default function ProductReviews() {
                   key={tab.value}
                   onClick={() => setActiveRating(tab.value)}
                   className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.14em] cursor-pointer border-none transition-all
-                    ${active ? 'bg-white text-[#938359] shadow-md shadow-amber-900/10' : 'bg-transparent text-slate-400 hover:text-[#938359]'}`}
+                    ${active ? 'bg-white text-[#85754E] shadow-md shadow-amber-900/10' : 'bg-transparent text-slate-400 hover:text-[#85754E]'}`}
                 >
                   {tab.label}
                 </button>
@@ -329,7 +329,7 @@ export default function ProductReviews() {
         {/* Loading */}
         {loading && reviewRows.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-11 h-11 border-4 border-amber-100 border-t-[#938359] rounded-full animate-spin" />
+            <div className="w-11 h-11 border-4 border-amber-100 border-t-[#85754E] rounded-full animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Loading review matrix</p>
           </div>
 
@@ -421,7 +421,7 @@ export default function ProductReviews() {
                         {/* Catalog Info */}
                         <td className="px-5 py-4.5 min-w-[150px]">
                           <div className="text-[13px] font-bold text-slate-900 flex items-center gap-1.5">
-                            <Package size={13} className="text-[#938359]" />
+                            <Package size={13} className="text-[#85754E]" />
                             {formatINR(review.productPrice)}
                           </div>
                           <div className="text-[10px] text-slate-400 font-semibold mt-1">

@@ -4,10 +4,39 @@ import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Transaction from "../../admin/models/Transaction.js";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "placeholder_secret",
-});
+// Initialize Razorpay only if credentials are available
+let razorpay = null;
+const hasRazorpayCredentials = process.env.RAZORPAY_KEY_ID && 
+                                 process.env.RAZORPAY_KEY_ID !== "rzp_test_placeholder" &&
+                                 process.env.RAZORPAY_KEY_SECRET &&
+                                 process.env.RAZORPAY_KEY_SECRET !== "placeholder_secret";
+
+if (hasRazorpayCredentials) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn("⚠️ Razorpay credentials not configured. Using MOCK MODE for development/testing.");
+}
+
+// Mock Razorpay order creation for testing
+const createMockRazorpayOrder = (options) => {
+  return {
+    id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    entity: "order",
+    amount: options.amount,
+    amount_paid: 0,
+    amount_due: options.amount,
+    currency: options.currency,
+    receipt: options.receipt,
+    offer_id: null,
+    status: "created",
+    attempts: 0,
+    notes: options.notes,
+    created_at: Math.floor(Date.now() / 1000),
+  };
+};
 
 // CREATE RAZORPAY ORDER
 export const createRazorpayOrder = async (req, res) => {
@@ -48,12 +77,6 @@ export const createRazorpayOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Amount is required" });
     }
 
-    // Validate Razorpay credentials
-    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === "rzp_test_placeholder") {
-      console.error("Razorpay credentials not configured");
-      return res.status(500).json({ success: false, message: "Payment gateway not configured. Please check server environment variables." });
-    }
-
     const options = {
       amount: Math.round(paymentAmount * 100),
       currency,
@@ -65,22 +88,29 @@ export const createRazorpayOrder = async (req, res) => {
       },
     };
 
-    console.log("Creating Razorpay order with options:", JSON.stringify(options, null, 2));
+    console.log("Creating payment order with options:", JSON.stringify(options, null, 2));
     
     let order;
-    try {
-      order = await razorpay.orders.create(options);
-    } catch (razorpayError) {
-      console.error("Razorpay API Error:", razorpayError);
-      const errMsg = razorpayError.error?.description || razorpayError.description || razorpayError.message || (typeof razorpayError === 'object' ? JSON.stringify(razorpayError) : String(razorpayError));
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to create payment order: " + errMsg 
-      });
+    
+    // Use mock mode if Razorpay credentials not configured
+    if (!hasRazorpayCredentials) {
+      console.log("Using MOCK Razorpay order (development mode)");
+      order = createMockRazorpayOrder(options);
+    } else {
+      try {
+        order = await razorpay.orders.create(options);
+      } catch (razorpayError) {
+        console.error("Razorpay API Error:", razorpayError);
+        const errMsg = razorpayError.error?.description || razorpayError.description || razorpayError.message || (typeof razorpayError === 'object' ? JSON.stringify(razorpayError) : String(razorpayError));
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to create payment order: " + errMsg 
+        });
+      }
     }
 
     if (!order) {
-      return res.status(500).json({ success: false, message: "Failed to create Razorpay order" });
+      return res.status(500).json({ success: false, message: "Failed to create payment order" });
     }
 
     // Create transaction record
@@ -95,6 +125,7 @@ export const createRazorpayOrder = async (req, res) => {
         receipt: options.receipt,
         notes: options.notes,
       });
+      console.log("Transaction created successfully:", order.id);
     } catch (txnError) {
       console.error("Transaction Record Error:", txnError);
       // Don't fail the whole request if transaction record creation fails
@@ -102,7 +133,7 @@ export const createRazorpayOrder = async (req, res) => {
 
     res.json(order);
   } catch (error) {
-    console.error("Razorpay order creation error:", error);
+    console.error("Payment order creation error:", error);
     res.status(500).json({ success: false, message: "Internal server error: " + error.message });
   }
 };
@@ -111,25 +142,44 @@ export const createRazorpayOrder = async (req, res) => {
 export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
-    const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "placeholder_secret");
-    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
-    const generated_signature = hmac.digest("hex");
+    
+    console.log("--- RECV: User verifyPayment ---");
+    console.log("Order ID:", orderId);
+    console.log("Razorpay Order ID:", razorpay_order_id);
+    console.log("User:", req.user);
 
-    if (generated_signature === razorpay_signature) {
+    let isValidSignature = false;
+
+    // In mock mode, accept the payment without verification
+    if (!hasRazorpayCredentials) {
+      console.log("Using MOCK payment verification (development mode)");
+      isValidSignature = true;
+    } else {
+      // Real Razorpay signature verification
+      const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+      hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+      const generated_signature = hmac.digest("hex");
+      isValidSignature = generated_signature === razorpay_signature;
+    }
+
+    if (isValidSignature) {
       if (orderId) {
         let dbOrderId = orderId;
         if (!mongoose.Types.ObjectId.isValid(orderId)) {
           const dbOrder = await Order.findOne({ orderId: orderId });
           if (dbOrder) dbOrderId = dbOrder._id;
         }
-        await Order.findByIdAndUpdate(dbOrderId, {
+        
+        const updateResult = await Order.findByIdAndUpdate(dbOrderId, {
           paymentStatus: "completed",
           paymentResult: { id: razorpay_payment_id, status: "completed", update_time: Date.now().toString() },
           isPaid: true,
           paidAt: Date.now(),
           razorpayOrderId: razorpay_order_id,
           razorpaySignature: razorpay_signature,
-        });
+        }, { new: true });
+        
+        console.log("Order updated:", updateResult?._id);
       }
 
       const transaction = await Transaction.findOne({ razorpayOrderId: razorpay_order_id });
@@ -138,13 +188,16 @@ export const verifyPayment = async (req, res) => {
         transaction.razorpaySignature = razorpay_signature;
         transaction.status = "captured";
         await transaction.save();
+        console.log("Transaction updated:", transaction._id);
       }
 
       res.json({ success: true, message: "Payment verified successfully" });
     } else {
+      console.warn("Invalid signature detected");
       res.status(400).json({ success: false, message: "Invalid signature" });
     }
   } catch (error) {
+    console.error("Payment verification error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

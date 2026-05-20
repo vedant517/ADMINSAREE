@@ -9,8 +9,8 @@ import {
 import api from '../../services/api';
 
 const API_BASE = '/coupons';
-const G = '#938359';
-const LG = '#f9f5e8';
+const G = '#85754E';
+const LG = '#FFF5E2';
 
 const formatINR = (v) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v || 0);
@@ -53,7 +53,7 @@ function StatusBadge({ coupon }) {
   if (!coupon.isActive) return <span className={`${base} bg-slate-100 text-slate-400`}>Inactive</span>;
   if (isExpired(coupon.validUntil)) return <span className={`${base} bg-red-100 text-red-600`}>Expired</span>;
   if (isExpiring(coupon.validUntil)) return <span className={`${base} bg-amber-100 text-amber-600`}>Expiring Soon</span>;
-  return <span className={`${base} bg-amber-50 text-[#938359]`}>Active</span>;
+  return <span className={`${base} bg-amber-50 text-[#85754E]`}>Active</span>;
 }
 
 /* ── Coupon Card ── */
@@ -64,7 +64,7 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 relative">
-      <div className={`h-1 ${coupon.isActive && !isExpired(coupon.validUntil) ? 'bg-gradient-to-r from-[#b09e6d] to-[#938359]' : 'bg-slate-200'}`} />
+      <div className={`h-1 ${coupon.isActive && !isExpired(coupon.validUntil) ? 'bg-gradient-to-r from-[#b09e6d] to-[#85754E]' : 'bg-slate-200'}`} />
 
       <div className="p-4">
         {/* Header */}
@@ -95,7 +95,7 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
 
         {/* Discount value */}
         <div className="bg-amber-50 rounded-xl p-3 mb-3 text-center">
-          <span className="text-[28px] font-black text-[#938359] leading-none">
+          <span className="text-[28px] font-black text-[#85754E] leading-none">
             {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : formatINR(coupon.discountValue)}
           </span>
           <span className="text-[11px] text-slate-500 block mt-0.5">
@@ -167,7 +167,7 @@ function CouponCard({ coupon, onEdit, onDelete, onToggle, onCopy }) {
 }
 
 /* ── Modal ── */
-const inpCls = "w-full px-3 py-2 border border-slate-200 rounded-xl text-[13px] text-slate-900 outline-none bg-slate-50 box-border focus:border-[#938359] focus:bg-white transition-colors";
+const inpCls = "w-full px-3 py-2 border border-slate-200 rounded-xl text-[13px] text-slate-900 outline-none bg-slate-50 box-border focus:border-[#85754E] focus:bg-white transition-colors";
 
 const INIT = {
   code: '', description: '', discountType: 'percentage', discountValue: '',
@@ -274,7 +274,7 @@ function CouponModal({ coupon, onClose, onSave }) {
                 <button
                   key={opt.val}
                   onClick={() => set('discountType', opt.val)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border-2 ${form.discountType === opt.val ? 'border-[#938359] bg-amber-50 text-[#938359]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border-2 ${form.discountType === opt.val ? 'border-[#85754E] bg-amber-50 text-[#85754E]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                 >
                   {opt.icon}{opt.label}
                 </button>
@@ -379,10 +379,10 @@ function CouponModal({ coupon, onClose, onSave }) {
 
           {/* Live preview */}
           {form.code && form.discountValue && (
-            <div className="bg-amber-50 rounded-xl px-3.5 py-3 border border-dashed border-[#938359]">
+            <div className="bg-amber-50 rounded-xl px-3.5 py-3 border border-dashed border-[#85754E]">
               <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Preview</p>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-sm font-black text-[#938359]">{form.code}</span>
+                <span className="font-mono text-sm font-black text-[#85754E]">{form.code}</span>
                 <span className="text-xs text-slate-400">—</span>
                 <span className="text-[13px] font-bold text-slate-900">
                   {form.discountType === 'percentage' ? `${form.discountValue}% off` : `₹${form.discountValue} off`}
@@ -531,27 +531,27 @@ export default function CouponManagement() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Coupons', val: pagination.total ?? coupons.length, icon: Tag, color: '#938359', sub: 'Catalog size', isFirst: true },
-          { label: 'Active', val: activeCoupons, icon: CheckCircle, color: '#938359', sub: 'Live now' },
+          { label: 'Total Coupons', val: pagination.total ?? coupons.length, icon: Tag, color: '#85754E', sub: 'Catalog size', isFirst: true },
+          { label: 'Active', val: activeCoupons, icon: CheckCircle, color: '#85754E', sub: 'Live now' },
           { label: 'Expired', val: expiredCoupons, icon: AlertCircle, color: '#f43f5e', sub: 'Past validity' },
           { label: 'Total Used', val: totalUsed, icon: Zap, color: '#f59e0b', sub: 'Redemption count' },
         ].map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className={`rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${s.isFirst ? 'border-[#938359] bg-heritage' : 'border-slate-100 bg-white'}`}>
+            <div key={s.label} className={`rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${s.isFirst ? 'border-[#85754E] bg-heritage' : 'border-slate-100 bg-white'}`}>
               <div className="flex justify-between items-start mb-4">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.isFirst ? 'bg-white/20' : 'bg-slate-50 border border-slate-100'}`}
                 >
-                  <Icon size={20} style={{ color: s.isFirst ? '#ffffff' : '#938359' }} />
+                  <Icon size={20} style={{ color: s.isFirst ? '#ffffff' : '#85754E' }} />
                 </div>
               </div>
               <div>
-                <div className={`text-3xl font-black tracking-tight leading-none mb-1 ${s.isFirst ? 'text-white' : 'text-[#938359]'}`}>
+                <div className={`text-3xl font-black tracking-tight leading-none mb-1 ${s.isFirst ? 'text-white' : 'text-[#85754E]'}`}>
                   {isLoading ? '...' : s.val}
                 </div>
-                <div className={`text-[13px] font-black uppercase tracking-widest ${s.isFirst ? 'text-white/70' : 'text-[#938359]/60'}`}>{s.label}</div>
-                <div className={`text-[11px] font-bold mt-1 uppercase tracking-tight ${s.isFirst ? 'text-white/50' : 'text-[#938359]/40'}`}>{s.sub}</div>
+                <div className={`text-[13px] font-black uppercase tracking-widest ${s.isFirst ? 'text-white/70' : 'text-[#85754E]/60'}`}>{s.label}</div>
+                <div className={`text-[11px] font-bold mt-1 uppercase tracking-tight ${s.isFirst ? 'text-white/50' : 'text-[#85754E]/40'}`}>{s.sub}</div>
               </div>
             </div>
           );
@@ -600,7 +600,7 @@ export default function CouponManagement() {
       {/* Grid */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-11 h-11 border-4 border-amber-50 border-t-[#938359] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+          <div className="w-11 h-11 border-4 border-amber-50 border-t-[#85754E] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
           <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Loading coupons…</span>
         </div>
       ) : coupons.length === 0 ? (

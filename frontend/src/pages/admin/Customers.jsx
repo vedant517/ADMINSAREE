@@ -13,8 +13,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
-const G       = "#938359";
-const LIGHT_G = "#f9f5e8";
+const G       = "#85754E";
+const LIGHT_G = "#FFF5E2";
 
 function resolveCustomer(raw) {
   const clean = (v) => (v && typeof v === "string" && v.trim() ? v.trim() : null);
@@ -29,7 +29,7 @@ function resolveCustomer(raw) {
 
 /* ── Stat Card ── */
 function StatCard({ title, value, badge, badgeUp, sub, loading, icon, isFirst }) {
-  const color = isFirst ? '#ffffff' : '#938359';
+  const color = isFirst ? '#ffffff' : '#85754E';
   return (
     <div
       className={`rounded-2xl border border-slate-100 p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${isFirst ? 'bg-heritage' : 'bg-white'}`}
@@ -43,7 +43,7 @@ function StatCard({ title, value, badge, badgeUp, sub, loading, icon, isFirst })
         {badge && (
           <span
             className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wide ${
-              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#938359]' : 'bg-red-50 text-rose-600')
+              isFirst ? 'bg-white/20 text-white' : (badgeUp ? 'bg-amber-50 text-[#85754E]' : 'bg-red-50 text-rose-600')
             }`}
           >
             {badgeUp ? '↑' : '↓'} {badge}
@@ -66,7 +66,7 @@ function CustomerWeeklyChart({ data, loading }) {
   if (loading) {
     return (
       <div className="h-[220px] flex items-center justify-center">
-        <div className="w-7 h-7 border-[3px] border-slate-200 border-t-[#938359] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+        <div className="w-7 h-7 border-[3px] border-slate-200 border-t-[#85754E] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
@@ -123,7 +123,7 @@ function CustomerDetailsModal({ customer, onClose }) {
       <div className="flex-1 min-w-0">
         <div className="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">{label}</div>
         {value ? (
-          <div className={`text-xs font-bold break-all ${accent ? 'text-[#938359]' : 'text-slate-900'} ${mono ? 'font-mono' : ''}`}>{value}</div>
+          <div className={`text-xs font-bold break-all ${accent ? 'text-[#85754E]' : 'text-slate-900'} ${mono ? 'font-mono' : ''}`}>{value}</div>
         ) : (
           <div className="text-[11px] text-slate-300 italic">—</div>
         )}
@@ -143,7 +143,7 @@ function CustomerDetailsModal({ customer, onClose }) {
             <div>
               <h2 className="text-sm font-black text-slate-900 m-0">{displayName}</h2>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-[#938359] border border-amber-100">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-[#85754E] border border-amber-100">
                   {customer.status || "Standard"}
                 </span>
               </div>
@@ -178,7 +178,7 @@ function CustomerDetailsModal({ customer, onClose }) {
               <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 m-0">Order IDs</p>
               <div className="flex flex-col gap-1.5">
                 {customer.orderIds.filter(Boolean).slice(0, 8).map((oid, i) => (
-                  <div key={i} className="font-mono text-[11px] font-semibold text-[#938359] bg-amber-50 px-2.5 py-1 rounded-md">
+                  <div key={i} className="font-mono text-[11px] font-semibold text-[#85754E] bg-amber-50 px-2.5 py-1 rounded-md">
                     #{typeof oid === "string" ? oid : oid?._id || String(oid)}
                   </div>
                 ))}
@@ -306,7 +306,7 @@ export default function Customers() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "VIP":
-      case "Active": return "bg-amber-50 text-[#938359] border border-amber-100";
+      case "Active": return "bg-amber-50 text-[#85754E] border border-amber-100";
       default:       return "bg-slate-50 text-slate-500 border border-slate-200";
     }
   };
@@ -398,7 +398,7 @@ export default function Customers() {
                   className="px-2.5 py-1 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center border-r border-amber-100 hover:bg-white/50">
                   <ChevronLeft size={13} />
                 </button>
-                <span className="px-3 py-1 text-[11px] font-semibold text-[#938359] flex items-center bg-white/40 whitespace-nowrap">{weekLabel}</span>
+                <span className="px-3 py-1 text-[11px] font-semibold text-[#85754E] flex items-center bg-white/40 whitespace-nowrap">{weekLabel}</span>
                 <button onClick={() => setWeekOffset(w => Math.min(0, w + 1))} disabled={weekOffset === 0}
                   className="px-2.5 py-1 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center border-l border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronRight size={13} />
@@ -427,7 +427,7 @@ export default function Customers() {
                 {newCustomers > 0 && totalForWeek === 0 && weekOffset === 0 && (
                   <div className="text-[10px] text-slate-400 italic">{newCustomers} new this month</div>
                 )}
-                <div className="text-[11px] font-bold text-[#938359] bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                <div className="text-[11px] font-bold text-[#85754E] bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
                   {totalForWeek > 0 ? `${totalForWeek} this week` : newCustomers > 0 && weekOffset === 0 ? `${newCustomers} new customers` : "0 this week"}
                 </div>
               </div>
@@ -452,7 +452,7 @@ export default function Customers() {
 
           {isLoading ? (
             <div className="flex justify-center p-10">
-              <div className="w-8 h-8 border-[3px] border-slate-200 border-t-[#938359] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
+              <div className="w-8 h-8 border-[3px] border-slate-200 border-t-[#85754E] rounded-full" style={{ animation: 'spin 0.8s linear infinite' }} />
             </div>
           ) : (
             <>
@@ -497,7 +497,7 @@ export default function Customers() {
                                 </div>
                                 <div>
                                   <div className="text-xs font-bold text-slate-900 whitespace-nowrap max-w-[120px] overflow-hidden text-ellipsis">{displayName}</div>
-                                  <div className="font-mono text-[9px] font-semibold text-[#938359] opacity-80">{id ? `…${id.slice(-8)}` : "—"}</div>
+                                  <div className="font-mono text-[9px] font-semibold text-[#85754E] opacity-80">{id ? `…${id.slice(-8)}` : "—"}</div>
                                 </div>
                               </div>
                             </td>

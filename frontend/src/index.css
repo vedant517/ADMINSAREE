@@ -13,7 +13,7 @@
   --color-primary-800: #075985;
   --color-primary-900: #0c4a6e;
   --color-primary-950: #082f49;
-  --color-heritage: #938359;
+  --color-heritage: #85754E;
 }
 
 /* Base Reset */
@@ -36,7 +36,7 @@
 
   ::selection {
     background-color: rgba(147, 131, 89, 0.2);
-    color: #938359;
+    color: #85754E;
   }
 }
 

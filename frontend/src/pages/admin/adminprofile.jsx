@@ -17,7 +17,7 @@ function TextInput({ style: extra, className: extraCls, ...props }) {
   return (
     <input
       {...props}
-      className={`w-full text-[13px] px-3 py-2 border rounded-lg bg-[#fafafa] text-[#222] outline-none transition-all box-border ${focused ? 'border-[#938359] shadow-[0_0_0_3px_rgba(147,131,89,0.10)] bg-white' : 'border-[#e8e8e8]'} ${extraCls || ''}`}
+      className={`w-full text-[13px] px-3 py-2 border rounded-lg bg-[#fafafa] text-[#222] outline-none transition-all box-border ${focused ? 'border-[#85754E] shadow-[0_0_0_3px_rgba(147,131,89,0.10)] bg-white' : 'border-[#e8e8e8]'} ${extraCls || ''}`}
       style={extra}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
@@ -35,7 +35,7 @@ function PwInput({ value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full text-[13px] px-3 py-2 border rounded-lg bg-[#fafafa] text-[#222] outline-none transition-all box-border pr-8 ${focused ? 'border-[#938359] shadow-[0_0_0_3px_rgba(147,131,89,0.10)] bg-white' : 'border-[#e8e8e8]'}`}
+        className={`w-full text-[13px] px-3 py-2 border rounded-lg bg-[#fafafa] text-[#222] outline-none transition-all box-border pr-8 ${focused ? 'border-[#85754E] shadow-[0_0_0_3px_rgba(147,131,89,0.10)] bg-white' : 'border-[#e8e8e8]'}`}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -194,12 +194,12 @@ const AdminProfile = () => {
       <img
         src={form.profileImageUrl}
         alt="avatar"
-        className="rounded-full object-cover border-[2.5px] border-white shadow-[0_0_0_1px_#f9f5e8]"
+        className="rounded-full object-cover border-[2.5px] border-white shadow-[0_0_0_1px_#FFF5E2]"
         style={{ width: size, height: size }}
       />
     ) : (
       <div
-        className="rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-[#938359] flex items-center justify-center font-bold flex-shrink-0 border-[2.5px] border-white shadow-[0_0_0_1px_#f9f5e8]"
+        className="rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-[#85754E] flex items-center justify-center font-bold flex-shrink-0 border-[2.5px] border-white shadow-[0_0_0_1px_#FFF5E2]"
         style={{ width: size, height: size, fontSize: size * 0.33 }}
       >
         {initials}
@@ -242,12 +242,12 @@ const AdminProfile = () => {
           <div className="bg-white rounded-2xl border border-[#ebebeb] px-5 py-5">
             <div className="flex justify-between items-center mb-4">
               <p className="text-sm font-semibold text-[#1a1a1a]">Change password</p>
-              <button className="bg-transparent text-[#938359] border-0 text-xs cursor-pointer p-0 font-medium">Need help?</button>
+              <button className="bg-transparent text-[#85754E] border-0 text-xs cursor-pointer p-0 font-medium">Need help?</button>
             </div>
 
             <label className="text-[11px] text-[#999] mb-1 mt-0 block font-medium">Current password</label>
             <PwInput value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-            <button className="bg-transparent border-0 text-[#938359] text-[11px] cursor-pointer p-0 font-medium mt-1.5 block">Forgot password?</button>
+            <button className="bg-transparent border-0 text-[#85754E] text-[11px] cursor-pointer p-0 font-medium mt-1.5 block">Forgot password?</button>
 
             <label className="text-[11px] text-[#999] mb-1 mt-3 block font-medium">New password</label>
             <PwInput value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 6 characters" />
@@ -256,7 +256,7 @@ const AdminProfile = () => {
             <PwInput value={reenterPassword} onChange={(e) => setReenterPassword(e.target.value)} placeholder="Re-enter new password" />
 
             <button
-              className="w-full mt-4 py-2.5 bg-[#938359] text-white border-0 rounded-lg text-[13px] font-semibold cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-70"
+              className="w-full mt-4 py-2.5 bg-[#85754E] text-white border-0 rounded-lg text-[13px] font-semibold cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-70"
               onClick={handlePasswordUpdate}
               disabled={pwSaving}
             >
@@ -295,7 +295,7 @@ const AdminProfile = () => {
               </div>
               <button
                 type="button"
-                className="bg-[#938359] text-white border-0 rounded-lg text-xs font-semibold px-3.5 py-2 whitespace-nowrap cursor-pointer hover:bg-[#837349] transition-colors"
+                className="bg-[#85754E] text-white border-0 rounded-lg text-xs font-semibold px-3.5 py-2 whitespace-nowrap cursor-pointer hover:bg-[#837349] transition-colors"
                 onClick={() => toast.success("Image URL updated")}
               >
                 Apply
@@ -365,7 +365,7 @@ const AdminProfile = () => {
               Discard
             </button>
             <button
-              className="bg-[#938359] text-white border-0 rounded-lg text-[13px] font-semibold min-w-[130px] py-2 cursor-pointer hover:bg-[#837349] transition-colors disabled:opacity-70"
+              className="bg-[#85754E] text-white border-0 rounded-lg text-[13px] font-semibold min-w-[130px] py-2 cursor-pointer hover:bg-[#837349] transition-colors disabled:opacity-70"
               onClick={handleUpdate}
               disabled={saving}
             >

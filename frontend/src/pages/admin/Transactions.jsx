@@ -13,15 +13,15 @@ import toast from 'react-hot-toast';
 import { formatINR } from '../../utils/currency';
 
 const statusConfig = {
-  captured: { bg: '#f8fafc', color: '#475569', icon: CheckCircle2, label: 'Success' },
-  created: { bg: '#f8fafc', color: '#475569', icon: Clock, label: 'Pending' },
-  failed: { bg: '#f8fafc', color: '#475569', icon: XCircle, label: 'Failed' },
-  refunded: { bg: '#f8fafc', color: '#475569', icon: RotateCcw, label: 'Refunded' },
-  authorized: { bg: '#f8fafc', color: '#475569', icon: CheckCircle2, label: 'Authorized' },
+  captured:   { bg: '#f0fdf4', color: '#16a34a', icon: CheckCircle2, label: 'Success' },
+  created:    { bg: '#fefce8', color: '#a16207', icon: Clock,         label: 'Pending' },
+  failed:     { bg: '#fef2f2', color: '#dc2626', icon: XCircle,       label: 'Failed' },
+  refunded:   { bg: '#f0f9ff', color: '#0369a1', icon: RotateCcw,     label: 'Refunded' },
+  authorized: { bg: '#f0fdf4', color: '#15803d', icon: CheckCircle2, label: 'Authorized' },
 };
 
 function StatCard({ title, value, icon: Icon, color, sub, trend, trendUp, isFirst }) {
-  const accent = isFirst ? '#ffffff' : '#938359';
+  const accent = isFirst ? '#ffffff' : '#85754E';
   return (
     <div className={`rounded-2xl border border-slate-100 p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between h-full ${isFirst ? 'bg-heritage' : 'bg-white'}`}>
       <div className="flex justify-between items-start mb-4">
@@ -33,7 +33,7 @@ function StatCard({ title, value, icon: Icon, color, sub, trend, trendUp, isFirs
         {trend && (
           <span
             className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wide ${
-              isFirst ? 'bg-white/20 text-white' : (trendUp ? 'bg-amber-50 text-[#938359]' : 'bg-red-50 text-rose-600')
+              isFirst ? 'bg-white/20 text-white' : (trendUp ? 'bg-amber-50 text-[#85754E]' : 'bg-red-50 text-rose-600')
             }`}
           >
             {trendUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />} {trend}
@@ -51,7 +51,11 @@ function StatCard({ title, value, icon: Icon, color, sub, trend, trendUp, isFirs
 
 function TransactionDetailModal({ transaction, onClose, onRefund }) {
   if (!transaction) return null;
-  const sc = statusConfig[transaction.status] || statusConfig.created;
+  const method = transaction.paymentMethod || transaction.order?.paymentMethod || 'Razorpay';
+  const isCod = method.toLowerCase() === 'cod' || method.toLowerCase() === 'cash on delivery';
+  const isSuccess = !isCod && (transaction.status === 'captured' || transaction.order?.paymentStatus === 'completed' || transaction.status === 'success');
+  
+  const sc = isSuccess ? statusConfig.captured : (isCod ? statusConfig.created : statusConfig[transaction.status] || statusConfig.created);
   const StatusIcon = sc.icon;
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -96,7 +100,7 @@ function TransactionDetailModal({ transaction, onClose, onRefund }) {
           {transaction.order && (
             <div className="flex justify-between items-center py-2 border-b border-slate-50">
               <span className="text-xs font-bold text-slate-400 uppercase">Linked Order</span>
-              <span className="text-xs font-extrabold text-[#938359]">{transaction.order?.orderId || transaction.order}</span>
+              <span className="text-xs font-extrabold text-[#85754E]">{transaction.order?.orderId || transaction.order}</span>
             </div>
           )}
         </div>
@@ -217,8 +221,8 @@ export default function Transactions() {
                   onClick={() => { setActiveFilter(f.value); setCurrentPage(1); }}
                   className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl border-0 cursor-pointer whitespace-nowrap transition-all ${
                     activeFilter === f.value
-                      ? 'bg-white text-[#938359] shadow-sm'
-                      : 'bg-transparent text-slate-400 hover:text-[#938359]'
+                      ? 'bg-white text-[#85754E] shadow-sm'
+                      : 'bg-transparent text-slate-400 hover:text-[#85754E]'
                   }`}
                 >
                   {f.label}
@@ -310,12 +314,20 @@ export default function Transactions() {
                               {new Date(t.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
                             <td className="px-3.5 py-3.5 text-center">
-                              <span
-                                className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-full uppercase whitespace-nowrap"
-                                style={{ background: sc.bg, color: sc.color }}
-                              >
-                                <StatusIcon size={10} /> {sc.label}
-                              </span>
+                              {(() => {
+                                const method = t.paymentMethod || t.order?.paymentMethod || 'Razorpay';
+                                const isCod = method.toLowerCase() === 'cod' || method.toLowerCase() === 'cash on delivery';
+                                const isSuccess = !isCod && (t.status === 'captured' || t.order?.paymentStatus === 'completed' || t.status === 'success');
+                                return isSuccess ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-full uppercase whitespace-nowrap" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                                    <CheckCircle2 size={10} /> Success
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-full uppercase whitespace-nowrap" style={{ background: '#fefce8', color: '#a16207' }}>
+                                    <Clock size={10} /> Pending
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td className="px-3.5 py-3.5 text-center">
                               <button

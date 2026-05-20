@@ -61,7 +61,7 @@ const ProductReviewPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#938359] rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#85754E] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -108,7 +108,7 @@ const ProductReviewPage = () => {
                  />
              </div>
              <div className="w-full md:w-2/3 space-y-4">
-                 <div className="inline-flex px-3 py-1 bg-amber-50 text-[#938359] text-xs font-bold uppercase tracking-wider rounded-full">
+                 <div className="inline-flex px-3 py-1 bg-amber-50 text-[#85754E] text-xs font-bold uppercase tracking-wider rounded-full">
                     {product.mainCategory || 'Exclusive'} 
                  </div>
                  <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -144,12 +144,12 @@ const ProductReviewPage = () => {
             <div className="lg:col-span-1 space-y-6">
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 sticky top-10">
                     <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                        <MessageSquare className="text-[#938359]" />
+                        <MessageSquare className="text-[#85754E]" />
                         Write a Review
                     </h3>
 
                     {message && (
-                        <div className={`p-4 rounded-xl mb-6 text-sm font-semibold ${message.type === 'success' ? 'bg-amber-50 text-[#938359]' : 'bg-red-50 text-red-700'}`}>
+                        <div className={`p-4 rounded-xl mb-6 text-sm font-semibold ${message.type === 'success' ? 'bg-amber-50 text-[#85754E]' : 'bg-red-50 text-red-700'}`}>
                             {message.text}
                         </div>
                     )}
@@ -185,7 +185,7 @@ const ProductReviewPage = () => {
                                     rows="4" 
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-4 focus:ring-[#938359]/10 focus:border-[#938359] transition-all resize-none"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-4 focus:ring-[#85754E]/10 focus:border-[#85754E] transition-all resize-none"
                                     placeholder="What did you like or dislike?"
                                     required
                                 />
@@ -194,7 +194,7 @@ const ProductReviewPage = () => {
                             <button 
                                 type="submit" 
                                 disabled={submitLoading}
-                                className="w-full py-3.5 bg-[#938359] hover:bg-[#837349] text-white font-bold text-sm uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/30 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full py-3.5 bg-[#85754E] hover:bg-[#837349] text-white font-bold text-sm uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/30 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {submitLoading ? 'Submitting...' : 'Submit Review'}
                             </button>

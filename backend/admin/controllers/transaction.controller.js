@@ -4,12 +4,40 @@ import mongoose from 'mongoose';
 import Transaction from '../models/Transaction.js';
 import Order from '../models/Order.js';
 
+// Check if Razorpay credentials are available
+const hasRazorpayCredentials = process.env.RAZORPAY_KEY_ID && 
+                                 process.env.RAZORPAY_KEY_ID !== "rzp_test_placeholder" &&
+                                 process.env.RAZORPAY_KEY_SECRET &&
+                                 process.env.RAZORPAY_KEY_SECRET !== "placeholder_secret";
+
 // Initialize Razorpay instance
 const getRazorpayInstance = () => {
+  if (!hasRazorpayCredentials) {
+    console.warn("⚠️ Razorpay credentials not configured. Using MOCK MODE for development/testing.");
+    return null;
+  }
   return new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
+};
+
+// Mock Razorpay order creation for testing
+const createMockRazorpayOrder = (options) => {
+  return {
+    id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    entity: "order",
+    amount: options.amount,
+    amount_paid: 0,
+    amount_due: options.amount,
+    currency: options.currency,
+    receipt: options.receipt,
+    offer_id: null,
+    status: "created",
+    attempts: 0,
+    notes: options.notes,
+    created_at: Math.floor(Date.now() / 1000),
+  };
 };
 
 // @desc    Create a Razorpay order
@@ -41,8 +69,6 @@ export const createRazorpayOrder = async (req, res) => {
       paymentAmount = order.totalPrice;
     }
 
-    const razorpay = getRazorpayInstance();
-
     const options = {
       amount: Math.round(paymentAmount * 100), // Razorpay expects amount in paise
       currency,
@@ -54,7 +80,25 @@ export const createRazorpayOrder = async (req, res) => {
       },
     };
 
-    const razorpayOrder = await razorpay.orders.create(options);
+    let razorpayOrder;
+    const razorpay = getRazorpayInstance();
+
+    if (!razorpay) {
+      // Use mock Razorpay order in development mode
+      console.log("Using MOCK Razorpay order (development mode)");
+      razorpayOrder = createMockRazorpayOrder(options);
+    } else {
+      // Real Razorpay in production
+      try {
+        razorpayOrder = await razorpay.orders.create(options);
+      } catch (razorpayError) {
+        console.error('Razorpay API Error:', razorpayError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to create payment order: ' + (razorpayError.message || 'Unknown error') 
+        });
+      }
+    }
 
     // Create a transaction record in status 'created'
     const transaction = await Transaction.create({
@@ -74,12 +118,12 @@ export const createRazorpayOrder = async (req, res) => {
         id: razorpayOrder.id,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        key: process.env.RAZORPAY_KEY_ID,
+        key: process.env.RAZORPAY_KEY_ID || "mock_key",
         transactionId: transaction.transactionId
       },
     });
   } catch (error) {
-    console.error('Razorpay Order Error:', error);
+    console.error('Order Creation Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

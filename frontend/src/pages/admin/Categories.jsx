@@ -136,7 +136,7 @@ const Categories = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center h-[80vh]">
-      <Loader2 className="animate-spin text-[#938359]" size={40} />
+      <Loader2 className="animate-spin text-[#85754E]" size={40} />
     </div>
   );
 
@@ -146,7 +146,7 @@ const Categories = () => {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#938359] rounded-2xl flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 bg-[#85754E] rounded-2xl flex items-center justify-center shrink-0">
             <ToggleLeft size={24} color="white" />
           </div>
           <div>
@@ -164,7 +164,7 @@ const Categories = () => {
           </button>
           <button
             onClick={() => { resetForm(); setShowAddModal(true); }}
-            className="flex items-center gap-2 bg-[#938359] text-white border-0 px-5 py-2.5 rounded-xl font-bold cursor-pointer text-sm shadow-lg shadow-amber-200 hover:bg-[#837349] transition-colors"
+            className="flex items-center gap-2 bg-[#85754E] text-white border-0 px-5 py-2.5 rounded-xl font-bold cursor-pointer text-sm shadow-lg shadow-amber-200 hover:bg-[#837349] transition-colors"
           >
             <Plus size={18} /> Add New Category
           </button>
@@ -203,7 +203,7 @@ const Categories = () => {
                   </div>
                 )}
                 {cat.isMain && (
-                  <div className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-lg ${isFirst ? 'bg-white text-heritage shadow-black/10' : 'bg-[#938359] text-white shadow-amber-300'}`}>
+                  <div className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-lg ${isFirst ? 'bg-white text-heritage shadow-black/10' : 'bg-[#85754E] text-white shadow-amber-300'}`}>
                     Featured
                   </div>
                 )}
@@ -236,7 +236,7 @@ const Categories = () => {
                     <button
                       onClick={() => handleToggle(cat._id)}
                       title={cat.isActive !== false ? "Disable" : "Enable"}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer hover:bg-slate-50 transition-all text-[11px] font-bold bg-white ${cat.isActive !== false ? 'border-amber-200 text-amber-500' : 'border-slate-200 text-[#938359]'}`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer hover:bg-slate-50 transition-all text-[11px] font-bold bg-white ${cat.isActive !== false ? 'border-amber-200 text-amber-500' : 'border-slate-200 text-[#85754E]'}`}
                     >
                       {cat.isActive !== false ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                       {cat.isActive !== false ? 'Disable' : 'Enable'}
@@ -287,7 +287,7 @@ const Categories = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   required
                   placeholder="e.g. Wedding Collection"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 focus:border-[#938359] transition-colors box-border"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 focus:border-[#85754E] transition-colors box-border"
                 />
               </div>
 
@@ -301,7 +301,7 @@ const Categories = () => {
                   value={formData.categories}
                   onChange={(e) => setFormData(prev => ({ ...prev, categories: e.target.value }))}
                   placeholder="e.g. Wedding, Festive, Party Wear, Casual"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 focus:border-[#938359] transition-colors box-border"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 focus:border-[#85754E] transition-colors box-border"
                 />
               </div>
 
@@ -316,14 +316,14 @@ const Categories = () => {
                   <button
                     type="button"
                     onClick={() => setUrlInputMode(false)}
-                    className={`flex-1 py-2.5 border-0 cursor-pointer text-sm font-bold flex items-center justify-center gap-1.5 transition-all border-r border-amber-100 ${!urlInputMode ? 'bg-[#938359] text-white shadow-inner' : 'bg-transparent text-slate-500 hover:bg-white/50'}`}
+                    className={`flex-1 py-2.5 border-0 cursor-pointer text-sm font-bold flex items-center justify-center gap-1.5 transition-all border-r border-amber-100 ${!urlInputMode ? 'bg-[#85754E] text-white shadow-inner' : 'bg-transparent text-slate-500 hover:bg-white/50'}`}
                   >
                     <Upload size={14} /> Upload File
                   </button>
                   <button
                     type="button"
                     onClick={() => setUrlInputMode(true)}
-                    className={`flex-1 py-2.5 border-0 cursor-pointer text-sm font-bold flex items-center justify-center gap-1.5 transition-all ${urlInputMode ? 'bg-[#938359] text-white shadow-inner' : 'bg-transparent text-slate-500 hover:bg-white/50'}`}
+                    className={`flex-1 py-2.5 border-0 cursor-pointer text-sm font-bold flex items-center justify-center gap-1.5 transition-all ${urlInputMode ? 'bg-[#85754E] text-white shadow-inner' : 'bg-transparent text-slate-500 hover:bg-white/50'}`}
                   >
                     <Link size={14} /> Paste URL
                   </button>
@@ -332,7 +332,7 @@ const Categories = () => {
                 {/* Upload zone */}
                 {!urlInputMode && (
                   <div
-                    className="border-2 border-dashed border-slate-200 rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-50 hover:border-[#938359] hover:bg-amber-50 transition-all relative"
+                    className="border-2 border-dashed border-slate-200 rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-50 hover:border-[#85754E] hover:bg-amber-50 transition-all relative"
                     onClick={() => fileInputRef.current.click()}
                   >
                     {preview && formData.image instanceof File ? (
@@ -363,7 +363,7 @@ const Categories = () => {
                       value={formData.imageUrl}
                       onChange={(e) => handleUrlInput(e.target.value)}
                       placeholder="https://example.com/image.jpg"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 mb-2.5 focus:border-[#938359] transition-colors box-border"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm text-slate-800 mb-2.5 focus:border-[#85754E] transition-colors box-border"
                     />
                     {preview && (
                       <div className="w-full h-36 rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
@@ -412,7 +412,7 @@ const Categories = () => {
                   id="isMain"
                   checked={formData.isMain}
                   onChange={(e) => setFormData(prev => ({ ...prev, isMain: e.target.checked }))}
-                  className="w-4.5 h-4.5 accent-[#938359] flex-shrink-0 cursor-pointer"
+                  className="w-4.5 h-4.5 accent-[#85754E] flex-shrink-0 cursor-pointer"
                   style={{ width: '18px', height: '18px' }}
                 />
                 <label htmlFor="isMain" className="text-sm font-semibold text-slate-500 cursor-pointer m-0">
@@ -427,7 +427,7 @@ const Categories = () => {
                   id="isActive"
                   checked={formData.isActive}
                   onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  className="w-4.5 h-4.5 accent-[#938359] flex-shrink-0 cursor-pointer"
+                  className="w-4.5 h-4.5 accent-[#85754E] flex-shrink-0 cursor-pointer"
                   style={{ width: '18px', height: '18px' }}
                 />
                 <label htmlFor="isActive" className="text-sm font-semibold text-slate-500 cursor-pointer m-0">
@@ -445,7 +445,7 @@ const Categories = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`flex-[2] py-3 rounded-xl border-0 text-white font-bold cursor-pointer text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${submitting ? 'bg-amber-300 cursor-not-allowed shadow-none' : 'bg-[#938359] hover:bg-[#837349] shadow-amber-200'}`}
+                  className={`flex-[2] py-3 rounded-xl border-0 text-white font-bold cursor-pointer text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${submitting ? 'bg-amber-300 cursor-not-allowed shadow-none' : 'bg-[#85754E] hover:bg-[#837349] shadow-amber-200'}`}
                 >
                   {submitting
                     ? <><Loader2 size={16} className="animate-spin" /> Saving...</>
