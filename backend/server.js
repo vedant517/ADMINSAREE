@@ -35,10 +35,39 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
+const normalizeOrigin = (value) => (value || "").trim().replace(/\/$/, "");
+const configuredOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.RENDER_EXTERNAL_URL,
+  "https://adminsaree-8.onrender.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]
+  .flatMap((value) => (value || "").split(","))
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalizedOrigin = normalizeOrigin(origin);
+  return (
+    configuredOrigins.includes(normalizedOrigin) ||
+    /^https:\/\/adminsaree-\d+\.onrender\.com$/.test(normalizedOrigin)
+  );
+};
+
 app.use(
   cors({
-    origin: true,
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 

@@ -38,7 +38,7 @@ export default function Login({ setIsAuthenticated }) {
         setError(data.msg || 'Login failed');
       }
     } catch (err) {
-      setError('Connection error. Is the backend running?');
+      setError(err.response?.data?.msg || err.response?.data?.message || err.message || 'Connection error. Is the backend running?');
     } finally {
       setIsLoading(false);
     }
