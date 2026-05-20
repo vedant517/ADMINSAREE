@@ -4,13 +4,7 @@
  */
 
 const getApiBaseUrl = () => {
-  // In production (when built for and served by the backend), always use the relative '/api' path
-  if (import.meta.env.MODE === 'production') {
-    return '/api';
-  }
-
-  // If VITE_API_URL is set in environment variables, use it.
-  // Otherwise, use the proxy path '/api'.
+  // Prioritize VITE_API_URL from environment variables (important for separate Render deployments)
   const envUrl = import.meta.env.VITE_API_URL;
   
   if (envUrl) {
@@ -18,7 +12,7 @@ const getApiBaseUrl = () => {
     return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
   }
   
-  // Default for development (proxied by Vite)
+  // Default for development (proxied by Vite) or when served directly by backend
   return '/api';
 };
 
