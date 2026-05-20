@@ -19,13 +19,13 @@ This repo is configured for a single Render Web Service. Express serves the buil
 Render build command:
 
 ```bash
-cd backend && npm install && cd ../frontend && npm install && npm run build
+npm run build
 ```
 
 Render start command:
 
 ```bash
-cd backend && node server.js
+npm start
 ```
 
 After deployment, open the service URL. API routes remain under `/api`, and React routes are served by `frontend/dist/index.html`.
