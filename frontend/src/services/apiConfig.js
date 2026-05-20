@@ -4,8 +4,8 @@
  */
 
 const getApiBaseUrl = () => {
-  // Prioritize VITE_API_URL from environment variables (important for separate Render deployments)
-  const envUrl = import.meta.env.VITE_API_URL;
+  // Prioritize Vite environment variables for separate Render deployments.
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
   
   if (envUrl) {
     // Ensure no trailing slash
@@ -17,3 +17,7 @@ const getApiBaseUrl = () => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+export const API_ORIGIN = API_BASE_URL.endsWith('/api')
+  ? API_BASE_URL.slice(0, -4)
+  : API_BASE_URL;

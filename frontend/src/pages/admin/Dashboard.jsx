@@ -12,6 +12,7 @@ import { fetchProducts } from '../../features/products/productSlice';
 import { useGetOrdersQuery, useGetOrderStatsQuery } from '../../features/orders/orderApi';
 import { useGetCustomerStatsQuery } from '../../features/customers/customerApi';
 import { formatCompactINR, formatINR } from '../../utils/currency';
+import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
 
 /* ── Stat Card ── */
 function StatCard({ title, value, badge, badgeUp, sub, onClick, loading, isFirst, icon: Icon, color }) {
@@ -325,9 +326,9 @@ const Dashboard = () => {
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                     <img
-                      src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
+                      src={resolveImageUrl(p.image || p.images, p.name)}
                       alt={p.name}
-                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
+                      onError={(e) => { e.target.src = getPlaceholderImage(p.name); }}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -373,9 +374,9 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-7 h-7 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                           <img
-                            src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
+                            src={resolveImageUrl(p.image || p.images, p.name)}
                             alt={p.name}
-                            onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
+                            onError={(e) => { e.target.src = getPlaceholderImage(p.name); }}
                             className="w-full h-full object-contain"
                           />
                         </div>
@@ -418,9 +419,9 @@ const Dashboard = () => {
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-7 h-7 rounded-md border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
                     <img
-                      src={p.image && p.image.startsWith('http') ? p.image : p.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${p.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`}
+                      src={resolveImageUrl(p.image || p.images, p.name)}
                       alt=""
-                      onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((p.name || 'P').substring(0, 2))}&background=938359&color=fff&bold=true`; }}
+                      onError={(e) => { e.target.src = getPlaceholderImage(p.name); }}
                       className="w-full h-full object-contain"
                     />
                   </div>

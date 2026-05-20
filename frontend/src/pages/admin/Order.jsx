@@ -31,68 +31,7 @@ import {
   useCreateOrderMutation,
 } from '../../features/orders/orderApi';
 import { formatINR } from '../../utils/currency';
-
-// Helper to format product image URLs from the backend securely
-const formatImageUrl = (imagePath, name = 'Item') => {
-  if (!imagePath) {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
-  }
-
-  // Handle case where imagePath is an actual object
-  if (typeof imagePath === 'object' && imagePath !== null) {
-    if (imagePath.url) {
-      imagePath = imagePath.url;
-    } else {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
-    }
-  }
-
-  // Handle case where imagePath is a stringified object (e.g. from mongoose coercion/database dumps)
-  if (typeof imagePath === 'string' && imagePath.trim().startsWith('{')) {
-    try {
-      const match = imagePath.match(/url:\s*['"]([^'"]+)['"]/i) || imagePath.match(/"url":\s*['"]([^'"]+)['"]/i);
-      if (match && match[1]) {
-        imagePath = match[1];
-      } else {
-        const parsed = JSON.parse(imagePath.replace(/'/g, '"'));
-        if (parsed && parsed.url) {
-          imagePath = parsed.url;
-        }
-      }
-    } catch (e) {
-      console.warn("Failed to parse stringified image object:", e);
-    }
-  }
-
-  if (typeof imagePath !== 'string') {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name.substring(0, 2))}&background=938359&color=fff&bold=true`;
-  }
-  
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-  
-  // Normalize Windows backslashes
-  let cleanPath = imagePath.replace(/\\/g, '/');
-  
-  if (!cleanPath.startsWith('/')) {
-    cleanPath = '/' + cleanPath;
-  }
-  
-  // Extract base URL from environment variable VITE_API_URL or VITE_API_BASE_URL
-  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-  let baseUrl = 'http://localhost:5001';
-  if (envUrl) {
-    let base = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
-    if (base.endsWith('/api')) {
-      base = base.slice(0, -4);
-    }
-    baseUrl = base;
-  }
-  
-  const sanitizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  return `${sanitizedBaseUrl}${cleanPath}`;
-};
+import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
 
 
 const statusStyle = {
@@ -257,13 +196,13 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
                 return (
                   <div key={idx} className={`flex items-center gap-3 ${idx < order.orderItems.length - 1 ? 'pb-2.5 border-b border-slate-200' : ''}`}>
                     <div className="w-11 h-11 shrink-0 rounded-xl overflow-hidden bg-slate-200 border border-slate-200">
-                      {item.image ? (
+                      {(item.image || item.images) ? (
                         <img 
-                          src={formatImageUrl(item.image, item.name)} 
+                          src={resolveImageUrl(item.image || item.images, item.name)} 
                           alt={item.name} 
                           className="w-full h-full object-cover" 
                           onError={(e) => {
-                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name.substring(0, 2))}&background=938359&color=fff&bold=true`;
+                            e.target.src = getPlaceholderImage(item.name);
                           }}
                         />
                       ) : (
@@ -413,6 +352,7 @@ export default function OrderManagement() {
         product: firstItem.name || 'Product Asset',
         variant: firstItem.variant || '',
         image: firstItem.image,
+        images: firstItem.images,
         emoji: getProductEmoji(firstItem.name),
         date: new Date(order.createdAt).toLocaleDateString('en-GB'),
         price: order.totalPrice || order.price || 0,
@@ -649,13 +589,13 @@ export default function OrderManagement() {
                           <td className="px-3 py-3">
                             <div className="flex items-center gap-2">
                               <div className="w-9 h-9 shrink-0 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200">
-                                {o.image ? (
+                                {(o.image || o.images) ? (
                                   <img 
-                                    src={formatImageUrl(o.image, o.product)} 
+                                    src={resolveImageUrl(o.image || o.images, o.product)} 
                                     alt={o.product} 
                                     className="w-full h-full object-cover" 
                                     onError={(e) => {
-                                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(o.product.substring(0, 2))}&background=938359&color=fff&bold=true`;
+                                      e.target.src = getPlaceholderImage(o.product);
                                     }}
                                   />
                                 ) : (

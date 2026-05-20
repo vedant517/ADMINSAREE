@@ -5,6 +5,12 @@ import { calculateDiscount } from "./couponController.js";
 import { calculateShippingCharges } from "../../services/shiprocketService.js";
 import Coupon from "../models/Coupon.js";
 
+const getProductImage = (product, fallback = "") => {
+  const firstImage = Array.isArray(product?.images) ? product.images[0] : null;
+  if (typeof firstImage === "string") return firstImage;
+  return firstImage?.secure_url || firstImage?.url || firstImage?.path || product?.image || fallback;
+};
+
 // CREATE ORDER
 export const createOrder = async (req, res) => {
   try {
@@ -66,7 +72,7 @@ export const createOrder = async (req, res) => {
         qty: quantity,
         price: priceToUse,
         name: product ? product.name : (item.name || "Unknown Product"),
-        image: product ? (product.images?.[0]?.url || product.image) : (item.image || "")
+        image: product ? getProductImage(product, item.image || "") : (item.image || "")
       });
       
       calculatedItemsPrice += (priceToUse * quantity);

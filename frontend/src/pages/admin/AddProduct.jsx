@@ -8,6 +8,7 @@ import { addProduct, updateProduct, fetchProductById } from '../../features/prod
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
 import { fetchMetadata } from '../../features/products/categorySlice';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -64,10 +65,10 @@ const AddProduct = () => {
           const loadedVariants = p.variants || [];
           setVariants(loadedVariants);
           setVariantImages(loadedVariants.map(() => null));
-          setVariantPreviews(loadedVariants.map((v) => v.image || null));
+          setVariantPreviews(loadedVariants.map((v) => (v.image || v.images) ? resolveImageUrl(v.image || v.images, p.name) : null));
           setIsFeatured(p.isFeatured !== false);
           setIsActive(p.isActive !== false);
-          if (p.image) setPreviews([p.image]);
+          if (p.image || p.images) setPreviews([resolveImageUrl(p.image || p.images, p.name)]);
         }
       };
       loadProduct();

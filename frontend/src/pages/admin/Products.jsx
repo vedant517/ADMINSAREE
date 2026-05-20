@@ -13,6 +13,7 @@ import { fetchCategories } from '../../features/products/categorySlice';
 import { useNavigate } from 'react-router-dom';
 import { formatINR } from '../../utils/currency';
 import api from '../../services/api';
+import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -183,8 +184,8 @@ const Products = () => {
                         <div className="flex items-center gap-3.5">
                           <div className="w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shrink-0">
                             <img
-                              src={product?.image && product.image.startsWith('http') ? product.image : product?.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((product?.name || 'Item').substring(0, 2))}&background=10b981&color=fff&bold=true`}
-                              onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent((product?.name || 'Item').substring(0, 2))}&background=10b981&color=fff&bold=true`; }}
+                              src={resolveImageUrl(product?.image || product?.images, product?.name, { bg: '10b981' })}
+                              onError={(e) => { e.target.src = getPlaceholderImage(product?.name, '10b981'); }}
                               className="w-full h-full object-cover"
                               alt={product?.name}
                             />

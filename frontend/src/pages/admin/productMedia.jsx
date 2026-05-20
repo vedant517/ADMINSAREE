@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import api from "../../services/api";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 const MAIN_CATEGORIES = ["Royal Silks", "Festive Radiance", "Bridal Elegance", "Handwoven Heritage"];
 const SUB_CATEGORIES = ["Wedding", "Party Wear", "Bride", "Festive", "Casual", "Daily Wear"];
@@ -117,7 +118,10 @@ const OfferPage = () => {
       mainCategory,
       tags,
       variantLabel: resolvedVariant ? (resolvedVariant.color || resolvedVariant.fabric || "Variant") : null,
-      image: resolvedVariant?.image || fullProduct?.image || product?.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300",
+      image: resolveImageUrl(
+        resolvedVariant?.image || resolvedVariant?.images || fullProduct?.image || fullProduct?.images || product?.image || product?.images,
+        fullProduct?.name || product?.name || "Product"
+      ),
     };
   });
 

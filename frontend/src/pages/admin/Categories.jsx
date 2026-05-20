@@ -4,15 +4,7 @@ import {
   Plus, Trash2, Edit2, Image as ImageIcon,
   X, Loader2, Upload, RefreshCw, Link, ToggleLeft, ToggleRight
 } from 'lucide-react';
-
-const resolveImageUrl = (image) => {
-  if (!image) return null;
-  if (typeof image === 'string' && image.trim() !== '') return image.trim();
-  if (typeof image === 'object') {
-    return image.secure_url || image.url || image.path || image.Location || null;
-  }
-  return null;
-};
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -111,7 +103,7 @@ const Categories = () => {
 
   const startEdit = (cat) => {
     setEditingId(cat._id);
-    const existingUrl = resolveImageUrl(cat.image) || '';
+    const existingUrl = resolveImageUrl(cat.image, cat.name, { fallback: null }) || '';
     setFormData({
       name: cat.name,
       image: null,
@@ -182,7 +174,7 @@ const Categories = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {categories.map((cat, idx) => {
-          const imgSrc = resolveImageUrl(cat.image);
+          const imgSrc = resolveImageUrl(cat.image, cat.name, { fallback: null });
           const hasError = imgErrors[cat._id];
           const isFirst = idx === 0;
           return (

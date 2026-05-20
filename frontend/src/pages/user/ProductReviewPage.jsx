@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { Star, ArrowLeft, MessageSquare, User, Clock, AlertCircle } from 'lucide-react';
-import { API_BASE_URL } from '../../services/apiConfig';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const ProductReviewPage = () => {
   const { id } = useParams();
@@ -102,7 +102,7 @@ const ProductReviewPage = () => {
           <div className="p-8 sm:p-10 flex flex-col md:flex-row gap-10 items-center">
              <div className="w-full md:w-1/3 aspect-square bg-slate-50 rounded-2xl p-4 flex items-center justify-center">
                  <img 
-                    src={product.image || `https://ui-avatars.com/api/?name=${product.name}`} 
+                    src={resolveImageUrl(product.image || product.images, product.name)} 
                     alt={product.name}
                     className="max-w-full max-h-full object-contain drop-shadow-xl"
                  />

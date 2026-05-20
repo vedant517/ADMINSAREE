@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Link } from 'react-router-dom';
+import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
 
 const CategoryShowcase = () => {
   const [categories, setCategories] = useState([]);
@@ -20,15 +21,9 @@ const CategoryShowcase = () => {
     fetchCategories();
   }, []);
 
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return path;
-  };
-
   const handleImageError = (e, name) => {
     e.target.onerror = null;
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Category')}&background=random&size=400&bold=true`;
+    e.target.src = getPlaceholderImage(name || 'Category');
   };
 
   if (loading) return null;
@@ -80,7 +75,7 @@ const CategoryShowcase = () => {
               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <img 
-                  src={getImageUrl(cat.image)} 
+                  src={resolveImageUrl(cat.image, cat.name)} 
                   alt={cat.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   onError={(e) => handleImageError(e, cat.name)}

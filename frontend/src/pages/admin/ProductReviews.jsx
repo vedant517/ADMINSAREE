@@ -17,6 +17,7 @@ import {
 import api from '../../services/api';
 import { fetchProducts } from '../../features/products/productSlice';
 import { formatINR } from '../../utils/currency';
+import { resolveImageUrl, getPlaceholderImage } from '../../utils/imageUrl';
 
 const ratingTabs = [
   { label: 'All Ratings', value: 'all' },
@@ -81,7 +82,7 @@ function MobileReviewCard({ review, navigate }) {
           <img
             src={review.productImage}
             alt={review.productName}
-            onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.productName)}&background=938359&color=fff&bold=true`; }}
+            onError={(e) => { e.currentTarget.src = getPlaceholderImage(review.productName); }}
             className="w-full h-full object-cover rounded-xl"
           />
         </div>
@@ -172,9 +173,7 @@ export default function ProductReviews() {
       reviewId: review._id,
       productId: review.product?._id || 'unknown',
       productName: review.product?.name || 'Untitled Product',
-      productImage: review.product?.image && review.product.image.startsWith('http')
-        ? review.product.image
-        : review.product?.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${review.product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((review.product?.name || 'Item').substring(0, 2))}&background=938359&color=fff&bold=true`,
+      productImage: resolveImageUrl(review.product?.image || review.product?.images, review.product?.name),
       productPrice: review.product?.price || 0,
       mainCategory: review.product?.mainCategory || 'Uncategorized',
       categories: review.product?.categories || [],
@@ -197,9 +196,7 @@ export default function ProductReviews() {
           reviewId: review.user || `${product._id}-${index + 1}`,
           productId: product._id,
           productName: product.name || 'Untitled Product',
-          productImage: product.image && product.image.startsWith('http')
-            ? product.image
-            : product.image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${product.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent((product.name || 'Item').substring(0, 2))}&background=938359&color=fff&bold=true`,
+          productImage: resolveImageUrl(product.image || product.images, product.name),
           productPrice: product.price || 0,
           mainCategory: product.mainCategory || 'Uncategorized',
           categories: product.categories || [],
@@ -380,7 +377,7 @@ export default function ProductReviews() {
                                 src={review.productImage}
                                 alt={review.productName}
                                 className="w-full h-full object-cover rounded-xl"
-                                onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.productName)}&background=938359&color=fff&bold=true`; }}
+                                onError={(e) => { e.currentTarget.src = getPlaceholderImage(review.productName); }}
                               />
                             </div>
                             <div className="min-w-0">
