@@ -21,7 +21,4 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-CLOUDINARY_CLOUD_NAME=dtw1nk7ho                                                                                                              CLOUDINARY_CLOUD_NAME=dtw1nk7ho 
-CLOUDINARY_API_KEY=634578549223663
-CLOUDINARY_API_SECRET=iuNridDQ2XEuXY5hs4KY2aBMz-c      
+*.sw?

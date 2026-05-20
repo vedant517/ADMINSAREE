@@ -19,13 +19,19 @@ This repo is configured for a single Render Web Service. Express serves the buil
 Render build command:
 
 ```bash
-npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+cd backend && npm install && cd ../frontend && npm install && npm run build
 ```
 
 Render start command:
 
 ```bash
-npm start --prefix backend
+cd backend && node server.js
 ```
 
 After deployment, open the service URL. API routes remain under `/api`, and React routes are served by `frontend/dist/index.html`.
+
+## Troubleshooting
+
+- If you see `ENOENT: no such file or directory ... index.html`, the frontend build failed. Check the Render build logs for errors.
+- Make sure `NODE_VERSION` is set to `20.18.0` in Render environment variables.
+- The `VITE_API_URL` env var is set to `/api` in `render.yaml` so the frontend uses relative API paths in production.
