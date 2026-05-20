@@ -42,7 +42,7 @@ const configuredOrigins = [
   process.env.RENDER_EXTERNAL_URL,
   "https://adminsaree-8.onrender.com",
   "http://localhost:5173",
-  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5173"
 ]
   .flatMap((value) => (value || "").split(","))
   .map(normalizeOrigin)
