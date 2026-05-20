@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import dns from "node:dns";
+import { existsSync } from "node:fs";
 
 // Load env
 dotenv.config();
@@ -105,26 +106,23 @@ if (process.env.NODE_ENV === "production") {
   const frontendDistPath = path.resolve(__dirname, "../frontend/dist");
   const indexHtmlPath = path.join(frontendDistPath, "index.html");
 
-  // Check if the frontend build exists
-  import("node:fs").then(({ existsSync }) => {
-    if (existsSync(indexHtmlPath)) {
-      console.log(`✅ Serving frontend from: ${frontendDistPath}`);
-      app.use(express.static(frontendDistPath));
-      app.get(/.*/, (req, res, next) => {
-        if (req.path.startsWith("/api")) return next();
-        res.sendFile(indexHtmlPath);
+  if (existsSync(indexHtmlPath)) {
+    console.log(`✅ Serving frontend from: ${frontendDistPath}`);
+    app.use(express.static(frontendDistPath));
+    app.get(/.*/, (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
+      res.sendFile(indexHtmlPath);
+    });
+  } else {
+    console.warn(`⚠️ Frontend build not found at: ${frontendDistPath}`);
+    console.warn("   Run 'npm run build' in the frontend directory first.");
+    app.get("/", (req, res) => {
+      res.json({
+        success: false,
+        message: "Frontend build not found. API is running — access routes under /api",
       });
-    } else {
-      console.warn(`⚠️ Frontend build not found at: ${frontendDistPath}`);
-      console.warn("   Run 'npm run build' in the frontend directory first.");
-      app.get("/", (req, res) => {
-        res.json({
-          success: false,
-          message: "Frontend build not found. API is running — access routes under /api",
-        });
-      });
-    }
-  });
+    });
+  }
 } else {
   app.get("/", (req, res) => {
     res.send("Unified API is running...");
