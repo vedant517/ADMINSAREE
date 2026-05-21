@@ -8,6 +8,8 @@ const orderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   qty: { type: Number, required: true, default: 1 }, // Changed from quantity to qty for Admin compatibility
   variant: String, // Added for Admin compatibility
+  fabric: String,
+  color: String,
 });
 
 const orderSchema = new mongoose.Schema(
@@ -30,6 +32,7 @@ const orderSchema = new mongoose.Schema(
     itemsPrice: { type: Number, default: 0 },
     taxPrice: { type: Number, default: 0 },
     shippingPrice: { type: Number, default: 0 },
+    discountPrice: { type: Number, default: 0 },
     totalPrice: { type: Number, required: true }, // Changed from totalAmount to totalPrice
     paymentMethod: { type: String, default: "COD" },
     paymentResult: { // Added for Admin Dashboard compatibility

@@ -15,9 +15,9 @@ export const calculateShippingCharge = (req, res) => {
     let shippingCharge = 0;
     
     if (amount < 500) {
-      shippingCharge = 50;
+      shippingCharge = 0; // Removed shipping charges
     } else if (amount >= 500 && amount < 1000) {
-      shippingCharge = 30;
+      shippingCharge = 0; // Removed shipping charges
     } else {
       shippingCharge = 0;
     }

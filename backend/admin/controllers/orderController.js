@@ -18,9 +18,41 @@ export const getOrders = async (req, res) => {
 
     const orders = await Order.find(query).sort({ createdAt: -1 });
 
+    // Enrich order items with variant details (fabric, color) for old orders
+    const enrichedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const orderObj = order.toObject();
+        const enrichedItems = await Promise.all(
+          (orderObj.orderItems || []).map(async (item) => {
+            if (item.fabric && item.color) return item;
+            try {
+              const product = await Product.findById(item.product).lean();
+              if (!product || !product.variants?.length) return item;
+              // Try to match variant by stored variant string or ID
+              const variantKey = item.variant || '';
+              const matchedVariant = product.variants.find((v) =>
+                String(v._id) === String(variantKey) ||
+                String(v.color || '').toLowerCase() === String(variantKey).toLowerCase() ||
+                String(v.fabric || '').toLowerCase() === String(variantKey).toLowerCase()
+              );
+              return {
+                ...item,
+                fabric: item.fabric || matchedVariant?.fabric || "",
+                color: item.color || matchedVariant?.color || "",
+                variant: item.variant || (matchedVariant ? `${matchedVariant.color} - ${matchedVariant.fabric}` : ""),
+              };
+            } catch {
+              return item;
+            }
+          })
+        );
+        return { ...orderObj, orderItems: enrichedItems };
+      })
+    );
+
     res.json({
       success: true,
-      data: orders
+      data: enrichedOrders
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

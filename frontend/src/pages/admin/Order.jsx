@@ -214,6 +214,11 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-bold text-slate-800 m-0 mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</p>
+                      {(item.fabric || item.color) && (
+                        <p className="text-[10px] text-[#85754E] m-0 mb-0.5 font-semibold">
+                          {[item.color, item.fabric].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
                       <p className="text-[11px] text-slate-500 m-0 font-medium">Qty: {qty} × {formatINR(price)}</p>
                     </div>
                     <span className="text-[13px] font-extrabold text-slate-900 shrink-0">{formatINR(qty * price)}</span>
@@ -234,7 +239,6 @@ function StatusUpdateModal({ order, onClose, onUpdate, isUpdating }) {
             <div className="flex flex-col gap-2">
               {[
                 { label: 'Items Total', value: derivedItemsTotal },
-                { label: 'Shipping Charge', value: shippingCost },
                 { label: 'Tax (GST)', value: taxAmount },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-center">
@@ -370,6 +374,8 @@ export default function OrderManagement() {
         orderId: order.orderId,
         product: firstItem.name || 'Product Asset',
         variant: firstItem.variant || '',
+        fabric: firstItem.fabric || '',
+        color: firstItem.color || '',
         image: firstItem.image,
         images: firstItem.images,
         emoji: getProductEmoji(firstItem.name),
@@ -625,9 +631,13 @@ export default function OrderManagement() {
                                 <span className="text-[12px] font-bold text-slate-800 max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap block">
                                   {o.product}
                                 </span>
-                                {o.variant && (
-                                  <span className="text-[10px] font-semibold text-slate-500">Variant: {o.variant}</span>
-                                )}
+                                {(o.fabric || o.color) ? (
+                                  <span className="text-[10px] font-semibold text-slate-500">
+                                    {[o.color, o.fabric].filter(Boolean).join(' · ')}
+                                  </span>
+                                ) : o.variant ? (
+                                  <span className="text-[10px] font-semibold text-slate-500">{o.variant}</span>
+                                ) : null}
                               </div>
                             </div>
                           </td>

@@ -18,9 +18,9 @@ router.post("/calculate", (req, res) => {
     let shippingCharge = 0;
 
     if (numAmount < 500) {
-      shippingCharge = 50;
+      shippingCharge = 0; // Removed shipping charges
     } else if (numAmount < 1000) {
-      shippingCharge = 30;
+      shippingCharge = 0; // Removed shipping charges
     } else {
       shippingCharge = 0;
     }

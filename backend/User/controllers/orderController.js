@@ -89,6 +89,7 @@ export const createOrder = async (req, res) => {
 
       const product = await Product.findById(productId);
       const priceToUse = product ? getProductPrice(product, item) : (item.price || 0);
+      const matchedVariant = product ? getSelectedVariant(product, item) : null;
       
       secureOrderItems.push({
         ...item,
@@ -96,7 +97,10 @@ export const createOrder = async (req, res) => {
         qty: quantity,
         price: priceToUse,
         name: product ? product.name : (item.name || "Unknown Product"),
-        image: product ? getProductImage(product, item.image || "") : (item.image || "")
+        image: product ? getProductImage(product, item.image || "") : (item.image || ""),
+        variant: matchedVariant ? `${matchedVariant.color} - ${matchedVariant.fabric}` : (item.variant || ""),
+        fabric: matchedVariant?.fabric || item.fabric || "",
+        color: matchedVariant?.color || item.color || "",
       });
       
       calculatedItemsPrice += (priceToUse * quantity);
@@ -122,8 +126,9 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // 4. Shipping Calculation (Shiprocket)
+    // 4. Shipping Calculation (Shiprocket) - REMOVED AS REQUESTED
     let shippingPrice = 0;
+    /*
     const deliveryZip = pincode || shippingAddress?.postalCode;
     
     if (deliveryZip) {
@@ -132,6 +137,7 @@ export const createOrder = async (req, res) => {
     } else {
       shippingPrice = itemsPrice < 500 ? 50 : 0;
     }
+    */
 
     // 5. Tax Calculation (18% GST)
     const taxableAmount = itemsPrice - discountPrice;
@@ -200,14 +206,47 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// GET USER ORDERS
+// GET USER ORDERS (with variant details enrichment for old orders)
 export const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user?.id });
+    const orders = await Order.find({ user: req.user?.id })
+      .populate("orderItems.product")
+      .sort({ createdAt: -1 });
+
+    // Enrich order items with variant details from the product (for old orders missing fabric/color)
+    const enrichedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const orderObj = order.toObject();
+        const enrichedItems = await Promise.all(
+          (orderObj.orderItems || []).map(async (item) => {
+            // If fabric and color are already stored, no need to look up
+            if (item.fabric && item.color) return item;
+
+            try {
+              // product is already populated
+              const product = item.product?._id ? item.product : await Product.findById(item.product).lean();
+              if (!product) return item;
+
+              // Try to find the matching variant
+              const matchedVariant = getSelectedVariant(product, item);
+              return {
+                ...item,
+                fabric: item.fabric || matchedVariant?.fabric || "",
+                color: item.color || matchedVariant?.color || "",
+                variant: item.variant || (matchedVariant ? `${matchedVariant.color} - ${matchedVariant.fabric}` : ""),
+              };
+            } catch {
+              return item;
+            }
+          })
+        );
+        return { ...orderObj, orderItems: enrichedItems };
+      })
+    );
 
     res.json({
       success: true,
-      data: orders
+      data: enrichedOrders
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -252,7 +291,7 @@ export const getOrderById = async (req, res) => {
     const order = await Order.findOne({
       _id: req.params.id,
       user: req.user.id,
-    });
+    }).populate("orderItems.product");
 
     if (!order)
       return res.status(404).json({ success: false, message: "Order not found." });
@@ -297,9 +336,10 @@ export const calculateOrder = async (req, res) => {
       });
     }
 
-    // 1. Shipping Calculation (Shiprocket)
+    // 1. Shipping Calculation (Shiprocket) - REMOVED AS REQUESTED
     let shippingPrice = 0;
     let shippingInfo = null;
+    /*
     if (pincode) {
       const shipResult = await calculateShippingCharges({ delivery_postcode: pincode, weight: totalWeight });
       if (shipResult.success) {
@@ -311,6 +351,7 @@ export const calculateOrder = async (req, res) => {
     } else {
       shippingPrice = itemsPrice < 999 ? 99 : 0; // Simple fallback
     }
+    */
 
     // 2. Discount Calculation (Coupon)
     let discount = 0;
