@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import api from '../../services/api';
 import { Star, ArrowLeft, MessageSquare, User, Clock, AlertCircle } from 'lucide-react';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import { getReviewerDisplayName } from '../../utils/reviewDisplay';
 
 const ProductReviewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isCustomerLoggedIn = useSelector((s) => s.auth.isCustomerLoggedIn);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -154,12 +157,12 @@ const ProductReviewPage = () => {
                         </div>
                     )}
 
-                    {!localStorage.getItem('isLoggedIn') ? (
+                    {!isCustomerLoggedIn ? (
                         <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-100">
                              <p className="text-sm text-slate-500 mb-4">Please log in to write a review for this product.</p>
-                             <button onClick={() => navigate('/')} className="px-6 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl w-full hover:bg-slate-800 transition">
+                             <Link to="/login" className="inline-block px-6 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl w-full hover:bg-slate-800 transition no-underline">
                                  Sign In
-                             </button>
+                             </Link>
                         </div>
                     ) : (
                         <form onSubmit={submitHandler} className="space-y-5">
@@ -226,7 +229,9 @@ const ProductReviewPage = () => {
                                                  <User className="text-slate-400 w-5 h-5" />
                                              </div>
                                              <div>
-                                                 <h5 className="font-bold text-slate-900 text-sm">{review.name}</h5>
+                                                 <h5 className="font-bold text-slate-900 text-sm">
+                                                   {getReviewerDisplayName(review)}
+                                                 </h5>
                                                  <div className="flex -ml-1 mt-0.5">
                                                      {Array.from({ length: 5 }).map((_, i) => (
                                                          <Star 

@@ -1,33 +1,41 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_BASE_URL } from '../../services/apiConfig';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createAuthBaseQuery } from '../../services/authBaseQuery';
+import { getStoredUserId } from '../../utils/userSession';
+import { setWishlistCount } from '../ui/uiSlice';
 
 export const wishlistApi = createApi({
   reducerPath: 'wishlistApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    credentials: 'include', // sends cookie token automatically
-  }),
+  baseQuery: createAuthBaseQuery(),
   tagTypes: ['Wishlist'],
+  refetchOnMountOrArgChange: true,
+  keepUnusedDataFor: 0,
   endpoints: (builder) => ({
 
-    // GET /api/wishlist
     getWishlist: builder.query({
       query: () => '/wishlist',
       providesTags: ['Wishlist'],
+      serializeQueryArgs: ({ endpointName }) =>
+        `${endpointName}-${getStoredUserId() || 'guest'}`,
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const list = data?.wishlist ?? [];
+          dispatch(setWishlistCount(Array.isArray(list) ? list.length : 0));
+        } catch {
+          dispatch(setWishlistCount(0));
+        }
+      },
     }),
 
-    // POST /api/wishlist/add
     addToWishlist: builder.mutation({
       query: (body) => ({
         url: '/wishlist/add',
         method: 'POST',
         body,
-        // body: { productId, name, price, image, rating, description }
       }),
       invalidatesTags: ['Wishlist'],
     }),
 
-    // DELETE /api/wishlist/remove/:productId
     removeFromWishlist: builder.mutation({
       query: (productId) => ({
         url: `/wishlist/remove/${productId}`,
@@ -36,7 +44,6 @@ export const wishlistApi = createApi({
       invalidatesTags: ['Wishlist'],
     }),
 
-    // DELETE /api/wishlist/clear
     clearWishlist: builder.mutation({
       query: () => ({
         url: '/wishlist/clear',

@@ -1,24 +1,9 @@
-import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import { calculateDiscount } from "./couponController.js";
 import { calculateShippingCharges } from "../../services/shiprocketService.js";
-
-// =======================
-// 🔹 GET USER FROM COOKIE
-// =======================
-const getUserId = (req) => {
-  const token = req.cookies?.token;
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded.id;
-  } catch (err) {
-    console.log("JWT ERROR:", err.message);
-    return null;
-  }
-};
+import { requireAuthUserId, resolveAuthUserId } from "../utils/resolveAuthUserId.js";
 
 const getProductImage = (product, fallback) => {
   const first = Array.isArray(product?.images) ? product.images[0] : null;
@@ -61,10 +46,10 @@ const refreshCartItemPricing = async (item) => {
 };
 
 // =======================
-// 🔹 HELPER: GET FULL CART
+// 🔹 HELPER: GET FULL CART (always scoped to authenticated user)
 // =======================
 const getFullCart = async (userId) => {
-  const cartItems = await Cart.find({ userId }).sort({ addedAt: -1 });
+  const cartItems = await Cart.find({ userId: String(userId) }).sort({ addedAt: -1 });
   const cart = await Promise.all(cartItems.map(refreshCartItemPricing));
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return { cart, totalItems };
@@ -75,13 +60,10 @@ const getFullCart = async (userId) => {
 // =======================
 export const getCartBreakdown = async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
     const { couponCode, pincode } = req.query;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Authentication required" });
-    }
-
     const { cart } = await getFullCart(userId);
     if (cart.length === 0) {
       return res.json({
@@ -92,7 +74,6 @@ export const getCartBreakdown = async (req, res) => {
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    // 1. Discount
     let discount = 0;
     let couponDetails = null;
     if (couponCode) {
@@ -105,10 +86,9 @@ export const getCartBreakdown = async (req, res) => {
       }
     }
 
-    // 2. Shipping
     let shipping = 0;
     if (pincode) {
-      const totalWeight = cart.reduce((sum, item) => sum + (0.5 * item.quantity), 0); // Mock 0.5kg per item
+      const totalWeight = cart.reduce((sum, item) => sum + (0.5 * item.quantity), 0);
       const shipResult = await calculateShippingCharges({ delivery_postcode: pincode, weight: totalWeight });
       if (shipResult.success) {
         shipping = shipResult.data.shipping_cost;
@@ -117,10 +97,8 @@ export const getCartBreakdown = async (req, res) => {
       shipping = subtotal < 500 ? 50 : 0;
     }
 
-    // 3. Tax (18% GST)
     const taxableAmount = subtotal - discount;
     const tax = Number((taxableAmount * 0.18).toFixed(2));
-
     const total = taxableAmount + shipping + tax;
 
     res.json({
@@ -143,19 +121,12 @@ export const getCartBreakdown = async (req, res) => {
 };
 
 // =======================
-// ✅ GET CART
+// ✅ GET CART — authenticated users only (prevents cross-user empty fallback)
 // =======================
 export const getCart = async (req, res) => {
   try {
-    const userId = getUserId(req);
-
-    if (!userId) {
-      return res.json({
-        success: true,
-        cart: [],
-        totalItems: 0,
-      });
-    }
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
 
     const data = await getFullCart(userId);
     res.json({ success: true, ...data });
@@ -171,14 +142,8 @@ export const getCart = async (req, res) => {
 // =======================
 export const addToCart = async (req, res) => {
   try {
-    const userId = getUserId(req);
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "guestId or token required",
-      });
-    }
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
 
     const { productId, quantity = 1, selectedVariant } = req.body;
 
@@ -197,7 +162,7 @@ export const addToCart = async (req, res) => {
     const currentPrice = getCurrentProductPrice(product, selectedVariant);
 
     const existingItem = await Cart.findOne({
-      userId,
+      userId: String(userId),
       productId,
       ...(selectedVariant?.name && {
         "selectedVariant.name": selectedVariant.name,
@@ -212,7 +177,7 @@ export const addToCart = async (req, res) => {
       await existingItem.save();
     } else {
       await Cart.create({
-        userId,
+        userId: String(userId),
         productId,
         name: product.name,
         price: currentPrice,
@@ -242,16 +207,11 @@ export const addToCart = async (req, res) => {
 // =======================
 export const updateCart = async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
     const { id } = req.params;
     const { quantity } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "guestId or token required",
-      });
-    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -268,7 +228,7 @@ export const updateCart = async (req, res) => {
     }
 
     const updatedItem = await Cart.findOneAndUpdate(
-      { _id: id, userId },
+      { _id: id, userId: String(userId) },
       { quantity },
       { new: true }
     );
@@ -299,15 +259,10 @@ export const updateCart = async (req, res) => {
 // =======================
 export const removeFromCart = async (req, res) => {
   try {
-    const userId = getUserId(req);
-    const { id } = req.params;
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
 
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "guestId or token required",
-      });
-    }
+    const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -316,7 +271,7 @@ export const removeFromCart = async (req, res) => {
       });
     }
 
-    const deletedItem = await Cart.findOneAndDelete({ _id: id, userId });
+    const deletedItem = await Cart.findOneAndDelete({ _id: id, userId: String(userId) });
 
     if (!deletedItem) {
       return res.status(404).json({
@@ -344,16 +299,10 @@ export const removeFromCart = async (req, res) => {
 // =======================
 export const clearCart = async (req, res) => {
   try {
-    const userId = getUserId(req);
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
 
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "guestId or token required",
-      });
-    }
-
-    await Cart.deleteMany({ userId });
+    await Cart.deleteMany({ userId: String(userId) });
 
     res.json({
       success: true,
@@ -367,3 +316,6 @@ export const clearCart = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+// Exported for tests / internal use
+export { resolveAuthUserId };

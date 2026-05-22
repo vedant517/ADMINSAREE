@@ -4,14 +4,20 @@ import { createCode128Svg } from '../../utils/barcode.js';
 
 const parseVariants = (variants) => {
   if (!variants) return [];
-  const parsed = typeof variants === 'string' ? JSON.parse(variants) : variants;
-  return Array.isArray(parsed)
-    ? parsed.map((variant) => ({
-        ...variant,
-        price: Number(variant.price) || 0,
-        stock: Number(variant.stock) || 0,
-      }))
-    : [];
+  try {
+    const parsed = typeof variants === 'string' ? JSON.parse(variants) : variants;
+    return Array.isArray(parsed)
+      ? parsed.map((variant) => ({
+          ...variant,
+          price: Number(variant.price) || 0,
+          mrp: Number(variant.mrp) || Number(variant.price) || 0,
+          stock: Number(variant.stock) || 0,
+        }))
+      : [];
+  } catch (err) {
+    console.error('Error parsing variants:', err.message, 'Input:', variants);
+    return [];
+  }
 };
 
 const getLowestVariantPrice = (variants = []) => {
@@ -78,10 +84,18 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, discountPrice, mainCategory, categories, stock, variants } = req.body;
+    const { name, description, price, mrp, mainCategory, categories, stock, variants } = req.body;
+    
+    console.log('Create Product Debug:', {
+      name, description, price, mainCategory, stock,
+      categoriesType: Array.isArray(categories) ? 'array' : typeof categories,
+      variantsType: typeof variants
+    });
+    
     const parsedVariants = parseVariants(variants);
     const variantBasePrice = getLowestVariantPrice(parsedVariants);
     const finalPrice = Number(price) > 0 ? Number(price) : variantBasePrice;
+    const finalMrp = Number(mrp) || finalPrice;
 
     if (!name || !description || !finalPrice || !mainCategory || stock === undefined) {
       return res.status(400).json({
@@ -90,17 +104,28 @@ export const createProduct = async (req, res) => {
       });
     }
 
+    // Handle categories - could be string or array
+    let finalCategories = [];
+    if (categories) {
+      if (Array.isArray(categories)) {
+        finalCategories = categories;
+      } else if (typeof categories === 'string') {
+        finalCategories = [categories];
+      }
+    }
+
     const productData = {
       name,
       description,
       price: finalPrice,
-      discountPrice: discountPrice ? Number(discountPrice) : 0,
+      mrp: finalMrp,
       mainCategory,
-      categories: categories ? (Array.isArray(categories) ? categories : [categories]) : [],
+      categories: finalCategories,
       stock: Number(stock),
       variants: parsedVariants,
-      isFeatured: req.body.isFeatured === 'true',
-      taxIncluded: req.body.taxIncluded === 'true',
+      isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
+      isActive: req.body.isActive === 'true' || req.body.isActive !== false,
+      taxIncluded: req.body.taxIncluded === 'true' || req.body.taxIncluded === true,
       user: req.user ? req.user.id : undefined,
     };
 
@@ -150,6 +175,7 @@ export const createProduct = async (req, res) => {
 
     res.status(201).json({ success: true, data: product });
   } catch (error) {
+    console.error('Create Product Error:', error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -175,29 +201,55 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    // Create updateData from req.body AND req.files
     const updateData = { ...req.body };
+    
+    console.log('Update Product Debug:', {
+      bodyFields: Object.keys(req.body),
+      filesCount: req.files ? req.files.length : 0,
+      variantsField: updateData.variants ? 'present' : 'missing'
+    });
     
     // Convert types
     if (updateData.discountPrice) updateData.discountPrice = Number(updateData.discountPrice);
     if (updateData.stock) updateData.stock = Number(updateData.stock);
+    if (updateData.price) updateData.price = Number(updateData.price);
+    if (updateData.mrp) updateData.mrp = Number(updateData.mrp);
     if (updateData.isFeatured) updateData.isFeatured = updateData.isFeatured === 'true';
     if (updateData.taxIncluded) updateData.taxIncluded = updateData.taxIncluded === 'true';
+    if (updateData.isActive) updateData.isActive = updateData.isActive === 'true';
     
     // Parse variants
     if (updateData.variants) {
       updateData.variants = parseVariants(updateData.variants);
+    } else {
+      // Keep existing variants if not provided
+      updateData.variants = product.variants || [];
     }
 
     const variantBasePrice = getLowestVariantPrice(updateData.variants || product.variants || []);
-    if (updateData.price !== undefined) {
-      const requestedPrice = Number(updateData.price);
-      updateData.price = requestedPrice > 0 ? requestedPrice : variantBasePrice;
+    if (updateData.price !== undefined && updateData.price > 0) {
+      // Price is already set
     } else if (variantBasePrice > 0) {
       updateData.price = variantBasePrice;
     }
-
-
-
+    if (updateData.mrp === undefined || updateData.mrp <= 0) {
+      updateData.mrp = updateData.price || product.price;
+    }
+    // Handle categories - could be string or array
+    let finalCategories = updateData.categories;
+    if (updateData.categories) {
+      if (Array.isArray(updateData.categories)) {
+        finalCategories = updateData.categories;
+      } else if (typeof updateData.categories === 'string') {
+        finalCategories = [updateData.categories];
+      }
+    } else {
+      // Keep existing categories if not provided
+      finalCategories = product.categories || [];
+    }
+    updateData.categories = finalCategories;
+    
     // Handle images from upload.any()
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
@@ -241,9 +293,8 @@ export const updateProduct = async (req, res) => {
 
     product = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
-      runValidators: true,
-    })
-
+      runValidators: false, // Set to false to avoid schema validation issues during partial updates
+    }).lean();
 
     res.status(200).json({ success: true, data: product });
   } catch (error) {
@@ -346,20 +397,28 @@ export const getProductMetadata = async (req, res) => {
 
 export const toggleProductStatus = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).select('isActive');
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    product.isActive = !product.isActive;
-    await product.save();
+    // Only flip isActive — avoid product.save() which re-validates the entire document
+    // (legacy rows can fail on mrp/description/variants and break the toggle).
+    const nextActive = product.isActive === false;
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isActive: nextActive },
+      { new: true, runValidators: false }
+    );
 
     res.status(200).json({
       success: true,
-      message: `Product ${product.isActive ? 'enabled' : 'disabled'} successfully`,
-      data: product
+      message: `Product ${updated.isActive ? 'enabled' : 'disabled'} successfully`,
+      data: updated,
     });
   } catch (error) {
+    console.error('Toggle product status error:', error);
     res.status(400).json({ success: false, message: error.message });
   }
 };

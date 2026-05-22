@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { logout } from '../../features/auth/authSlice';
+import { resetUserData } from '../../utils/resetUserData';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -51,6 +54,7 @@ const navGroups = [
 ];
 
 export default function AdminLayout({ setIsAuthenticated }) {
+  const dispatch = useDispatch();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
@@ -65,8 +69,9 @@ export default function AdminLayout({ setIsAuthenticated }) {
     } catch (err) {
       console.error('Logout failed:', err);
     }
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('role');
+    // Clear customer cart/wishlist/notification cache so the next user never sees stale counts
+    dispatch(logout());
+    resetUserData(dispatch);
     if (setIsAuthenticated) setIsAuthenticated(false);
     else window.location.href = '/';
   };

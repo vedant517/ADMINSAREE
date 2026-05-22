@@ -1,223 +1,185 @@
-import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
-import nodemailer from "nodemailer";
+import { parseIdentifier, findUserByIdentifier, ensureUserExists } from "../utils/identifier.js";
+import { generateEmailOtp, MOBILE_STATIC_OTP } from "../utils/otp.js";
+import { saveOtp, verifyStoredOtp, OTP_EXPIRY_MS } from "../utils/otpStore.js";
+import { sendOtpEmail } from "../utils/emailService.js";
+import {
+  signAuthToken,
+  setAuthCookie,
+  clearAuthCookie,
+  formatAuthUser,
+} from "../utils/token.js";
 
-// Simple In-Memory Store for OTPs
-const otpStore = {};
-
-const normalizeIdentifier = ({ phonenum, email, identifier }) => {
-  const raw = String(identifier || email || phonenum || "").trim();
-  if (!raw) return null;
-  const isEmail = raw.includes("@");
-  return {
-    key: isEmail ? raw.toLowerCase() : raw.replace(/\D/g, ""),
-    type: isEmail ? "email" : "mobile",
-  };
-};
-
-const findUserByIdentifier = ({ key, type }) => {
-  return type === "email"
-    ? User.findOne({ email: key })
-    : User.findOne({ phonenum: key });
-};
-
-const sendEmailOtp = async (email, otp) => {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    return false;
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to: email,
-    subject: "Your Sheetalya login OTP",
-    text: `Your OTP is ${otp}. It expires in 10 minutes.`,
-  });
-  return true;
-};
-
-// REGISTER USER
-export const registerUser = async (req, res) => {
-  try {
-    if (!req.body) {
-      return res.status(400).json({ message: "Request body is missing." });
-    }
-    const { name, phonenum, email } = req.body;
-
-    if (!name || !phonenum || !email) {
-      return res.status(400).json({ message: "Name, Mobile number, and Email are required." });
-    }
-
-    // Check if user already exists with mobile
-    const existingMobile = await User.findOne({ phonenum });
-    if (existingMobile) {
-      return res.status(400).json({ message: "User already exists with this mobile number. Please login." });
-    }
-
-    // Check if user already exists with email
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).json({ message: "User already exists with this email address." });
-    }
-
-    // Create user
-    const user = await User.create({
-      name,
-      phonenum,
-      email,
-      role: 'user'
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Account created successfully. Please login with OTP.",
-      user: {
-        id: user._id,
-        name: user.name,
-        phonenum: user.phonenum,
-        email: user.email
-      }
-    });
-  } catch (err) {
-    console.error("Registration Error:", err);
-    res.status(500).json({ message: err.message || "Internal server error" });
-  }
-};
-
-// SEND OTP
+// ─── SEND OTP ───────────────────────────────────────────────────────────────
 export const sendOTP = async (req, res) => {
   try {
-    const identifier = normalizeIdentifier(req.body || {});
-
-    if (!identifier?.key) {
-      return res.status(400).json({ message: "Mobile number or email is required." });
+    const identifier = parseIdentifier(req.body?.identifier ?? req.body?.email ?? req.body?.phonenum);
+    if (identifier?.error) {
+      return res.status(400).json({ success: false, message: identifier.error });
     }
 
-    const user = await findUserByIdentifier(identifier);
-    if (!user) {
-      return res.status(404).json({ message: "User not found. Please create an account first." });
+    if (identifier.type === "mobile") {
+      saveOtp(identifier.key, { otp: MOBILE_STATIC_OTP, type: "mobile" });
+      return res.status(200).json({
+        success: true,
+        channel: "mobile",
+        expiresIn: OTP_EXPIRY_MS,
+        message: "OTP sent to your mobile number.",
+      });
     }
 
-    // Generate 6-digit OTP
-    const otp = "123456"; // FOR DEMO: Always use 123456
-    const expiry = Date.now() + 10 * 60 * 1000; // 10 mins
-
-    otpStore[identifier.key] = { otp, expiry, type: identifier.type };
+    const otp = generateEmailOtp();
+    saveOtp(identifier.key, { otp, type: "email" });
 
     let delivered = false;
-    if (identifier.type === "email") {
-      try {
-        delivered = await sendEmailOtp(identifier.key, otp);
-      } catch (mailError) {
-        console.warn(`[AUTH] Email OTP delivery failed for ${identifier.key}:`, mailError.message);
+    try {
+      await sendOtpEmail(identifier.key, otp);
+      delivered = true;
+    } catch (mailErr) {
+      console.error("[AUTH] Email OTP failed:", mailErr.message);
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[AUTH] Dev email OTP for ${identifier.key}: ${otp}`);
       }
+      return res.status(503).json({
+        success: false,
+        message: mailErr.message || "Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS.",
+      });
     }
 
-    console.log(`[AUTH] OTP for ${identifier.type} ${identifier.key}: ${otp}`);
-
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      channel: identifier.type,
+      channel: "email",
       delivered,
-      message: `OTP sent successfully to ${identifier.type} (Demo Mode: 123456)` 
+      expiresIn: OTP_EXPIRY_MS,
+      message: "OTP sent to your email address.",
     });
   } catch (err) {
     console.error("Send OTP Error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// VERIFY OTP (LOGIN)
+// ─── VERIFY OTP (login / auto signup) ─────────────────────────────────────
 export const verifyOTP = async (req, res) => {
   try {
-    const { otp } = req.body;
-    const identifier = normalizeIdentifier(req.body || {});
-    const sanitizedOtp = String(otp || "").trim().replace(/\s/g, "");
-
-    if (!identifier?.key || !otp) {
-      return res.status(400).json({ message: "Mobile number/email and OTP are required" });
-    }
-
-    const stored = otpStore[identifier.key];
-    const isMaster = sanitizedOtp === "123456";
-
-    if (!isMaster) {
-      if (!stored) {
-        return res.status(400).json({ message: "OTP not found or session expired. Please resend code." });
-      }
-      if (stored.otp !== sanitizedOtp) {
-        return res.status(400).json({ message: "Invalid OTP code. Please try again." });
-      }
-      if (Date.now() > stored.expiry) {
-        delete otpStore[identifier.key];
-        return res.status(400).json({ message: "OTP has expired. Please resend code." });
-      }
-    }
-
-    // OTP Verified -> Get User
-    const user = await findUserByIdentifier(identifier);
-    if (!user) {
-      return res.status(404).json({ message: "User record lost. Please register again." });
-    }
-
-    // Clean up store
-    delete otpStore[identifier.key];
-
-    // Create JWT
-    const token = jwt.sign(
-      { id: user._id.toString(), role: user.role }, 
-      process.env.JWT_SECRET || "fallback_secret", 
-      { expiresIn: "7d" }
+    const identifier = parseIdentifier(
+      req.body?.identifier ?? req.body?.email ?? req.body?.phonenum
     );
+    if (identifier?.error) {
+      return res.status(400).json({ success: false, message: identifier.error });
+    }
 
-    // Set Cookie
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction, // Only secure in production
-      sameSite: isProduction ? "None" : "Lax", // None requires Secure, Lax is fine for local
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+    const sanitizedOtp = String(req.body?.otp || "").trim().replace(/\s/g, "");
+    if (!sanitizedOtp) {
+      return res.status(400).json({ success: false, message: "OTP is required." });
+    }
+
+    if (identifier.type === "mobile") {
+      if (sanitizedOtp !== MOBILE_STATIC_OTP) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid OTP code. Please try again.",
+        });
+      }
+    } else {
+      const check = verifyStoredOtp(identifier.key, sanitizedOtp);
+      if (!check.ok) {
+        return res.status(400).json({ success: false, message: check.message });
+      }
+    }
+
+    const user = await ensureUserExists(User, identifier, req.body?.name);
+    const token = signAuthToken(user);
+    setAuthCookie(res, token);
+
+    const userPayload = formatAuthUser(user, token);
 
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,  // ✅ Return token in body for cross-origin (Render) environments
-      user: {
-        id: user._id,
-        name: user.name,
-        phonenum: user.phonenum,
-        email: user.email,
-        role: user.role,
-        token,  // ✅ Also embed in user object so frontend can read it easily
-      }
+      token,
+      user: userPayload,
     });
   } catch (err) {
     console.error("Verify OTP Error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: err.message || "Internal server error" });
   }
 };
 
-// LOGOUT
-export const logoutUser = (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  res.clearCookie("token", { 
-    path: "/",
-    secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax"
-  });
-  res.status(200).json({ 
-    success: true,
-    message: "Logged out successfully" 
-  });
+// ─── GET CURRENT USER ───────────────────────────────────────────────────────
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({
+      success: true,
+      user: formatAuthUser(user, null),
+    });
+  } catch (err) {
+    console.error("Get current user error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ─── LOGOUT ─────────────────────────────────────────────────────────────────
+export const logoutUser = (_req, res) => {
+  clearAuthCookie(res);
+  res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
+// Legacy register (optional — hybrid flow auto-creates users)
+export const registerUser = async (req, res) => {
+  try {
+    const { name, phonenum, email } = req.body || {};
+    const mobileId = parseIdentifier(phonenum);
+    const emailId = parseIdentifier(email);
+
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: "Name is required." });
+    }
+    if (mobileId?.error) {
+      return res.status(400).json({ success: false, message: mobileId.error });
+    }
+    if (emailId?.error) {
+      return res.status(400).json({ success: false, message: emailId.error });
+    }
+
+    const existingMobile = mobileId?.key
+      ? await User.findOne({ phonenum: mobileId.key })
+      : null;
+    if (existingMobile) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists with this mobile number. Please login.",
+      });
+    }
+
+    const existingEmail = emailId?.key
+      ? await User.findOne({ email: emailId.key })
+      : null;
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists with this email. Please login.",
+      });
+    }
+
+    const user = await User.create({
+      name: name.trim(),
+      phonenum: mobileId.key,
+      email: emailId.key,
+      role: "user",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Account created. Please verify with OTP.",
+      user: formatAuthUser(user, null),
+    });
+  } catch (err) {
+    console.error("Registration Error:", err);
+    res.status(500).json({ success: false, message: err.message || "Internal server error" });
+  }
 };

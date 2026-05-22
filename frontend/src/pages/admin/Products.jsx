@@ -51,10 +51,18 @@ const Products = () => {
 
   const handleToggle = async (id) => {
     try {
-      await api.patch(`/admin/products/${id}/toggle-status`);
-      dispatch(fetchProducts({ isAdmin: true }));
-    } catch (error) {
-      alert('Error toggling product status');
+      const { data } = await api.patch(`/admin/products/${id}/toggle-status`);
+      dispatch(fetchProducts({ isAdmin: true, search: search.trim() }));
+      if (data?.message) {
+        dispatch(clearProductError());
+      }
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.msg ||
+        err.message ||
+        'Error toggling product status';
+      alert(msg);
     }
   };
 
@@ -164,14 +172,14 @@ const Products = () => {
               <tbody>
                 {loading && filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center">
+                    <td colSpan={6} className="py-16 text-center">
                       <div className="w-11 h-11 border-4 border-amber-100 border-t-[#85754E] rounded-full mx-auto mb-3" style={{ animation: 'spin 0.8s linear infinite' }} />
                       <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Syncing Catalog...</span>
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center">
+                    <td colSpan={6} className="py-16 text-center">
                       <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-3">
                         <Package size={30} className="text-slate-400" />
                       </div>

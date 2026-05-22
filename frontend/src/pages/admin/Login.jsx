@@ -29,9 +29,7 @@ export default function Login({ setIsAuthenticated }) {
       const data = res.data;
 
       if (res.status === 200) {
-        dispatch(setCredentials({ role: data.role }));
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('role', data.role);
+        dispatch(setCredentials({ role: data.role, isAdmin: true }));
         if (setIsAuthenticated) setIsAuthenticated(true);
         navigate('/dashboard');
       } else {

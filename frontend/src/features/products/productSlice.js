@@ -81,8 +81,8 @@ export const updateProduct = createAsyncThunk(
         },
       });
 
-      // Auto-refresh the list
-      thunkAPI.dispatch(fetchProducts());
+      // Auto-refresh the list with admin params
+      thunkAPI.dispatch(fetchProducts({ isAdmin: true }));
 
       return response.data.data;
     } catch (error) {
@@ -96,6 +96,8 @@ export const deleteProduct = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       await api.delete(`${API_URL}/${id}`);
+      // Re-fetch the list from server after deletion to ensure consistency
+      thunkAPI.dispatch(fetchProducts({ isAdmin: true }));
       return id;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);

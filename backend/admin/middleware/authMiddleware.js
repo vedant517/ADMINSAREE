@@ -3,8 +3,11 @@ import User from "../../models/User.js";
 import Admin from '../models/Admin.js';
 
 export const protect = async (req, res, next) => {
-  // ── Strictly read from httpOnly cookie ──
-  const token = req.cookies?.token;
+  // httpOnly cookie (admin login) or Bearer header fallback
+  let token = req.cookies?.token;
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
 
   if (!token) {
     console.error('No token found in request cookies');

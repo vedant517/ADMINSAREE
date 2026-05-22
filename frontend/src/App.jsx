@@ -18,6 +18,8 @@ const ProductReviews = lazy(() => import('./pages/admin/ProductReviews'));
 const Categories = lazy(() => import('./pages/admin/Categories'));
 const Enquiries = lazy(() => import('./pages/admin/Enquiries'));
 const ProductReviewPage = lazy(() => import('./pages/user/ProductReviewPage'));
+const AuthLogin = lazy(() => import('./pages/user/AuthLogin'));
+const Shop = lazy(() => import('./pages/user/Shop'));
 
 const LoadingSpinner = () => (
   <div className="flex-1 flex items-center justify-center min-h-[400px]">
@@ -46,6 +48,8 @@ function App() {
           />
           
           {/* Public / User routes */}
+          <Route path="/login" element={<AuthLogin />} />
+          <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id/reviews" element={<ProductReviewPage />} />
 
 

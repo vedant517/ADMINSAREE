@@ -13,7 +13,11 @@ const productSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: [true, 'Please add a price'],
+    required: [true, 'Please add a selling price'],
+  },
+  mrp: {
+    type: Number,
+    required: [true, 'Please add an MRP (Maximum Retail Price)'],
   },
   images: [
     {
@@ -51,6 +55,7 @@ const productSchema = new mongoose.Schema({
     {
       color: { type: String, required: true },
       price: { type: Number, required: true },
+      mrp: { type: Number, required: true },
       fabric: { type: String, required: true },
       stock: { type: Number, default: 0 },
       sku: { type: String },

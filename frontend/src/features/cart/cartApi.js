@@ -1,33 +1,41 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_BASE_URL } from '../../services/apiConfig';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createAuthBaseQuery } from '../../services/authBaseQuery';
+import { getStoredUserId } from '../../utils/userSession';
+import { setCartCount } from '../ui/uiSlice';
 
 export const cartApi = createApi({
   reducerPath: 'cartApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    credentials: 'include', // sends cookie token automatically
-  }),
+  baseQuery: createAuthBaseQuery(),
   tagTypes: ['Cart'],
+  refetchOnMountOrArgChange: true,
+  keepUnusedDataFor: 0,
   endpoints: (builder) => ({
 
-    // GET /api/cart
+    // GET /api/cart — cache key includes userId so User B never sees User A cache
     getCart: builder.query({
       query: () => '/cart',
       providesTags: ['Cart'],
+      serializeQueryArgs: ({ endpointName }) =>
+        `${endpointName}-${getStoredUserId() || 'guest'}`,
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCartCount(data?.totalItems ?? data?.cart?.length ?? 0));
+        } catch {
+          dispatch(setCartCount(0));
+        }
+      },
     }),
 
-    // POST /api/cart/add
     addToCart: builder.mutation({
       query: (body) => ({
         url: '/cart/add',
         method: 'POST',
         body,
-        // body: { productId, name, price, image, quantity, selectedVariant }
       }),
       invalidatesTags: ['Cart'],
     }),
 
-    // PUT /api/cart/update/:id
     updateCartItem: builder.mutation({
       query: ({ id, quantity }) => ({
         url: `/cart/update/${id}`,
@@ -37,7 +45,6 @@ export const cartApi = createApi({
       invalidatesTags: ['Cart'],
     }),
 
-    // DELETE /api/cart/remove/:id
     removeFromCart: builder.mutation({
       query: (id) => ({
         url: `/cart/remove/${id}`,
@@ -46,7 +53,6 @@ export const cartApi = createApi({
       invalidatesTags: ['Cart'],
     }),
 
-    // DELETE /api/cart/clear
     clearCart: builder.mutation({
       query: () => ({
         url: '/cart/clear',

@@ -1,6 +1,7 @@
 import Product from "../models/Product.js";
 import Offer from "../models/Offer.js";
 import User from "../../models/User.js";
+import { enrichEmbeddedReviews, resolveReviewerName } from "../utils/enrichReviews.js";
 
 // ✅ GET MAIN CATEGORIES
 export const getMainCategories = async (req, res) => {
@@ -137,10 +138,12 @@ export const getProductById = async (req, res) => {
       console.error("OFFER CALC ERROR:", offerErr.message);
     }
 
+    const withReviewerNames = await enrichEmbeddedReviews(productData);
+
     res.json({
       success: true,
-      data: productData,
-      product: productData,
+      data: withReviewerNames,
+      product: withReviewerNames,
     });
   } catch (error) {
     console.error("GET PRODUCT ERROR:", error);
@@ -216,13 +219,15 @@ export const addProductReview = async (req, res) => {
       });
     }
 
-    const dbUser = await User.findById(req.user._id);
+    const dbUser = await User.findById(req.user._id).select("name email");
+    const reviewerName = resolveReviewerName({}, dbUser);
 
     const review = {
       user: req.user._id,
-      name: dbUser?.name || dbUser?.email?.split("@")[0] || "Anonymous",
+      name: reviewerName,
       rating: Number(rating),
       comment,
+      date: new Date(),
     };
 
     product.reviews.push(review);
@@ -231,17 +236,23 @@ export const addProductReview = async (req, res) => {
       product.reviews.reduce((acc, item) => item.rating + acc, 0) /
       product.reviews.length;
 
-    // Save to standalone Review collection for Admin Panel
     const Review = (await import("../models/Review.js")).default;
     await Review.create({
       user: req.user._id,
       product: product._id,
       rating: Number(rating),
       comment,
+      name: reviewerName,
     });
 
     await product.save();
-    res.status(201).json({ success: true, message: "Review added" });
+    const enriched = await enrichEmbeddedReviews(product.toObject());
+    res.status(201).json({
+      success: true,
+      message: "Review added",
+      data: enriched,
+      product: enriched,
+    });
   } catch (error) {
     console.error("ADD REVIEW ERROR:", error);
     res.status(500).json({

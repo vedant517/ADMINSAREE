@@ -16,8 +16,15 @@ export const protect = (req, res, next) => {
       return res.status(401).json({ message: "Not authorized, no token" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret =
+      process.env.JWT_SECRET ||
+      (process.env.NODE_ENV === "production" ? null : "dev_jwt_secret_change_me");
+    if (!secret) {
+      return res.status(500).json({ message: "JWT_SECRET is not configured" });
+    }
+    const decoded = jwt.verify(token, secret);
 
+    // Used by cart, wishlist, orders, and notification routes (req.user._id)
     req.user = {
       id: decoded.id,
       _id: decoded.id,
@@ -45,4 +52,4 @@ export const authorize = (...roles) => {
     }
     next();
   };
-};
+};

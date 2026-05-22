@@ -1,12 +1,12 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_BASE_URL } from '../../services/apiConfig';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createAuthBaseQuery } from '../../services/authBaseQuery';
+import { resetUserData } from '../../utils/resetUserData';
+import { logout, logoutCustomer, setCredentials, setUserProfile } from './authSlice';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    credentials: 'include',
-  }),
+  baseQuery: createAuthBaseQuery(),
+  tagTypes: ['AuthUser'],
   endpoints: (builder) => ({
     register: builder.mutation({
       query: (userData) => ({
@@ -28,12 +28,36 @@ export const authApi = createApi({
         method: 'POST',
         body: data,
       }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        const user = data?.user;
+        if (user) {
+          dispatch(
+            setCredentials({
+              role: user.role || 'user',
+              userId: user.id,
+              token: data?.token || user.token,
+              user,
+              isCustomer: true,
+            })
+          );
+        }
+      },
+    }),
+    getCurrentUser: builder.query({
+      query: () => '/auth/me',
+      providesTags: ['AuthUser'],
     }),
     logout: builder.mutation({
       query: () => ({
         url: '/auth/logout',
         method: 'POST',
       }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await queryFulfilled.catch(() => {});
+        dispatch(logoutCustomer());
+        resetUserData(dispatch);
+      },
     }),
   }),
 });
@@ -42,5 +66,6 @@ export const {
   useRegisterMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
+  useGetCurrentUserQuery,
   useLogoutMutation,
 } = authApi;

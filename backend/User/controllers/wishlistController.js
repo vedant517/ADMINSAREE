@@ -1,19 +1,6 @@
-import jwt from "jsonwebtoken";
 import Wishlist from "../models/Wishlist.js";
 import Product from "../models/Product.js";
-
-// GET USER ID FROM TOKEN
-const getUserId = (req) => {
-  const token = req.cookies?.token;
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded.id;
-  } catch (err) {
-    console.log("JWT ERROR:", err.message);
-    return null;
-  }
-};
+import { requireAuthUserId } from "../utils/resolveAuthUserId.js";
 
 const getProductImage = (product, fallback) => {
   const first = Array.isArray(product?.images) ? product.images[0] : null;
@@ -50,18 +37,13 @@ const mapWishlistItem = async (item) => {
   return { ...plainItem, ...current };
 };
 
-// GET WISHLIST
+// GET WISHLIST — scoped to req.user / JWT user id only
 export const getWishlist = async (req, res) => {
   try {
-    const userId = getUserId(req);
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "User not logged in",
-        wishlist: [],
-      });
-    }
-    const wishlistItems = await Wishlist.find({ userId });
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
+    const wishlistItems = await Wishlist.find({ userId: String(userId) });
     const wishlist = await Promise.all(wishlistItems.map(mapWishlistItem));
     res.json({ success: true, wishlist });
   } catch (error) {
@@ -72,10 +54,9 @@ export const getWishlist = async (req, res) => {
 // ADD TO WISHLIST
 export const addToWishlist = async (req, res) => {
   try {
-    const userId = getUserId(req);
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "User not logged in" });
-    }
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
     const { productId } = req.body;
     if (!productId) {
       return res.status(400).json({ success: false, message: "productId is required" });
@@ -86,12 +67,12 @@ export const addToWishlist = async (req, res) => {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    const exists = await Wishlist.findOne({ userId, productId });
+    const exists = await Wishlist.findOne({ userId: String(userId), productId });
     if (exists) {
       return res.status(400).json({ success: false, message: "Item already in wishlist" });
     }
     await Wishlist.create({
-      userId,
+      userId: String(userId),
       productId,
       name: product.name,
       price: getProductPrice(product),
@@ -99,7 +80,7 @@ export const addToWishlist = async (req, res) => {
       rating: product.ratings || product.rating || 4,
       description: product.description,
     });
-    const wishlistItems = await Wishlist.find({ userId });
+    const wishlistItems = await Wishlist.find({ userId: String(userId) });
     const wishlist = await Promise.all(wishlistItems.map(mapWishlistItem));
     res.status(201).json({ success: true, message: "Item added to wishlist", wishlist });
   } catch (error) {
@@ -110,15 +91,17 @@ export const addToWishlist = async (req, res) => {
 // REMOVE FROM WISHLIST
 export const removeFromWishlist = async (req, res) => {
   try {
-    const userId = getUserId(req);
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "User not logged in" });
-    }
-    const result = await Wishlist.deleteOne({ userId, productId: req.params.productId });
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
+    const result = await Wishlist.deleteOne({
+      userId: String(userId),
+      productId: req.params.productId,
+    });
     if (result.deletedCount === 0) {
       return res.status(404).json({ success: false, message: "Item not found in wishlist" });
     }
-    const wishlist = await Wishlist.find({ userId });
+    const wishlist = await Wishlist.find({ userId: String(userId) });
     res.json({ success: true, message: "Item removed from wishlist", wishlist });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -128,11 +111,10 @@ export const removeFromWishlist = async (req, res) => {
 // CLEAR WISHLIST
 export const clearWishlist = async (req, res) => {
   try {
-    const userId = getUserId(req);
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "User not logged in" });
-    }
-    await Wishlist.deleteMany({ userId });
+    const userId = requireAuthUserId(req, res);
+    if (!userId) return;
+
+    await Wishlist.deleteMany({ userId: String(userId) });
     res.json({ success: true, message: "Wishlist cleared", wishlist: [] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

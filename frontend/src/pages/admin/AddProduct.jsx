@@ -26,7 +26,7 @@ const AddProduct = () => {
   } = useSelector((state) => state.categories || {});
 
   const [formData, setFormData] = useState({
-    name: '', description: '', price: '', discountPrice: '',
+    name: '', description: '', price: '', mrp: '', discountPrice: '',
     mainCategory: '', categories: [],
     stockQuantity: '', stockStatus: 'In Stock',
   });
@@ -56,7 +56,7 @@ const AddProduct = () => {
           const p = result.payload;
           setFormData({
             name: p.name || '', description: p.description || '',
-            price: p.price || '', discountPrice: p.discountPrice || '',
+            price: p.price || '', mrp: p.mrp || '', discountPrice: p.discountPrice || '',
             mainCategory: p.mainCategory || '',
             categories: p.categories || [],
             stockQuantity: p.stock || '',
@@ -162,7 +162,7 @@ const AddProduct = () => {
   };
 
   const addVariant = () => {
-    setVariants([...variants, { color: '', fabric: '', price: '', stock: '' }]);
+    setVariants([...variants, { color: '', fabric: '', price: '', mrp: '', stock: '' }]);
     setVariantImages([...variantImages, null]);
     setVariantPreviews([...variantPreviews, null]);
   };
@@ -187,6 +187,7 @@ const AddProduct = () => {
     submissionData.append('name', formData.name);
     submissionData.append('description', formData.description);
     submissionData.append('price', String(effectiveBasePrice));
+    submissionData.append('mrp', String(formData.mrp || effectiveBasePrice));
     submissionData.append('discountPrice', formData.discountPrice);
     submissionData.append('mainCategory', formData.mainCategory);
     formData.categories.forEach(cat => submissionData.append('categories', cat));
@@ -197,6 +198,7 @@ const AddProduct = () => {
     submissionData.append('variants', JSON.stringify(variants.map((variant) => ({
       ...variant,
       price: Number(variant.price) || effectiveBasePrice,
+      mrp: Number(variant.mrp) || Number(variant.price) || Number(formData.mrp) || effectiveBasePrice,
       stock: Number(variant.stock) || 0,
     }))));
     if (images.length > 0) submissionData.append('image', images[0]);
@@ -338,10 +340,11 @@ const AddProduct = () => {
               <div className="flex flex-col gap-3">
                 {variants.map((variant, idx) => (
                   <div key={idx} className="bg-slate-50 p-4 rounded-xl flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1fr_1fr_100px_36px] sm:items-end">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1fr_1fr_1fr_100px_36px] sm:items-end">
                       {[
                         { label: 'Fabric', field: 'fabric', type: 'text' },
-                        { label: 'Variant Price', field: 'price', type: 'number' },
+                        { label: 'MRP', field: 'mrp', type: 'number' },
+                        { label: 'Selling Price', field: 'price', type: 'number' },
                         { label: 'Stock', field: 'stock', type: 'number' },
                       ].map(({ label, field, type }) => (
                         <div key={field}>
@@ -437,20 +440,35 @@ const AddProduct = () => {
           <div className={sectionCls}>
             <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wide m-0 mb-5">Pricing</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className={labelCls}>Base Price (INR)</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                  <input
-                    required={variants.length === 0} type="number" name="price" value={formData.price}
-                    onChange={handleInputChange} placeholder="0.00"
-                    className={`${inputCls} pl-7`}
-                  />
+              <div className="sm:col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelCls}>MRP (Maximum Retail Price)</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                    <input
+                      type="number" name="mrp" value={formData.mrp}
+                      onChange={handleInputChange} placeholder="0.00"
+                      className={`${inputCls} pl-7`}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Base Selling Price (INR)</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                    <input
+                      required={variants.length === 0} type="number" name="price" value={formData.price}
+                      onChange={handleInputChange} placeholder="0.00"
+                      className={`${inputCls} pl-7`}
+                    />
+                  </div>
                 </div>
                 {variants.length > 0 && (
-                  <p className="text-[11px] text-[#85754E] font-bold mt-2 mb-0">
-                    Variant pricing active: product base will save as lowest variant price ({formatINR(getEffectiveBasePrice())}).
-                  </p>
+                  <div className="sm:col-span-2">
+                    <p className="text-[11px] text-[#85754E] font-bold mt-2 mb-0">
+                      Variant pricing active: product base will save as lowest variant price ({formatINR(getEffectiveBasePrice())}).
+                    </p>
+                  </div>
                 )}
               </div>
               <div>

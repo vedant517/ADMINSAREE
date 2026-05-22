@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema({
     required: false,
     unique: true,
     sparse: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
@@ -24,8 +26,10 @@ const userSchema = new mongoose.Schema({
   },
   phonenum: {
     type: String,
-    required: [true, 'Please add a phone number'],
+    required: false,
     unique: true,
+    sparse: true,
+    trim: true,
   },
   role: {
     type: String,

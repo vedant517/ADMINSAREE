@@ -26,6 +26,12 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    /** Cached display name at time of review (also resolved from User on read). */
+    name: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

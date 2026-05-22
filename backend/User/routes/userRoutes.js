@@ -4,6 +4,22 @@ import Order from "../models/Order.js";
 
 const router = express.Router();
 
+// @desc    Notification badge count (undelivered orders for logged-in user)
+// @route   GET /api/user/notifications/count
+// @access  Private
+router.get("/notifications/count", protect, async (req, res) => {
+  try {
+    const count = await Order.countDocuments({
+      user: req.user._id,
+      isDelivered: { $ne: true },
+    });
+    res.json({ success: true, count });
+  } catch (err) {
+    console.error("Notification count error:", err.message);
+    res.status(500).json({ success: false, message: "Server error fetching notifications." });
+  }
+});
+
 // @desc    Get current user orders
 // @route   GET /api/user/orders
 // @access  Private
